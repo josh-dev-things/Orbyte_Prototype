@@ -47,7 +47,8 @@ int main()
     std::cout << "Orbyte Prototype\n";
 
     satellite test(
-        12
+        12,
+        "Test_Sat_1"
     );
     int test_out = test.get_altitude();
 
