@@ -2,21 +2,45 @@
 //
 
 #include <iostream>
+#include <string>
 
 class satellite
 {
     public:
         int altitude = 0;
+        std::string ID;
 
-        satellite(int _altitude) {
+        satellite(int _altitude, std::string _ID) {
             altitude = _altitude;
+            ID = _ID;
         }
 
         int get_altitude()
         {
             return altitude;
         }
+
+        int Update(float delta)
+        {
+            //There'll be a good reason for having delta as a parameter... I dont know what that is just yet
+            return 0;
+        }
+
+        void Debug()
+        {
+            std::cout << ID;
+
+        }
 };
+
+int mainloop()
+{
+    while (1)
+    {
+        //The observant among you will notice that this should execute infinitely!
+        
+    }
+}
 
 int main()
 {
@@ -28,6 +52,8 @@ int main()
     int test_out = test.get_altitude();
 
     std::cout << test_out;
+
+    mainloop();
 
     return 0;
 }
