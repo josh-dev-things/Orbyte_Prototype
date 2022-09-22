@@ -1,8 +1,12 @@
 // Orbyte_Prototype.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
+//  SDL + GUI library built for SDL 
+// https://lazyfoo.net/tutorials/SDL/01_hello_SDL/index2.php
+
 
 #include <iostream>
 #include <string>
+//#include <SDL.h>
+#include <stdio.h> //This library makes debugging nicer, but shouldn't really be involved in user usage.
 
 class satellite
 {
@@ -44,7 +48,7 @@ int mainloop()
 
 int main()
 {
-    std::cout << "Orbyte Prototype\n";
+    printf("Orbyte Prototype\n");
 
     satellite test(
         12,
@@ -52,7 +56,7 @@ int main()
     );
     int test_out = test.get_altitude();
 
-    std::cout << test_out;
+    printf("%d\n", test_out);
 
     mainloop();
 
