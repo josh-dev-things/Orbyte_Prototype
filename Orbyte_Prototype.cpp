@@ -1,6 +1,7 @@
 // Orbyte_Prototype.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //  SDL + GUI library built for SDL 
 // https://lazyfoo.net/tutorials/SDL/01_hello_SDL/index2.php
+// https://lazyfoo.net/tutorials/SDL/index.php
 
 
 #include <iostream>
@@ -8,48 +9,102 @@
 #include <SDL.h>
 #include <stdio.h> //This library makes debugging nicer, but shouldn't really be involved in user usage.
 
+//Open GL
+#include <GL\glew.h>
+#include <SDL_opengl.h>
+#include <GL\glu.h>
+
 const int SCREEN_WIDTH = 700;
 const int SCREEN_HEIGHT = 500;
 
-int main(int argc, char* args[])
-{
-	SDL_Window* sdl_window = NULL;
-	SDL_Surface* sdl_surface = NULL;
+//Window
+SDL_Window* gWindow = NULL;
 
-	//Initialize SDL: https://lazyfoo.net/tutorials/SDL/01_hello_SDL/index2.php
+SDL_Surface* gScreenSurface = NULL;
+
+SDL_Surface* gHelloWorld = NULL; // "... An SDL surface is just an image data type that contains the pixels of an image along with all data needed to render it"
+
+//Initialize SDL and window
+bool init()
+{
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
-		printf("ERROR INITIALIZING SDL | SDL_ERROR : %s\n", SDL_GetError()); //printf = print format
-		return -1;
+		printf("ERROR INITIALIZING SDL | SDL_ERROR : %s\n", SDL_GetError());
+		return false;
 	}
 
-	//Now creating window
-	sdl_window = SDL_CreateWindow("Orbyte Prototype", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
-	if (sdl_window == NULL)
+	//Creating the window
+	gWindow = SDL_CreateWindow("Orbyte Prototype", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+	if (gWindow == NULL)
 	{
-		printf("ERROR CREATING WINDOW | SDL_ERROR : %s\n", SDL_GetError());
-		return -1;
+		printf("ERROR CREATING WINDOW | SDL_ERROR: %s\n", SDL_GetError());
+		return false;
 	}
 
-	//Creating window surface 
-	sdl_surface = SDL_GetWindowSurface(sdl_window);
+	gScreenSurface = SDL_GetWindowSurface(gWindow);
+	return true;
+}
 
-	//MAKE SOMETHING DISPLAY
-	SDL_FillRect(sdl_surface, NULL, SDL_MapRGB(sdl_surface->format, 0xFF, 0xFF, 0xFF)); //Fills rect white, because FF for all RGB values in hex is white
+//Loads media
+bool loadMedia()
+{
+	gHelloWorld = SDL_LoadBMP("images/Orbyte.bmp");
+	if(gHelloWorld == NULL)
+	{
+		printf("UNABLE TO ACCESS IMAGE %s | SDL_ERROR : %s\n", "images/Orbyte.bmp", SDL_GetError());
+		return false;
+	}
+	return true;
+}
 
-	SDL_UpdateWindowSurface(sdl_window); //Update the window
-
-	//Hack to get window to stay up
-	SDL_Event e; bool quit = false; while (quit == false) { while (SDL_PollEvent(&e)) { if (e.type == SDL_QUIT) quit = true; } } //NOT MY IDEA
+//Frees media and shuts down SDL
+void close()
+{
+	//Deallocate surface
+	SDL_FreeSurface(gHelloWorld);
+	gHelloWorld = NULL;
 
 	//Destroy window
-	SDL_DestroyWindow(sdl_window);
+	SDL_DestroyWindow(gWindow);
+	gWindow = NULL;
 
-	//Quit SDL
+	//Quit SDL subsystems
 	SDL_Quit();
-
-	return 0; // all has gone well!
 }
+
+int main(int argc, char* args[])
+{
+	//Start up SDL and create window
+	if (!init())
+	{
+		printf("Failed to initialize!\n");
+	}
+	else
+	{
+		//Load media
+		if (!loadMedia())
+		{
+			printf("Failed to load media!\n");
+		}
+		else
+		{
+			//Apply the image
+			SDL_BlitSurface(gHelloWorld, NULL, gScreenSurface, NULL);
+
+			//Update the surface
+			SDL_UpdateWindowSurface(gWindow);
+
+			//Hack to get window to stay up
+			SDL_Event e; bool quit = false; while (quit == false) { while (SDL_PollEvent(&e)) { if (e.type == SDL_QUIT) quit = true; } }
+		}
+	}
+
+	//Free resources and close SDL
+	close();
+
+	return 0;
+}
+
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
 // Debug program: F5 or Debug > Start Debugging menu
