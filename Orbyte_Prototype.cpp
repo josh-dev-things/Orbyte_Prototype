@@ -5,62 +5,50 @@
 
 #include <iostream>
 #include <string>
-//#include <SDL.h>
+#include <SDL.h>
 #include <stdio.h> //This library makes debugging nicer, but shouldn't really be involved in user usage.
 
-class satellite
+const int SCREEN_WIDTH = 700;
+const int SCREEN_HEIGHT = 500;
+
+int main(int argc, char* args[])
 {
-    public:
-        int altitude = 0;
-        std::string ID;
+	SDL_Window* sdl_window = NULL;
+	SDL_Surface* sdl_surface = NULL;
 
-        satellite(int _altitude, std::string _ID) {
-            altitude = _altitude;
-            ID = _ID;
-        }
+	//Initialize SDL: https://lazyfoo.net/tutorials/SDL/01_hello_SDL/index2.php
+	if (SDL_Init(SDL_INIT_VIDEO) < 0)
+	{
+		printf("ERROR INITIALIZING SDL | SDL_ERROR : %s\n", SDL_GetError()); //printf = print format
+		return -1;
+	}
 
-        int get_altitude()
-        {
-            return altitude;
-        }
+	//Now creating window
+	sdl_window = SDL_CreateWindow("Orbyte Prototype", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+	if (sdl_window == NULL)
+	{
+		printf("ERROR CREATING WINDOW | SDL_ERROR : %s\n", SDL_GetError());
+		return -1;
+	}
 
-        int Update(float delta)
-        {
-            //There'll be a good reason for having delta as a parameter... I dont know what that is just yet
-            return 0;
-        }
+	//Creating window surface 
+	sdl_surface = SDL_GetWindowSurface(sdl_window);
 
-        void Debug()
-        {
-            std::cout << ID;
+	//MAKE SOMETHING DISPLAY
+	SDL_FillRect(sdl_surface, NULL, SDL_MapRGB(sdl_surface->format, 0xFF, 0xFF, 0xFF)); //Fills rect white, because FF for all RGB values in hex is white
 
-        }
-};
+	SDL_UpdateWindowSurface(sdl_window); //Update the window
 
-int mainloop()
-{
-    while (1)
-    {
-        //The observant among you will notice that this should execute infinitely!
-        
-    }
-}
+	//Hack to get window to stay up
+	SDL_Event e; bool quit = false; while (quit == false) { while (SDL_PollEvent(&e)) { if (e.type == SDL_QUIT) quit = true; } } //NOT MY IDEA
 
-int main()
-{
-    printf("Orbyte Prototype\n");
+	//Destroy window
+	SDL_DestroyWindow(sdl_window);
 
-    satellite test(
-        12,
-        "Test_Sat_1"
-    );
-    int test_out = test.get_altitude();
+	//Quit SDL
+	SDL_Quit();
 
-    printf("%d\n", test_out);
-
-    mainloop();
-
-    return 0;
+	return 0; // all has gone well!
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
