@@ -104,6 +104,16 @@ int main(int argc, char* args[])
 					{
 						quit = true;
 					}
+					//User Presses a Key
+					else if (sdl_event.type == SDL_KEYDOWN)
+					{
+						switch (sdl_event.key.keysym.sym)
+						{
+						case SDLK_SPACE:
+							printf("User Pressed The Space Bar");
+							break;
+						}
+					}
 				}
 
 				//Apply the image
