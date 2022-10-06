@@ -24,6 +24,10 @@ SDL_Surface* gScreenSurface = NULL;
 
 SDL_Surface* gHelloWorld = NULL; // "... An SDL surface is just an image data type that contains the pixels of an image along with all data needed to render it"
 
+//Runtime variables
+bool quit = false;
+SDL_Event sdl_event;
+
 //Initialize SDL and window
 bool init()
 {
@@ -88,15 +92,28 @@ int main(int argc, char* args[])
 		}
 		else
 		{
-			//Apply the image
-			SDL_BlitSurface(gHelloWorld, NULL, gScreenSurface, NULL);
 
-			//Update the surface
-			SDL_UpdateWindowSurface(gWindow);
+			//Mainloop time
+			while (!quit)
+			{
+				//Handle events
+				while (SDL_PollEvent(&sdl_event) != 0)
+				{
+					//User requests Quit
+					if (sdl_event.type == SDL_QUIT)
+					{
+						quit = true;
+					}
+				}
 
-			//Hack to get window to stay up
-			SDL_Event e; bool quit = false; while (quit == false) { while (SDL_PollEvent(&e)) { if (e.type == SDL_QUIT) quit = true; } }
+				//Apply the image
+				SDL_BlitSurface(gHelloWorld, NULL, gScreenSurface, NULL);
+
+				//Update the surface
+				SDL_UpdateWindowSurface(gWindow);
+			}
 		}
+
 	}
 
 	//Free resources and close SDL
