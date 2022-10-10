@@ -3,6 +3,8 @@
 // https://lazyfoo.net/tutorials/SDL/01_hello_SDL/index2.php
 // https://lazyfoo.net/tutorials/SDL/index.php
 
+//Note: Skipping loading pngs since we dont want textures. Everything will be done in code.
+
 
 #include <iostream>
 #include <string>
@@ -50,15 +52,31 @@ bool init()
 }
 
 //Loads media
-bool loadMedia()
+SDL_Surface* loadSurface(std::string path)
 {
-	gHelloWorld = SDL_LoadBMP("images/Orbyte.bmp");
-	if(gHelloWorld == NULL)
+	//The final optimized image
+	SDL_Surface* optimizedSurface = NULL;
+
+	//Load image at specified path
+	SDL_Surface* loadedSurface = SDL_LoadBMP(path.c_str());
+	if (loadedSurface == NULL)
 	{
-		printf("UNABLE TO ACCESS IMAGE %s | SDL_ERROR : %s\n", "images/Orbyte.bmp", SDL_GetError());
-		return false;
+		printf("Unable to load image %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
 	}
-	return true;
+	else
+	{
+		//Convert surface to screen format
+		optimizedSurface = SDL_ConvertSurface(loadedSurface, gScreenSurface->format, 0);
+		if (optimizedSurface == NULL)
+		{
+			printf("Unable to optimize image %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
+		}
+
+		//Get rid of old loaded surface
+		SDL_FreeSurface(loadedSurface);
+	}
+
+	return optimizedSurface;
 }
 
 //Frees media and shuts down SDL
@@ -86,7 +104,7 @@ int main(int argc, char* args[])
 	else
 	{
 		//Load media
-		if (!loadMedia())
+		if (false)
 		{
 			printf("Failed to load media!\n");
 		}
@@ -110,14 +128,20 @@ int main(int argc, char* args[])
 						switch (sdl_event.key.keysym.sym)
 						{
 						case SDLK_SPACE:
-							printf("User Pressed The Space Bar");
+							printf("User Pressed The Space Bar\n");
 							break;
 						}
 					}
 				}
 
 				//Apply the image
-				SDL_BlitSurface(gHelloWorld, NULL, gScreenSurface, NULL);
+				SDL_Surface* gStretchedSurface = loadSurface("images/Orbyte.bmp");
+				SDL_Rect stretchRect;
+				stretchRect.x = 0;
+				stretchRect.y = 0;
+				stretchRect.w = SCREEN_WIDTH;
+				stretchRect.h = SCREEN_HEIGHT;
+				SDL_BlitScaled(gStretchedSurface, NULL, gScreenSurface, &stretchRect);
 
 				//Update the surface
 				SDL_UpdateWindowSurface(gWindow);
