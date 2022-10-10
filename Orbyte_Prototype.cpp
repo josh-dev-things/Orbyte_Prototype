@@ -5,6 +5,8 @@
 
 //Note: Skipping loading pngs since we dont want textures. Everything will be done in code.
 
+//TODO: Lesson 08, Rendering Geometry
+
 
 #include <iostream>
 #include <string>
