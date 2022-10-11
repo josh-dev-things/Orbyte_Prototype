@@ -5,7 +5,7 @@
 
 //Note: Skipping loading pngs since we dont want textures. Everything will be done in code.
 
-//TODO: Lesson 08, Rendering Geometry
+//TODO: Lesson 08, Rendering Geometry [DONE]
 
 
 #include <iostream>
@@ -25,6 +25,14 @@ const int SCREEN_HEIGHT = 500;
 SDL_Window* gWindow = NULL;
 
 SDL_Surface* gScreenSurface = NULL;
+SDL_Surface* gStretchedSurface = NULL;
+
+//The window renderer
+SDL_Renderer* gRenderer = NULL;
+
+//Current displayed texture
+SDL_Texture* gTexture = NULL;
+
 
 SDL_Surface* gHelloWorld = NULL; // "... An SDL surface is just an image data type that contains the pixels of an image along with all data needed to render it"
 
@@ -49,9 +57,31 @@ bool init()
 		return false;
 	}
 
+	//Create the SDL Renderer
+	gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED);
+	if (gRenderer == NULL)
+	{
+		printf("Renderer could not be created! SDL Error: %s\n", SDL_GetError());
+		return false;
+	}
+	else
+	{
+		//Initialize renderer color
+		SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+	} //Not loading PNGs because that'd be a pain to implement.
+
 	gScreenSurface = SDL_GetWindowSurface(gWindow);
 	return true;
 }
+
+bool loadMedia()
+{
+	//Loading success flag
+	bool success = true;
+
+	//Nothing to load
+	return success;
+} //I dont understand the purpose of this I'll be honest!
 
 //Loads media
 SDL_Surface* loadSurface(std::string path)
@@ -87,12 +117,20 @@ void close()
 	//Deallocate surface
 	SDL_FreeSurface(gHelloWorld);
 	gHelloWorld = NULL;
+	SDL_FreeSurface(gStretchedSurface);
+	gStretchedSurface = NULL;
+	SDL_DestroyTexture(gTexture);
+	gTexture = NULL;
+
 
 	//Destroy window
 	SDL_DestroyWindow(gWindow);
+	SDL_DestroyRenderer(gRenderer);
 	gWindow = NULL;
+	gRenderer = NULL;
 
 	//Quit SDL subsystems
+	
 	SDL_Quit();
 }
 
@@ -113,9 +151,43 @@ int main(int argc, char* args[])
 		else
 		{
 
+			//Apply the image
+			/*gStretchedSurface = loadSurface("images/Orbyte.bmp");
+			SDL_Rect stretchRect;
+			stretchRect.x = 0;
+			stretchRect.y = 0;
+			stretchRect.w = SCREEN_WIDTH;
+			stretchRect.h = SCREEN_HEIGHT;
+			SDL_BlitScaled(gStretchedSurface, NULL, gScreenSurface, &stretchRect);*/
+
 			//Mainloop time
 			while (!quit)
 			{
+				//SDL_UpdateWindowSurface(gWindow); //Update surface
+
+				//Clear screen
+				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+				SDL_RenderClear(gRenderer);
+				//Render red filled quad
+				SDL_Rect fillRect = { SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 };
+				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0x00, 0x00, 0xFF);
+				SDL_RenderFillRect(gRenderer, &fillRect);
+				//Render green outlined quad
+				SDL_Rect outlineRect = { SCREEN_WIDTH / 6, SCREEN_HEIGHT / 6, SCREEN_WIDTH * 2 / 3, SCREEN_HEIGHT * 2 / 3 };
+				SDL_SetRenderDrawColor(gRenderer, 0x00, 0xFF, 0x00, 0xFF);
+				SDL_RenderDrawRect(gRenderer, &outlineRect);
+				//Draw blue horizontal line
+				SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0xFF, 0xFF);
+				SDL_RenderDrawLine(gRenderer, 0, SCREEN_HEIGHT / 2, SCREEN_WIDTH, SCREEN_HEIGHT / 2);
+				//Draw vertical line of yellow dots
+				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0x00, 0xFF);
+				for (int i = 0; i < SCREEN_HEIGHT; i += 4)
+				{
+					SDL_RenderDrawPoint(gRenderer, SCREEN_WIDTH / 2, i);
+				}
+
+				//Update screen
+				SDL_RenderPresent(gRenderer);
 				//Handle events
 				while (SDL_PollEvent(&sdl_event) != 0)
 				{
@@ -135,23 +207,10 @@ int main(int argc, char* args[])
 						}
 					}
 				}
-
-				//Apply the image
-				SDL_Surface* gStretchedSurface = loadSurface("images/Orbyte.bmp");
-				SDL_Rect stretchRect;
-				stretchRect.x = 0;
-				stretchRect.y = 0;
-				stretchRect.w = SCREEN_WIDTH;
-				stretchRect.h = SCREEN_HEIGHT;
-				SDL_BlitScaled(gStretchedSurface, NULL, gScreenSurface, &stretchRect);
-
-				//Update the surface
-				SDL_UpdateWindowSurface(gWindow);
 			}
 		}
 
 	}
-
 	//Free resources and close SDL
 	close();
 
