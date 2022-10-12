@@ -6,6 +6,7 @@
 //Note: Skipping loading pngs since we dont want textures. Everything will be done in code.
 
 //TODO: Lesson 08, Rendering Geometry [DONE]
+//TODO: Lesson 09, Viewport Stuff
 
 
 #include <iostream>
@@ -68,7 +69,7 @@ bool init()
 	{
 		//Initialize renderer color
 		SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-	} //Not loading PNGs because that'd be a pain to implement.
+	} //Not loading PNGs because that'd be a pain to implement.	
 
 	gScreenSurface = SDL_GetWindowSurface(gWindow);
 	return true;
@@ -176,6 +177,14 @@ int main(int argc, char* args[])
 				SDL_Rect outlineRect = { SCREEN_WIDTH / 6, SCREEN_HEIGHT / 6, SCREEN_WIDTH * 2 / 3, SCREEN_HEIGHT * 2 / 3 };
 				SDL_SetRenderDrawColor(gRenderer, 0x00, 0xFF, 0x00, 0xFF);
 				SDL_RenderDrawRect(gRenderer, &outlineRect);
+				//Drawing the Sidebar
+				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0x8A, 0x33, 0xFF);
+				SDL_Rect sidebar_rect;
+				sidebar_rect.x = 0;
+				sidebar_rect.y = 0;
+				sidebar_rect.w = 100;
+				sidebar_rect.h = SCREEN_HEIGHT;
+				SDL_RenderFillRect(gRenderer, &sidebar_rect);
 				//Draw blue horizontal line
 				SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0xFF, 0xFF);
 				SDL_RenderDrawLine(gRenderer, 0, SCREEN_HEIGHT / 2, SCREEN_WIDTH, SCREEN_HEIGHT / 2);
