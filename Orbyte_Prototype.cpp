@@ -45,6 +45,11 @@ struct vector3
 	float x, y, z;
 };
 
+struct edge
+{
+	int a, b;
+};
+
 void rotate(vector3& point, float x = 1, float y = 1, float z = 1)
 {
 	float rad = 0;
@@ -86,9 +91,9 @@ void show()
 	SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
 	SDL_RenderClear(gRenderer);
 
-	SDL_SetRenderDrawColor(gRenderer, 255, 255, 255, 255);
 	for (auto& point : points)
 	{
+		SDL_SetRenderDrawColor(gRenderer, 255, point.x, point.y, 255);
 		SDL_RenderDrawPoint(gRenderer, point.x, point.y);
 	}
 
@@ -233,6 +238,24 @@ int main(int argc, char* args[])
 
 			};
 
+			std::vector<edge> cube_edges
+			{
+				{0, 4},
+				{1, 5},
+				{2, 6},
+				{3, 7},
+
+				{0,1},
+				{1,2},
+				{2,3},
+				{3,0},
+
+				{4,5},
+				{5,6},
+				{6,7},
+				{7,4}
+			};
+
 			vector3 centeroid{0,0,0};
 			for (auto& p : cube_points)
 			{
@@ -254,13 +277,20 @@ int main(int argc, char* args[])
 					p.x -= centeroid.x;
 					p.y -= centeroid.y;
 					p.z -= centeroid.z;
-					rotate(p, 0.002, 0.001, 0.004);
+					float rot = 0.0003f;
+					rotate(p, rot, 0.0004, 0.0006);
 					p.x += centeroid.x;
 					p.y += centeroid.y;
 					p.z += centeroid.z;
 					pixel(p.x, p.y);
 				} 
-				
+				for (auto& edg : cube_edges)
+				{
+					line(cube_points[edg.a].x,
+						cube_points[edg.a].y,
+						cube_points[edg.b].x,
+						cube_points[edg.b].y);
+				}
 				show();
 				points.clear();
 				//END GRAPHICS
