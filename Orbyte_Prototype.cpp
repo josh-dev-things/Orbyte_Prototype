@@ -13,11 +13,8 @@
 #include <string>
 #include <SDL.h>
 #include <stdio.h> //This library makes debugging nicer, but shouldn't really be involved in user usage.
-
-//Open GL
-#include <GL\glew.h>
-#include <SDL_opengl.h>
-#include <GL\glu.h>
+#include <vector>
+#include <numeric>
 
 const int SCREEN_WIDTH = 700;
 const int SCREEN_HEIGHT = 500;
@@ -34,12 +31,75 @@ SDL_Renderer* gRenderer = NULL;
 //Current displayed texture
 SDL_Texture* gTexture = NULL;
 
-
-SDL_Surface* gHelloWorld = NULL; // "... An SDL surface is just an image data type that contains the pixels of an image along with all data needed to render it"
+//Bastion Graphics Stuff
+std::vector<SDL_Point> points;
 
 //Runtime variables
 bool quit = false;
 SDL_Event sdl_event;
+
+///FUNCTIONS FOR GRAPHICS https://www.youtube.com/watch?v=kdRJgYO1BJM
+
+struct vector3
+{
+	float x, y, z;
+};
+
+void rotate(vector3& point, float x = 1, float y = 1, float z = 1)
+{
+	float rad = 0;
+
+	rad = x;
+	point.y = std::cos(rad) * point.y - std::sin(rad) * point.z;
+	point.z = std::sin(rad) * point.y + std::cos(rad) * point.z;
+
+	rad = y;
+	point.x = std::cos(rad) * point.x - std::sin(rad) * point.z;
+	point.z = std::sin(rad) * point.x + std::cos(rad) * point.z;
+
+	rad = z;
+	point.x = std::cos(rad) * point.x - std::sin(rad) * point.y;
+	point.y = std::sin(rad) * point.x + std::cos(rad) * point.y;
+}
+
+void pixel(float x, float y)
+{
+	SDL_Point _point = { x, y };
+	points.emplace_back(_point);
+}
+
+void line(float x1, float y1, float x2, float y2)
+{
+	float dx = x2 - x1;
+	float dy = y2 - y1;
+	float length = std::sqrt(dx * dx + dy * dy);
+	float angle = std::atan2(dy, dx);
+	for (float i = 0; i < length; i++)
+	{
+		pixel(x1 + std::cos(angle) * i,
+			y1 + std::sin(angle) * i);
+	}
+}
+
+void show()
+{
+	SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
+	SDL_RenderClear(gRenderer);
+
+	SDL_SetRenderDrawColor(gRenderer, 255, 255, 255, 255);
+	for (auto& point : points)
+	{
+		SDL_RenderDrawPoint(gRenderer, point.x, point.y);
+	}
+
+	SDL_RenderPresent(gRenderer);
+}
+///END FUNCTIONS FOR GRAPHICS
+
+
+
+
+
 
 //Initialize SDL and window
 bool init()
@@ -115,9 +175,6 @@ SDL_Surface* loadSurface(std::string path)
 //Frees media and shuts down SDL
 void close()
 {
-	//Deallocate surface
-	SDL_FreeSurface(gHelloWorld);
-	gHelloWorld = NULL;
 	SDL_FreeSurface(gStretchedSurface);
 	gStretchedSurface = NULL;
 	SDL_DestroyTexture(gTexture);
@@ -151,52 +208,65 @@ int main(int argc, char* args[])
 		}
 		else
 		{
+			//random points
+			for (int i = 0; i < 100; i++)
+			{
+				pixel(rand() % 640, rand() % 480);
+			}
 
-			//Apply the image
-			/*gStretchedSurface = loadSurface("images/Orbyte.bmp");
-			SDL_Rect stretchRect;
-			stretchRect.x = 0;
-			stretchRect.y = 0;
-			stretchRect.w = SCREEN_WIDTH;
-			stretchRect.h = SCREEN_HEIGHT;
-			SDL_BlitScaled(gStretchedSurface, NULL, gScreenSurface, &stretchRect);*/
+			//square
+			line(100, 100, 200, 100);
+			line(200, 100, 200, 200);
+			line(200, 200, 100, 200);
+			line(100, 200, 100, 100);
+
+			std::vector<vector3> cube_points{
+				{100,100,100},
+				{200,100,100},
+				{200,200,100},
+				{100,200,100},
+
+				{100,100,200},
+				{200,100,200},
+				{200,200,200},
+				{100,200,200}
+
+			};
+
+			vector3 centeroid{0,0,0};
+			for (auto& p : cube_points)
+			{
+				centeroid.x += p.x;
+				centeroid.y += p.y;
+				centeroid.z += p.z;
+			}
+			centeroid.x /= cube_points.size();
+			centeroid.y /= cube_points.size();
+			centeroid.z /= cube_points.size();
 
 			//Mainloop time
 			while (!quit)
 			{
-				//SDL_UpdateWindowSurface(gWindow); //Update surface
+				//GRAPHICS
 
-				//Clear screen
-				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-				SDL_RenderClear(gRenderer);
-				//Render red filled quad
-				SDL_Rect fillRect = { SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 };
-				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0x00, 0x00, 0xFF);
-				SDL_RenderFillRect(gRenderer, &fillRect);
-				//Render green outlined quad
-				SDL_Rect outlineRect = { SCREEN_WIDTH / 6, SCREEN_HEIGHT / 6, SCREEN_WIDTH * 2 / 3, SCREEN_HEIGHT * 2 / 3 };
-				SDL_SetRenderDrawColor(gRenderer, 0x00, 0xFF, 0x00, 0xFF);
-				SDL_RenderDrawRect(gRenderer, &outlineRect);
-				//Drawing the Sidebar
-				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0x8A, 0x33, 0xFF);
-				SDL_Rect sidebar_rect;
-				sidebar_rect.x = 0;
-				sidebar_rect.y = 0;
-				sidebar_rect.w = 100;
-				sidebar_rect.h = SCREEN_HEIGHT;
-				SDL_RenderFillRect(gRenderer, &sidebar_rect);
-				//Draw blue horizontal line
-				SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0xFF, 0xFF);
-				SDL_RenderDrawLine(gRenderer, 0, SCREEN_HEIGHT / 2, SCREEN_WIDTH, SCREEN_HEIGHT / 2);
-				//Draw vertical line of yellow dots
-				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0x00, 0xFF);
-				for (int i = 0; i < SCREEN_HEIGHT; i += 4)
+				for (auto& p : cube_points)
 				{
-					SDL_RenderDrawPoint(gRenderer, SCREEN_WIDTH / 2, i);
-				}
+					p.x -= centeroid.x;
+					p.y -= centeroid.y;
+					p.z -= centeroid.z;
+					rotate(p, 0.002, 0.001, 0.004);
+					p.x += centeroid.x;
+					p.y += centeroid.y;
+					p.z += centeroid.z;
+					pixel(p.x, p.y);
+				} 
+				
+				show();
+				points.clear();
+				//END GRAPHICS
 
-				//Update screen
-				SDL_RenderPresent(gRenderer);
+
+
 				//Handle events
 				while (SDL_PollEvent(&sdl_event) != 0)
 				{
