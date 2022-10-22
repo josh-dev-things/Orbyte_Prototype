@@ -15,6 +15,8 @@
 #include <stdio.h> //This library makes debugging nicer, but shouldn't really be involved in user usage.
 #include <vector>
 #include <numeric>
+#include "vec3.h"
+#include "Icosahedron.h"
 
 const int SCREEN_WIDTH = 700;
 const int SCREEN_HEIGHT = 500;
@@ -39,16 +41,6 @@ bool quit = false;
 SDL_Event sdl_event;
 
 ///FUNCTIONS FOR GRAPHICS https://www.youtube.com/watch?v=kdRJgYO1BJM
-
-struct vector3
-{
-	float x, y, z;
-};
-
-struct edge
-{
-	int a, b;
-};
 
 void rotate(vector3& point, float x = 1, float y = 1, float z = 1)
 {
@@ -93,7 +85,7 @@ void show()
 
 	for (auto& point : points)
 	{
-		SDL_SetRenderDrawColor(gRenderer, 255, point.x, point.y, 255);
+		SDL_SetRenderDrawColor(gRenderer, 255, ((float) point.x / (float)SCREEN_WIDTH) * 255, ((float)point.y / (float)SCREEN_HEIGHT) * 255, 255);
 		SDL_RenderDrawPoint(gRenderer, point.x, point.y);
 	}
 
@@ -267,6 +259,13 @@ int main(int argc, char* args[])
 			centeroid.y /= cube_points.size();
 			centeroid.z /= cube_points.size();
 
+			//Experimenting with ico
+			Ico icosohedron(1.0f, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 100);
+			std::vector<vector3> ico_points = icosohedron.Get_Vertices();
+			std::vector<edge> ico_edges = icosohedron.Get_Edges();
+			vector3 ico_centeroid{ icosohedron.x, icosohedron.y, icosohedron.z };
+
+
 			//Mainloop time
 			while (!quit)
 			{
@@ -290,6 +289,25 @@ int main(int argc, char* args[])
 						cube_points[edg.a].y,
 						cube_points[edg.b].x,
 						cube_points[edg.b].y);
+				}
+				for (auto& p : ico_points)
+				{
+					p.x -= ico_centeroid.x;
+					p.y -= ico_centeroid.y;
+					p.z -= ico_centeroid.z;
+					rotate(p, 0.0001, 0.0004, 0.0006);
+					p.x += ico_centeroid.x;
+					p.y += ico_centeroid.y;
+					p.z += ico_centeroid.z;
+					pixel(p.x, p.y);
+
+				}
+				for (auto& edg : ico_edges)
+				{
+					line(ico_points[edg.a].x,
+						ico_points[edg.a].y,
+						ico_points[edg.b].x,
+						ico_points[edg.b].y);
 				}
 				show();
 				points.clear();
