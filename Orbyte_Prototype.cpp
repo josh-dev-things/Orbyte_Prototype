@@ -16,7 +16,7 @@
 #include <vector>
 #include <numeric>
 #include "vec3.h"
-#include "Icosahedron.h"
+#include "OrbitBody.h"
 #include <sstream>
 
 const int SCREEN_WIDTH = 700;
@@ -275,11 +275,11 @@ int main(int argc, char* args[])
 			centeroid.y /= cube_points.size();
 			centeroid.z /= cube_points.size();
 
-			//Experimenting with ico
-			/*Ico icosohedron(1.0f, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 100);
-			std::vector<vector3> ico_points = icosohedron.Get_Vertices();
-			std::vector<edge> ico_edges = icosohedron.Get_Edges();
-			vector3 ico_centeroid{ icosohedron.x, icosohedron.y, icosohedron.z };*/
+			//Experimenting with orbit body
+			body test(200, 200, 200, 50);
+			std::vector<vector3> test_verts = test.Get_Vertices();
+
+			
 
 
 			//Mainloop time
@@ -308,6 +308,13 @@ int main(int argc, char* args[])
 				}
 				show();
 				points.clear();
+
+				for (auto& p : test_verts)
+				{
+					pixel(p.x, p.y);
+				}
+
+
 				//END GRAPHICS
 
 

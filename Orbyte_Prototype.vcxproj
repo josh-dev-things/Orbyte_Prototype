@@ -135,6 +135,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Icosahedron.h" />
+    <ClInclude Include="OrbitBody.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="vec3.h" />
   </ItemGroup>
