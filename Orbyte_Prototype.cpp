@@ -17,9 +17,12 @@
 #include <numeric>
 #include "vec3.h"
 #include "Icosahedron.h"
+#include <sstream>
 
 const int SCREEN_WIDTH = 700;
 const int SCREEN_HEIGHT = 500;
+const int SCREEN_FPS = 60;
+const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
 
 const int TARGET_FPS = 60;
 
@@ -41,6 +44,9 @@ std::vector<SDL_Point> points;
 //Runtime variables
 bool quit = false;
 SDL_Event sdl_event;
+
+//Current time start time
+Uint32 startTime = 0;
 
 ///FUNCTIONS FOR GRAPHICS https://www.youtube.com/watch?v=kdRJgYO1BJM
 
@@ -191,6 +197,14 @@ void close()
 	SDL_Quit();
 }
 
+Uint32 Update_Clock() //https://lazyfoo.net/tutorials/SDL/25_capping_frame_rate/index.php
+{
+	Uint32 current_time = SDL_GetTicks(); //milliseconds
+	Uint32 delta = current_time - startTime;
+	startTime = current_time;
+	return delta; //Put this in a seperate time class. Time.deltaTime etc.
+}
+
 int main(int argc, char* args[])
 {
 	//Start up SDL and create window
@@ -262,10 +276,10 @@ int main(int argc, char* args[])
 			centeroid.z /= cube_points.size();
 
 			//Experimenting with ico
-			Ico icosohedron(1.0f, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 100);
+			/*Ico icosohedron(1.0f, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 100);
 			std::vector<vector3> ico_points = icosohedron.Get_Vertices();
 			std::vector<edge> ico_edges = icosohedron.Get_Edges();
-			vector3 ico_centeroid{ icosohedron.x, icosohedron.y, icosohedron.z };
+			vector3 ico_centeroid{ icosohedron.x, icosohedron.y, icosohedron.z };*/
 
 
 			//Mainloop time
@@ -291,25 +305,6 @@ int main(int argc, char* args[])
 						cube_points[edg.a].y,
 						cube_points[edg.b].x,
 						cube_points[edg.b].y);
-				}
-				for (auto& p : ico_points)
-				{
-					p.x -= ico_centeroid.x;
-					p.y -= ico_centeroid.y;
-					p.z -= ico_centeroid.z;
-					rotate(p, 0.0001, 0.0004, 0.0006);
-					p.x += ico_centeroid.x;
-					p.y += ico_centeroid.y;
-					p.z += ico_centeroid.z;
-					pixel(p.x, p.y);
-
-				}
-				for (auto& edg : ico_edges)
-				{
-					line(ico_points[edg.a].x,
-						ico_points[edg.a].y,
-						ico_points[edg.b].x,
-						ico_points[edg.b].y);
 				}
 				show();
 				points.clear();
