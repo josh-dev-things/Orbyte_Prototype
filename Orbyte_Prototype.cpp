@@ -24,7 +24,7 @@ const int SCREEN_HEIGHT = 500;
 const int SCREEN_FPS = 60;
 const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
 
-const int TARGET_FPS = 60;
+const int MAX_FPS = 60;
 
 //Window
 SDL_Window* gWindow = NULL;
@@ -333,7 +333,15 @@ int main(int argc, char* args[])
 				}
 
 				//DELAY UNTIL END
-			}
+				Uint32 delta = Update_Clock();
+				float interval = 1000 / MAX_FPS;
+				if (delta < (Uint32)interval)
+				{
+					Uint32 delay = (Uint32)interval - delta;
+					SDL_Delay(delay);
+				}
+
+			}	
 		}
 
 	}
