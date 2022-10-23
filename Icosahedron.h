@@ -46,14 +46,10 @@ class Ico
 			v.z += z;
 		}
 
-		for (int i = 0; i < vertices.size(); i++)
-		{
-			for (int j = 0; j < vertices.size(); j++)
-			{
-				edge this_edge = { i, j };
-				edges.emplace_back(this_edge);
-			}
-		}
+		std::vector<edge> _edges{
+			{0, 1}
+		};
+		edges = _edges;
 	}
 
 	std::vector<vector3> Get_Vertices()

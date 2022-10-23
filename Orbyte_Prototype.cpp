@@ -21,6 +21,8 @@
 const int SCREEN_WIDTH = 700;
 const int SCREEN_HEIGHT = 500;
 
+const int TARGET_FPS = 60;
+
 //Window
 SDL_Window* gWindow = NULL;
 
@@ -334,6 +336,8 @@ int main(int argc, char* args[])
 						}
 					}
 				}
+
+				//DELAY UNTIL END
 			}
 		}
 
