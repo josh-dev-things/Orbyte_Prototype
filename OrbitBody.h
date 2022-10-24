@@ -24,7 +24,7 @@ class body
 	vector3 velocity{ 0,0,0 };
 	float mu = 0;
 	float mass = 1;
-	float god_mass = 10;
+	float god_mass = 1000;
 	vector3 god_pos;
 
 
@@ -109,32 +109,29 @@ class body
 		return _vertices;
 	}
 
-	public: int Update_Body(Uint32 delta)
+	public: int Update_Body(Uint32 delta) //OK SO PROBLEM TIME. Y in sdl is -ve. Good luck!
 	{
 		rotate(0.001f, 0.002f, 0.003f);
 		vector3 position = {x, y, z};
 		std::vector<vector3> sim_step = rk4_step(time_since_start, position, velocity, 1);
 		position = sim_step[0];
-		x = position.x; y = position.y; z = position.z;
+		MoveToPos(position);
+		
 		velocity = sim_step[1];
 		return 0;
 	}
 
-	void Move(float mov_x, float mov_y, float mov_z, float delta)
+	void MoveToPos(vector3 new_pos)
 	{
-		float dx = mov_x * delta;
-		float dy = mov_y * delta;
-		float dz = mov_z * delta;
+		vector3 old_pos = { x, y ,z };
+		x = new_pos.x;
+		y = new_pos.y;
+		z = new_pos.z;
 
-		x += dx;
-		y += dy;
-		z += dz;
 
 		for (auto& p : vertices)
 		{
-			p.x += dx;
-			p.y += dy;
-			p.z += dz;
+			p = p + (new_pos - old_pos);
 		}
 	}
 
