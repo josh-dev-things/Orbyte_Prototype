@@ -47,6 +47,7 @@ SDL_Event sdl_event;
 
 //Current time start time
 Uint32 startTime = 0;
+Uint32 deltaTime = 0;
 
 ///FUNCTIONS FOR GRAPHICS https://www.youtube.com/watch?v=kdRJgYO1BJM
 
@@ -277,17 +278,13 @@ int main(int argc, char* args[])
 
 			//Experimenting with orbit body
 			body test(200, 200, 200, 50);
-			std::vector<vector3> test_verts = test.Get_Vertices();
-
-			
-
 
 			//Mainloop time
 			while (!quit)
 			{
 				//GRAPHICS
 
-				for (auto& p : cube_points)
+				/*for (auto& p : cube_points)	CUBE TESTING	
 				{
 					p.x -= centeroid.x;
 					p.y -= centeroid.y;
@@ -305,16 +302,25 @@ int main(int argc, char* args[])
 						cube_points[edg.a].y,
 						cube_points[edg.b].x,
 						cube_points[edg.b].y);
-				}
-				show();
-				points.clear();
+				}*/
 
+				test.Update_Body(deltaTime);
+				std::vector<vector3> test_verts = test.Get_Vertices();
+				std::vector<edge> test_edges = test.Get_Edges();
 				for (auto& p : test_verts)
 				{
 					pixel(p.x, p.y);
 				}
+				for (auto& edg : test_edges)
+				{
+					line(test_verts[edg.a].x,
+						test_verts[edg.a].y,
+						test_verts[edg.b].x,
+						test_verts[edg.b].y);
+				}
 
-
+				show();
+				points.clear();
 				//END GRAPHICS
 
 
@@ -340,11 +346,11 @@ int main(int argc, char* args[])
 				}
 
 				//DELAY UNTIL END
-				Uint32 delta = Update_Clock();
+				deltaTime = Update_Clock();
 				float interval = 1000 / MAX_FPS;
-				if (delta < (Uint32)interval)
+				if (deltaTime < (Uint32)interval)
 				{
-					Uint32 delay = (Uint32)interval - delta;
+					Uint32 delay = (Uint32)interval - deltaTime;
 					SDL_Delay(delay);
 				}
 

@@ -3,8 +3,13 @@
 #ifndef ORBITBODY_H
 #define ORBITBODY_H
 
-#include <vector>
+#include <iostream>
+#include <string>
 #include <SDL.h>
+#include <stdio.h> //This library makes debugging nicer, but shouldn't really be involved in user usage.
+#include <vector>
+#include <numeric>
+#include <sstream>
 #include "vec3.h"
 
 class body
@@ -19,14 +24,39 @@ class body
 		y = center_y;
 		z = center_z;
 
+		
+		vertices = Generate_Vertices(scale);
+
+		//Edges Now
+		std::vector<edge> _edges{
+			{0, 3},
+			{0, 2},
+			{0, 4},
+			{0,5},
+
+			{1, 2},
+			{1,3},
+			{1,4},
+			{1,5},
+
+			{2,4},
+			{2,5},
+			{3,4},
+			{3,5}
+		};
+		edges = _edges;
+	}
+
+	std::vector<vector3> Generate_Vertices(float scale)
+	{
 		std::vector<vector3> _vertices{
 			{1, 0, 0},
 			{-1, 0, 0},
 
-			{0, 1, 0},
+			{0, 1, 0}, //2
 			{0, -1, 0},
 
-			{0, 0, 1},
+			{0, 0, 1}, //4
 			{0, 0, -1}
 		};
 
@@ -39,21 +69,33 @@ class body
 			v.z *= scale;
 			v.z += z;
 		}
-		vertices = _vertices;
+		return _vertices;
+	}
 
-		//Edges Now
-		std::vector<edge> _edges{
-			{0, 3},
-			{0, 2},
-			{0, 4},
-			{0,5},
+	public: int Update_Body(Uint32 delta)
+	{
+		rotate(0.001f, 0.002f, 0.003f);
+		
+		Move(0.01, 0, 0, delta);
+		return 0;
+	}
 
-			{1, 2},
-			{1,3},
-			{1,4},
-			{1,5}
-		};
-		edges = _edges;
+	void Move(float mov_x, float mov_y, float mov_z, float delta)
+	{
+		float dx = mov_x * delta;
+		float dy = mov_y * delta;
+		float dz = mov_z * delta;
+
+		x += dx;
+		y += dy;
+		z += dz;
+
+		for (auto& p : vertices)
+		{
+			p.x += dx;
+			p.y += dy;
+			p.z += dz;
+		}
 	}
 
 	std::vector<vector3> Get_Vertices()
@@ -65,6 +107,40 @@ class body
 	std::vector<edge> Get_Edges()
 	{
 		return edges;
+	}
+
+	void rotate(float rot_x = 1, float rot_y = 1, float rot_z = 1)
+	{
+		for (auto& p : vertices)
+		{
+			vector3 point = p;
+			//centroid adjustments
+			point.x -= x;
+			point.y -= y;
+			point.z -= z;
+
+			//Rotate point
+			float rad = 0;
+
+			rad = rot_x;
+			point.y = std::cos(rad) * point.y - std::sin(rad) * point.z;
+			point.z = std::sin(rad) * point.y + std::cos(rad) * point.z;
+
+			rad = rot_y;
+			point.x = std::cos(rad) * point.x - std::sin(rad) * point.z;
+			point.z = std::sin(rad) * point.x + std::cos(rad) * point.z;
+
+			rad = rot_z;
+			point.x = std::cos(rad) * point.x - std::sin(rad) * point.y;
+			point.y = std::sin(rad) * point.x + std::cos(rad) * point.y;
+
+			//centroid adjustments
+			point.x += x;
+			point.y += y;
+			point.z += z;
+
+			p = point;
+		}
 	}
 };
 
