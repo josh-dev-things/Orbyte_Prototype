@@ -277,32 +277,32 @@ int main(int argc, char* args[])
 			centeroid.z /= cube_points.size();
 
 			//Experimenting with orbit body
-			body test(200, 200, 200, 50);
+			vector3 SUN_POS = { SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 0 };
+			body SUN(SUN_POS.x, SUN_POS.y, SUN_POS.z, 25, {0, 0, 0}, SUN_POS);
+			body test(200, 200, 0, 10, { 0.1, 0.1, 0 }, SUN_POS);
 
-			//Mainloop time
+			//Mainloop time 
 			while (!quit)
 			{
 				//GRAPHICS
 
-				/*for (auto& p : cube_points)	CUBE TESTING	
+				//render sun
+				SUN.Update_Body(deltaTime);
+				std::vector<vector3> SUN_verts = SUN.Get_Vertices();
+				std::vector<edge> SUN_edges = SUN.Get_Edges();
+				for (auto& p : SUN_verts)
 				{
-					p.x -= centeroid.x;
-					p.y -= centeroid.y;
-					p.z -= centeroid.z;
-					float rot = 0.0003f;
-					rotate(p, rot, 0.0004, 0.0006);
-					p.x += centeroid.x;
-					p.y += centeroid.y;
-					p.z += centeroid.z;
 					pixel(p.x, p.y);
-				} 
-				for (auto& edg : cube_edges)
+				}
+				for (auto& edg : SUN_edges)
 				{
-					line(cube_points[edg.a].x,
-						cube_points[edg.a].y,
-						cube_points[edg.b].x,
-						cube_points[edg.b].y);
-				}*/
+					line(SUN_verts[edg.a].x,
+						SUN_verts[edg.a].y,
+						SUN_verts[edg.b].x,
+						SUN_verts[edg.b].y);
+				}
+				SUN_verts.clear();
+				SUN_edges.clear();
 
 				test.Update_Body(deltaTime);
 				std::vector<vector3> test_verts = test.Get_Vertices();
@@ -318,6 +318,8 @@ int main(int argc, char* args[])
 						test_verts[edg.b].x,
 						test_verts[edg.b].y);
 				}
+				test_edges.clear();
+				test_verts.clear();
 
 				show();
 				points.clear();

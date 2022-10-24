@@ -18,12 +18,24 @@ class body
 	std::vector<edge> edges;
 	public: float x, y, z;
 
-	public: body(float center_x, float center_y, float center_z, float scale)
+	//Orbit information
+	vector3 velocity{ 0,0,0 };
+	float mu = 0;
+	float mass = 1;
+	float god_mass = 10;
+	vector3 god_pos;
+
+
+
+	public: body(float center_x, float center_y, float center_z, float scale, vector3 _velocity, vector3 _god_pos)
 	{
+		mu = 6.6743 * pow(10, -11) * god_mass;
+		velocity = _velocity;
+		god_pos = _god_pos;
+
 		x = center_x;
 		y = center_y;
 		z = center_z;
-
 		
 		vertices = Generate_Vertices(scale);
 
@@ -46,6 +58,20 @@ class body
 		};
 		edges = _edges;
 	}
+
+	std::vector<vector3> two_body_ode(float t, vector3 _r, vector3 _v)
+	{
+		vector3 r = _r;
+		vector3 nr = Normalize(r);
+		vector3 a = {
+			(-mu * r.x) / (pow(nr.x, 3)),
+			(-mu * r.x) / (pow(nr.x, 3)),
+			(-mu * r.x) / (pow(nr.x, 3))
+		};
+		return { _v, a };
+	}
+
+	//TODO: rk4_step function
 
 	std::vector<vector3> Generate_Vertices(float scale)
 	{
@@ -76,7 +102,7 @@ class body
 	{
 		rotate(0.001f, 0.002f, 0.003f);
 		
-		Move(0.01, 0, 0, delta);
+		Move(velocity.x, velocity.y, velocity.z, delta);
 		return 0;
 	}
 
