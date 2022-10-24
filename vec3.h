@@ -3,8 +3,29 @@
 struct vector3
 {
 	float x, y, z;
-	vector3 normalize() {
-		return { x, y, z };
+	
+	public: vector3 operator*(float right)
+	{
+		vector3 result = { x * right, y * right, z * right };
+		return result;
+	}
+
+	public: vector3 operator+(float right)
+	{
+		vector3 result = { x + right, y + right, z + right };
+		return result;
+	}
+
+	public: vector3 operator+(vector3 v)
+	{
+		vector3 result = { x + v.x, y + v.y, z + v.z };
+		return result;
+	}
+
+	public: vector3 operator*(vector3 v)
+	{
+		vector3 result = { x * v.x, y * v.y, z * v.z };
+		return result;
 	}
 };
 

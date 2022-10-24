@@ -19,6 +19,8 @@ class body
 	public: float x, y, z;
 
 	//Orbit information
+	float time_since_start = 0;
+
 	vector3 velocity{ 0,0,0 };
 	float mu = 0;
 	float mass = 1;
@@ -71,7 +73,16 @@ class body
 		return { _v, a };
 	}
 
-	//TODO: rk4_step function
+	//TODO: rk4_step function https://www.youtube.com/watch?v=TzX6bg3Kc0E&t=241s
+	std::vector<vector3> rk4_step(float _time, vector3 _position, vector3 _velocity, float _dt)
+	{
+		//structure of the vectors: [pos, velocity]
+		std::vector<vector3> rk1 = two_body_ode(_time, _position, _velocity);
+		std::vector<vector3> rk2 = two_body_ode(_time + (0.5 * _dt), _position + (rk1[0] * 0.5f * _dt), _velocity + (rk1[1] * 0.5f * _dt));
+		std::vector<vector3> rk3 = two_body_ode(_time + (0.5 * _dt), _position + (rk2[0] * 0.5f * _dt), _velocity + (rk2[1] * 0.5f * _dt));
+		std::vector<vector3> rk4 = two_body_ode(_time + _dt, _position + (rk3[0] * _dt), _velocity + (rk3[1] * _dt));
+		return {_position + (rk1[0] + rk2[0] * 2 + rk3[0] * 2 + rk4[0]) * (_dt / 6), _velocity + (rk1[1] + rk2[1] * 2 + rk3[1] * 2 + rk4[1]) * (_dt / 6) };
+	}
 
 	std::vector<vector3> Generate_Vertices(float scale)
 	{
@@ -101,8 +112,11 @@ class body
 	public: int Update_Body(Uint32 delta)
 	{
 		rotate(0.001f, 0.002f, 0.003f);
-		
-		Move(velocity.x, velocity.y, velocity.z, delta);
+		vector3 position = {x, y, z};
+		std::vector<vector3> sim_step = rk4_step(time_since_start, position, velocity, 1);
+		position = sim_step[0];
+		x = position.x; y = position.y; z = position.z;
+		velocity = sim_step[1];
 		return 0;
 	}
 
