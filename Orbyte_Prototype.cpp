@@ -13,14 +13,18 @@
 #include <string>
 #include <SDL.h>
 #include <stdio.h> //This library makes debugging nicer, but shouldn't really be involved in user usage.
-
-//Open GL
-#include <GL\glew.h>
-#include <SDL_opengl.h>
-#include <GL\glu.h>
+#include <vector>
+#include <numeric>
+#include "vec3.h"
+#include "OrbitBody.h"
+#include <sstream>
 
 const int SCREEN_WIDTH = 700;
 const int SCREEN_HEIGHT = 500;
+const int SCREEN_FPS = 60;
+const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
+
+const int MAX_FPS = 60;
 
 //Window
 SDL_Window* gWindow = NULL;
@@ -34,12 +38,77 @@ SDL_Renderer* gRenderer = NULL;
 //Current displayed texture
 SDL_Texture* gTexture = NULL;
 
-
-SDL_Surface* gHelloWorld = NULL; // "... An SDL surface is just an image data type that contains the pixels of an image along with all data needed to render it"
+//Bastion Graphics Stuff
+std::vector<SDL_Point> points;
 
 //Runtime variables
 bool quit = false;
 SDL_Event sdl_event;
+
+//Current time start time
+Uint32 startTime = 0;
+Uint32 deltaTime = 0;
+
+//DEBUGGING
+
+
+///FUNCTIONS FOR GRAPHICS https://www.youtube.com/watch?v=kdRJgYO1BJM
+
+void rotate(vector3& point, float x = 1, float y = 1, float z = 1)
+{
+	float rad = 0;
+
+	rad = x;
+	point.y = std::cos(rad) * point.y - std::sin(rad) * point.z;
+	point.z = std::sin(rad) * point.y + std::cos(rad) * point.z;
+
+	rad = y;
+	point.x = std::cos(rad) * point.x - std::sin(rad) * point.z;
+	point.z = std::sin(rad) * point.x + std::cos(rad) * point.z;
+
+	rad = z;
+	point.x = std::cos(rad) * point.x - std::sin(rad) * point.y;
+	point.y = std::sin(rad) * point.x + std::cos(rad) * point.y;
+}
+
+void pixel(float x, float y)
+{
+	SDL_Point _point = { x / 1000 + SCREEN_WIDTH / 2, -y / 1000 + SCREEN_HEIGHT / 2};
+	points.emplace_back(_point);
+}
+
+void line(float x1, float y1, float x2, float y2)
+{
+	float dx = x2 - x1;
+	float dy = y2 - y1;
+	float length = std::sqrt(dx * dx + dy * dy);
+	float angle = std::atan2(dy, dx);
+	for (float i = 0; i < length; i++)
+	{
+		pixel(x1 + std::cos(angle) * i,
+			y1 + std::sin(angle) * i);
+	}
+}
+
+void show()
+{
+	SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
+	SDL_RenderClear(gRenderer);
+
+	for (auto& point : points)
+	{
+		SDL_SetRenderDrawColor(gRenderer, 255, ((float) point.x / (float)SCREEN_WIDTH) * 255, ((float)point.y / (float)SCREEN_HEIGHT) * 255, 255);
+		SDL_RenderDrawPoint(gRenderer, point.x, point.y);
+	}
+
+	SDL_RenderPresent(gRenderer);
+}
+///END FUNCTIONS FOR GRAPHICS
+
+
+
+
+
 
 //Initialize SDL and window
 bool init()
@@ -115,9 +184,6 @@ SDL_Surface* loadSurface(std::string path)
 //Frees media and shuts down SDL
 void close()
 {
-	//Deallocate surface
-	SDL_FreeSurface(gHelloWorld);
-	gHelloWorld = NULL;
 	SDL_FreeSurface(gStretchedSurface);
 	gStretchedSurface = NULL;
 	SDL_DestroyTexture(gTexture);
@@ -133,6 +199,14 @@ void close()
 	//Quit SDL subsystems
 	
 	SDL_Quit();
+}
+
+Uint32 Update_Clock() //https://lazyfoo.net/tutorials/SDL/25_capping_frame_rate/index.php
+{
+	Uint32 current_time = SDL_GetTicks(); //milliseconds
+	Uint32 delta = current_time - startTime;
+	startTime = current_time;
+	return delta; //Put this in a seperate time class. Time.deltaTime etc.
 }
 
 int main(int argc, char* args[])
@@ -151,52 +225,102 @@ int main(int argc, char* args[])
 		}
 		else
 		{
+			//random points
+			for (int i = 0; i < 100; i++)
+			{
+				pixel(rand() % 640, rand() % 480);
+			}
 
-			//Apply the image
-			/*gStretchedSurface = loadSurface("images/Orbyte.bmp");
-			SDL_Rect stretchRect;
-			stretchRect.x = 0;
-			stretchRect.y = 0;
-			stretchRect.w = SCREEN_WIDTH;
-			stretchRect.h = SCREEN_HEIGHT;
-			SDL_BlitScaled(gStretchedSurface, NULL, gScreenSurface, &stretchRect);*/
+			//square
+			line(100, 100, 200, 100);
+			line(200, 100, 200, 200);
+			line(200, 200, 100, 200);
+			line(100, 200, 100, 100);
 
-			//Mainloop time
+			std::vector<vector3> cube_points{
+				{100,100,100},
+				{200,100,100},
+				{200,200,100},
+				{100,200,100},
+
+				{100,100,200},
+				{200,100,200},
+				{200,200,200},
+				{100,200,200}
+
+			};
+
+			std::vector<edge> cube_edges
+			{
+				{0, 4},
+				{1, 5},
+				{2, 6},
+				{3, 7},
+
+				{0,1},
+				{1,2},
+				{2,3},
+				{3,0},
+
+				{4,5},
+				{5,6},
+				{6,7},
+				{7,4}
+			};
+
+			vector3 centeroid{0,0,0};
+			for (auto& p : cube_points)
+			{
+				centeroid.x += p.x;
+				centeroid.y += p.y;
+				centeroid.z += p.z;
+			}
+			centeroid.x /= cube_points.size();
+			centeroid.y /= cube_points.size();
+			centeroid.z /= cube_points.size();
+
+			//Experimenting with orbit body
+			vector3 SUN_POS = { 0, 0, 0 };
+			body test(0, 50, 0, 10, { 0.25, 0, 0 }, SUN_POS);
+
+			//Mainloop time 
 			while (!quit)
 			{
-				//SDL_UpdateWindowSurface(gWindow); //Update surface
+				//GRAPHICS
 
-				//Clear screen
-				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-				SDL_RenderClear(gRenderer);
-				//Render red filled quad
-				SDL_Rect fillRect = { SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 };
-				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0x00, 0x00, 0xFF);
-				SDL_RenderFillRect(gRenderer, &fillRect);
-				//Render green outlined quad
-				SDL_Rect outlineRect = { SCREEN_WIDTH / 6, SCREEN_HEIGHT / 6, SCREEN_WIDTH * 2 / 3, SCREEN_HEIGHT * 2 / 3 };
-				SDL_SetRenderDrawColor(gRenderer, 0x00, 0xFF, 0x00, 0xFF);
-				SDL_RenderDrawRect(gRenderer, &outlineRect);
-				//Drawing the Sidebar
-				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0x8A, 0x33, 0xFF);
-				SDL_Rect sidebar_rect;
-				sidebar_rect.x = 0;
-				sidebar_rect.y = 0;
-				sidebar_rect.w = 100;
-				sidebar_rect.h = SCREEN_HEIGHT;
-				SDL_RenderFillRect(gRenderer, &sidebar_rect);
-				//Draw blue horizontal line
-				SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0xFF, 0xFF);
-				SDL_RenderDrawLine(gRenderer, 0, SCREEN_HEIGHT / 2, SCREEN_WIDTH, SCREEN_HEIGHT / 2);
-				//Draw vertical line of yellow dots
-				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0x00, 0xFF);
-				for (int i = 0; i < SCREEN_HEIGHT; i += 4)
+				//render sun
+				pixel(SUN_POS.x, SUN_POS.y);
+
+				test.Update_Body(deltaTime);
+				std::cout << "x: " << test.x << "\n";
+				std::cout << "y: " << test.y << "\n"; // WHEN Y GETS SMALL THINGS FUCK UP
+				std::cout << "z: " << test.z << "\n";
+				std::vector<vector3> test_verts = test.Get_Vertices();
+				std::vector<edge> test_edges = test.Get_Edges();
+				for (auto& p : test_verts)
 				{
-					SDL_RenderDrawPoint(gRenderer, SCREEN_WIDTH / 2, i);
+					pixel(p.x, p.y);
 				}
+				for (auto& p : test.trail_points)
+				{
+					pixel(p.x, p.y);
+				}
+				for (auto& edg : test_edges)
+				{
+					line(test_verts[edg.a].x,
+						test_verts[edg.a].y,
+						test_verts[edg.b].x,
+						test_verts[edg.b].y);
+				}
+				test_edges.clear();
+				test_verts.clear();
 
-				//Update screen
-				SDL_RenderPresent(gRenderer);
+				show();
+				points.clear();
+				//END GRAPHICS
+
+
+
 				//Handle events
 				while (SDL_PollEvent(&sdl_event) != 0)
 				{
@@ -216,7 +340,17 @@ int main(int argc, char* args[])
 						}
 					}
 				}
-			}
+
+				//DELAY UNTIL END
+				deltaTime = Update_Clock();
+				float interval = 1000 / MAX_FPS;
+				if (deltaTime < (Uint32)interval)
+				{
+					Uint32 delay = (Uint32)interval - deltaTime;
+					SDL_Delay(delay);
+				}
+
+			}	
 		}
 
 	}
