@@ -49,6 +49,9 @@ SDL_Event sdl_event;
 Uint32 startTime = 0;
 Uint32 deltaTime = 0;
 
+//DEBUGGING
+
+
 ///FUNCTIONS FOR GRAPHICS https://www.youtube.com/watch?v=kdRJgYO1BJM
 
 void rotate(vector3& point, float x = 1, float y = 1, float z = 1)
@@ -70,7 +73,7 @@ void rotate(vector3& point, float x = 1, float y = 1, float z = 1)
 
 void pixel(float x, float y)
 {
-	SDL_Point _point = { x, y };
+	SDL_Point _point = { x / 1000 + SCREEN_WIDTH / 2, -y / 1000 + SCREEN_HEIGHT / 2};
 	points.emplace_back(_point);
 }
 
@@ -277,9 +280,8 @@ int main(int argc, char* args[])
 			centeroid.z /= cube_points.size();
 
 			//Experimenting with orbit body
-			vector3 SUN_POS = { SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 0 };
-			body SUN(SUN_POS.x, SUN_POS.y, SUN_POS.z, 25, {0, 0, 0}, SUN_POS);
-			body test(200, 200, 0, 10, { 0.1, 0.1, 0 }, SUN_POS);
+			vector3 SUN_POS = { 0, 0, 0 };
+			body test(0, 50, 0, 10, { 0.25, 0, 0 }, SUN_POS);
 
 			//Mainloop time 
 			while (!quit)
@@ -287,27 +289,19 @@ int main(int argc, char* args[])
 				//GRAPHICS
 
 				//render sun
-				SUN.Update_Body(deltaTime);
-				std::vector<vector3> SUN_verts = SUN.Get_Vertices();
-				std::vector<edge> SUN_edges = SUN.Get_Edges();
-				for (auto& p : SUN_verts)
-				{
-					pixel(p.x, p.y);
-				}
-				for (auto& edg : SUN_edges)
-				{
-					line(SUN_verts[edg.a].x,
-						SUN_verts[edg.a].y,
-						SUN_verts[edg.b].x,
-						SUN_verts[edg.b].y);
-				}
-				SUN_verts.clear();
-				SUN_edges.clear();
+				pixel(SUN_POS.x, SUN_POS.y);
 
 				test.Update_Body(deltaTime);
+				std::cout << "x: " << test.x << "\n";
+				std::cout << "y: " << test.y << "\n"; // WHEN Y GETS SMALL THINGS FUCK UP
+				std::cout << "z: " << test.z << "\n";
 				std::vector<vector3> test_verts = test.Get_Vertices();
 				std::vector<edge> test_edges = test.Get_Edges();
 				for (auto& p : test_verts)
+				{
+					pixel(p.x, p.y);
+				}
+				for (auto& p : test.trail_points)
 				{
 					pixel(p.x, p.y);
 				}
