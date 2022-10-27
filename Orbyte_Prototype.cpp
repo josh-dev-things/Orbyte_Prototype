@@ -23,7 +23,7 @@ const int SCREEN_WIDTH = 700;
 const int SCREEN_HEIGHT = 500;
 const int SCREEN_FPS = 60;
 const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
-
+const float km_per_pixel = 3000;
 const int MAX_FPS = 60;
 
 //Window
@@ -73,7 +73,7 @@ void rotate(vector3& point, float x = 1, float y = 1, float z = 1)
 
 void pixel(float x, float y)
 {
-	SDL_Point _point = { x / 1000 + SCREEN_WIDTH / 2, -y / 1000 + SCREEN_HEIGHT / 2};
+	SDL_Point _point = { x / km_per_pixel + SCREEN_WIDTH / 2, -y / km_per_pixel + SCREEN_HEIGHT / 2};
 	points.emplace_back(_point);
 }
 
@@ -281,7 +281,7 @@ int main(int argc, char* args[])
 
 			//Experimenting with orbit body
 			vector3 SUN_POS = { 0, 0, 0 };
-			body test(0, 50, 0, 10, { 0.25, 0, 0 }, SUN_POS);
+			body test(0, 175000, 0, 17000, { 0, 0, 0 }, SUN_POS);
 
 			//Mainloop time 
 			while (!quit)
@@ -292,9 +292,9 @@ int main(int argc, char* args[])
 				pixel(SUN_POS.x, SUN_POS.y);
 
 				test.Update_Body(deltaTime);
-				std::cout << "x: " << test.x << "\n";
-				std::cout << "y: " << test.y << "\n"; // WHEN Y GETS SMALL THINGS FUCK UP
-				std::cout << "z: " << test.z << "\n";
+				//std::cout << "x: " << test.x << "\n";
+				//std::cout << "y: " << test.y << "\n"; // WHEN Y GETS SMALL THINGS FUCK UP
+				//std::cout << "z: " << test.z << "\n";
 				std::vector<vector3> test_verts = test.Get_Vertices();
 				std::vector<edge> test_edges = test.Get_Edges();
 				for (auto& p : test_verts)
@@ -336,6 +336,7 @@ int main(int argc, char* args[])
 						{
 						case SDLK_SPACE:
 							printf("User Pressed The Space Bar\n");
+							test.reset();
 							break;
 						}
 					}

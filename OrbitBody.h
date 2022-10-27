@@ -19,27 +19,50 @@ class body
 	vector3 last_trail_point;
 	public: std::vector<vector3> trail_points;
 	public: float x, y, z;
+		  float scale;
+
+private : vector3 start_pos;
+private: vector3 start_vel;
 
 	//Orbit information
 	float time_since_start = 0;
 
 	vector3 velocity{ 0,0,0 };
 	float mu = 0;
-	float mass = 1;
-	float god_mass = 1.9 * pow(11,10);
+	float god_mass = 5.9 * pow(10,24);
 	vector3 god_pos;
 
 
-
-	public: body(float center_x, float center_y, float center_z, float scale, vector3 _velocity, vector3 _god_pos)
+	public: body(float center_x, float center_y, float center_z, float _scale, vector3 _velocity, vector3 _god_pos, bool override_velocity = true)
 	{
 		mu = 6.6743 * pow(10, -11) * god_mass;
+		if (override_velocity)
+		{
+			//We manipulate the velocity so that a perfectly circular orbit is achieved
+			if (center_x != 0)
+			{
+				_velocity.y = sqrt(mu / center_x);
+			}
+			if (center_y != 0)
+			{
+				_velocity.x = sqrt(mu / center_y);
+			}
+			if (center_z != 0)
+			{
+				_velocity.z = sqrt(mu / center_z);
+			}
+		}
 		velocity = _velocity;
+		start_vel = velocity;
 		god_pos = _god_pos;
+
+		scale = _scale;
 
 		x = center_x;
 		y = center_y;
 		z = center_z;
+
+		start_pos = { x, y, z };
 		
 		vertices = Generate_Vertices(scale);
 
@@ -82,6 +105,15 @@ class body
 		//std::cout << "rk_result: " << (pow(nr.z, 3)) << "\n";
 		return { v, a };
 	}
+
+public: void reset()
+{
+	x = start_pos.x;
+	y = start_pos.y;
+	z = start_pos.z;
+
+	velocity = start_vel;
+}
 
 	//TODO: rk4_step function https://www.youtube.com/watch?v=TzX6bg3Kc0E&t=241s
 	std::vector<vector3> rk4_step(float _time, vector3 _position, vector3 _velocity, float _dt = 1) //SHITS THE BED WHEN Y = 0
@@ -132,12 +164,12 @@ class body
 	{
 		rotate(0.001f, 0.002f, 0.003f);
 		vector3 position = {x, y, z};
-		std::vector<vector3> sim_step = rk4_step(time_since_start / 1000, position, velocity, 10);
+		std::vector<vector3> sim_step = rk4_step(time_since_start / 1000, position, velocity, 0.1);
 		position = sim_step[0];
 		MoveToPos(position);
 		time_since_start += delta / 1000;
 
-		if (Magnitude(position - last_trail_point) > 5)
+		if (Magnitude(position - last_trail_point) > Magnitude(velocity)/ 24)
 		{
 			trail_points.emplace_back(position);
 			last_trail_point = position;
@@ -161,10 +193,7 @@ class body
 		z = new_pos.z;
 
 
-		for (auto& p : vertices)
-		{
-			p = p + (new_pos - old_pos);
-		}
+		vertices = Generate_Vertices(scale);
 	}
 
 	std::vector<vector3> Get_Vertices()
