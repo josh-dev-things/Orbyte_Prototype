@@ -29,8 +29,6 @@ const int MAX_FPS = 60;
 //Window
 SDL_Window* gWindow = NULL;
 
-SDL_Surface* gScreenSurface = NULL;
-SDL_Surface* gStretchedSurface = NULL;
 
 //The window renderer
 SDL_Renderer* gRenderer = NULL;
@@ -79,14 +77,14 @@ void pixel(float x, float y)
 
 void line(float x1, float y1, float x2, float y2)
 {
-	float dx = x2 - x1;
-	float dy = y2 - y1;
+	float dx = (x2 - x1) / km_per_pixel;
+	float dy = (y2 - y1) / km_per_pixel;
 	float length = std::sqrt(dx * dx + dy * dy);
 	float angle = std::atan2(dy, dx);
-	for (float i = 0; i < length; i++)
+	for (int i = 0; i < length; i++)
 	{
-		pixel(x1 + std::cos(angle) * i,
-			y1 + std::sin(angle) * i);
+		pixel(x1 + std::cos(angle) * i * km_per_pixel,
+			y1 + std::sin(angle) * i * km_per_pixel);
 	}
 }
 
@@ -94,14 +92,17 @@ void show()
 {
 	SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
 	SDL_RenderClear(gRenderer);
+	int count = 0;
 
 	for (auto& point : points)
 	{
 		SDL_SetRenderDrawColor(gRenderer, 255, ((float) point.x / (float)SCREEN_WIDTH) * 255, ((float)point.y / (float)SCREEN_HEIGHT) * 255, 255);
-		SDL_RenderDrawPoint(gRenderer, point.x, point.y);
+		SDL_RenderDrawPoint(gRenderer, point.x, point.y); //DRAW TO TEXTURE INSTEAD???
+		count++;
 	}
-
+	//std::cout << "Draw points : " << count << "\n";
 	SDL_RenderPresent(gRenderer);
+	points.clear();
 }
 ///END FUNCTIONS FOR GRAPHICS
 
@@ -140,7 +141,7 @@ bool init()
 		SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 	} //Not loading PNGs because that'd be a pain to implement.	
 
-	gScreenSurface = SDL_GetWindowSurface(gWindow);
+	//gScreenSurface = SDL_GetWindowSurface(gWindow);
 	return true;
 }
 
@@ -154,40 +155,42 @@ bool loadMedia()
 } //I dont understand the purpose of this I'll be honest!
 
 //Loads media
-SDL_Surface* loadSurface(std::string path)
-{
-	//The final optimized image
-	SDL_Surface* optimizedSurface = NULL;
-
-	//Load image at specified path
-	SDL_Surface* loadedSurface = SDL_LoadBMP(path.c_str());
-	if (loadedSurface == NULL)
-	{
-		printf("Unable to load image %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
-	}
-	else
-	{
-		//Convert surface to screen format
-		optimizedSurface = SDL_ConvertSurface(loadedSurface, gScreenSurface->format, 0);
-		if (optimizedSurface == NULL)
-		{
-			printf("Unable to optimize image %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
-		}
-
-		//Get rid of old loaded surface
-		SDL_FreeSurface(loadedSurface);
-	}
-
-	return optimizedSurface;
-}
+//SDL_Surface* loadSurface(std::string path)
+//{
+//	//The final optimized image
+//	SDL_Surface* optimizedSurface = NULL;
+//
+//	//Load image at specified path
+//	SDL_Surface* loadedSurface = SDL_LoadBMP(path.c_str());
+//	if (loadedSurface == NULL)
+//	{
+//		printf("Unable to load image %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
+//	}
+//	else
+//	{
+//		//Convert surface to screen format
+//		optimizedSurface = SDL_ConvertSurface(loadedSurface, gScreenSurface->format, 0);
+//		if (optimizedSurface == NULL)
+//		{
+//			printf("Unable to optimize image %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
+//		}
+//
+//		//Get rid of old loaded surface
+//		SDL_FreeSurface(loadedSurface);
+//	}
+//
+//	return optimizedSurface;
+//}
 
 //Frees media and shuts down SDL
 void close()
 {
-	SDL_FreeSurface(gStretchedSurface);
-	gStretchedSurface = NULL;
+	//SDL_FreeSurface(gStretchedSurface);
+	//gStretchedSurface = NULL;
 	SDL_DestroyTexture(gTexture);
 	gTexture = NULL;
+
+	points.clear();
 
 
 	//Destroy window
@@ -225,63 +228,20 @@ int main(int argc, char* args[])
 		}
 		else
 		{
-			//random points
-			for (int i = 0; i < 100; i++)
-			{
-				pixel(rand() % 640, rand() % 480);
-			}
-
-			//square
-			line(100, 100, 200, 100);
-			line(200, 100, 200, 200);
-			line(200, 200, 100, 200);
-			line(100, 200, 100, 100);
-
-			std::vector<vector3> cube_points{
-				{100,100,100},
-				{200,100,100},
-				{200,200,100},
-				{100,200,100},
-
-				{100,100,200},
-				{200,100,200},
-				{200,200,200},
-				{100,200,200}
-
-			};
-
-			std::vector<edge> cube_edges
-			{
-				{0, 4},
-				{1, 5},
-				{2, 6},
-				{3, 7},
-
-				{0,1},
-				{1,2},
-				{2,3},
-				{3,0},
-
-				{4,5},
-				{5,6},
-				{6,7},
-				{7,4}
-			};
-
-			vector3 centeroid{0,0,0};
-			for (auto& p : cube_points)
-			{
-				centeroid.x += p.x;
-				centeroid.y += p.y;
-				centeroid.z += p.z;
-			}
-			centeroid.x /= cube_points.size();
-			centeroid.y /= cube_points.size();
-			centeroid.z /= cube_points.size();
-
 			//Experimenting with orbit body
 			vector3 SUN_POS = { 0, 0, 0 };
-			body test(0, 175000, 0, 17000, { 0, 0, 0 }, SUN_POS);
+			std::vector<body> orbiting_bodies;
+			body mercury(0, 59000, 0, 2000, { 0, 0, 0 }, SUN_POS);
+			body venus(0, 108000, 0, 6000, { 0, 0, 0 }, SUN_POS);
+			body earth(0, 148000, 0, 6000, { 0, 0, 0 }, SUN_POS);
+			body mars(0, 222000, 0, 3000, { 0, 0, 0 }, SUN_POS);
+			body jupiter(0, 740000, 0, 70000, { 0, 0, 0 }, SUN_POS);
+			orbiting_bodies.emplace_back(mercury);
+			orbiting_bodies.emplace_back(venus);
+			orbiting_bodies.emplace_back(earth);
+			orbiting_bodies.emplace_back(mars);
+			orbiting_bodies.emplace_back(jupiter);
+
 
 			//Mainloop time 
 			while (!quit)
@@ -291,32 +251,32 @@ int main(int argc, char* args[])
 				//render sun
 				pixel(SUN_POS.x, SUN_POS.y);
 
-				test.Update_Body(deltaTime);
-				//std::cout << "x: " << test.x << "\n";
-				//std::cout << "y: " << test.y << "\n"; // WHEN Y GETS SMALL THINGS FUCK UP
-				//std::cout << "z: " << test.z << "\n";
-				std::vector<vector3> test_verts = test.Get_Vertices();
-				std::vector<edge> test_edges = test.Get_Edges();
-				for (auto& p : test_verts)
+				for (auto& b : orbiting_bodies)
 				{
-					pixel(p.x, p.y);
+
+					b.Update_Body(deltaTime, 1); // <-- THIS IS NOT THE BOTTLENECK
+					std::vector<vector3> test_verts = b.Get_Vertices();
+					std::vector<edge> test_edges = b.Get_Edges();
+					for (auto& p : test_verts)
+					{
+						pixel(p.x, p.y);
+					}
+					for (auto& p : b.trail_points)
+					{
+						pixel(p.x, p.y);
+					}
+					for (auto& edg : test_edges)
+					{
+						line(test_verts[edg.a].x,
+							test_verts[edg.a].y,
+							test_verts[edg.b].x,
+							test_verts[edg.b].y);
+					}
+					test_edges.clear();
+					test_verts.clear();
 				}
-				for (auto& p : test.trail_points)
-				{
-					pixel(p.x, p.y);
-				}
-				for (auto& edg : test_edges)
-				{
-					line(test_verts[edg.a].x,
-						test_verts[edg.a].y,
-						test_verts[edg.b].x,
-						test_verts[edg.b].y);
-				}
-				test_edges.clear();
-				test_verts.clear();
 
 				show();
-				points.clear();
 				//END GRAPHICS
 
 
@@ -336,7 +296,10 @@ int main(int argc, char* args[])
 						{
 						case SDLK_SPACE:
 							printf("User Pressed The Space Bar\n");
-							test.reset();
+							for (auto& b : orbiting_bodies)
+							{
+								b.reset();
+							}
 							break;
 						}
 					}
@@ -344,11 +307,15 @@ int main(int argc, char* args[])
 
 				//DELAY UNTIL END
 				deltaTime = Update_Clock();
-				float interval = 1000 / MAX_FPS;
+				std::cout << (float)1000 / ((float)deltaTime + 1) << " FPS" << "\n";
+				float interval = (float)1000 / MAX_FPS;
 				if (deltaTime < (Uint32)interval)
 				{
 					Uint32 delay = (Uint32)interval - deltaTime;
-					SDL_Delay(delay);
+					if (delay > 0)
+					{
+						SDL_Delay(delay);
+					}
 				}
 
 			}	

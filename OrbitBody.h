@@ -25,11 +25,9 @@ private : vector3 start_pos;
 private: vector3 start_vel;
 
 	//Orbit information
-	float time_since_start = 0;
-
 	vector3 velocity{ 0,0,0 };
 	float mu = 0;
-	float god_mass = 5.9 * pow(10,24);
+	const float god_mass = 5.9 * pow(10,24);
 	vector3 god_pos;
 
 
@@ -160,14 +158,14 @@ public: void reset()
 	}
 
 
-	public: int Update_Body(Uint32 delta)
+	public: int Update_Body(float delta, float time_scale = 1)
 	{
-		rotate(0.001f, 0.002f, 0.003f);
+		rotate(0.01f, 0.02f, 0.03f);
 		vector3 position = {x, y, z};
-		std::vector<vector3> sim_step = rk4_step(time_since_start / 1000, position, velocity, 0.1);
+		float t = (delta / 1000);
+		std::vector<vector3> sim_step = rk4_step(t * time_scale, position, velocity, t / 6);
 		position = sim_step[0];
 		MoveToPos(position);
-		time_since_start += delta / 1000;
 
 		if (Magnitude(position - last_trail_point) > Magnitude(velocity)/ 24)
 		{
@@ -192,8 +190,16 @@ public: void reset()
 		y = new_pos.y;
 		z = new_pos.z;
 
+		float dx = x - old_pos.x;
+		float dy = y - old_pos.y;
+		float dz = z - old_pos.z;
 
-		vertices = Generate_Vertices(scale);
+		for (auto& p : vertices)
+		{
+			p.x += dx;
+			p.y += dy;
+			p.z += dz;
+		}
 	}
 
 	std::vector<vector3> Get_Vertices()
