@@ -160,7 +160,7 @@ public: void reset()
 
 	public: int Update_Body(float delta, float time_scale = 1)
 	{
-		rotate(0.01f, 0.02f, 0.03f);
+		rotate(0.001f, 0.002f, 0.003f);
 		vector3 position = {x, y, z};
 		float t = (delta / 1000);
 		std::vector<vector3> sim_step = rk4_step(t * time_scale, position, velocity, t / 6);
