@@ -25,6 +25,7 @@ const int SCREEN_FPS = 60;
 const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
 const float km_per_pixel = 1000;
 const int MAX_FPS = 60;
+float time_scale = 1;
 
 //Window
 SDL_Window* gWindow = NULL;
@@ -32,9 +33,6 @@ SDL_Window* gWindow = NULL;
 
 //The window renderer
 SDL_Renderer* gRenderer = NULL;
-
-//Current displayed texture
-SDL_Texture* gTexture = NULL;
 
 //Bastion Graphics Stuff
 std::vector<SDL_Point> points;
@@ -52,22 +50,22 @@ Uint32 deltaTime = 0;
 
 ///FUNCTIONS FOR GRAPHICS https://www.youtube.com/watch?v=kdRJgYO1BJM
 
-void rotate(vector3& point, float x = 1, float y = 1, float z = 1)
-{
-	float rad = 0;
-
-	rad = x;
-	point.y = std::cos(rad) * point.y - std::sin(rad) * point.z;
-	point.z = std::sin(rad) * point.y + std::cos(rad) * point.z;
-
-	rad = y;
-	point.x = std::cos(rad) * point.x - std::sin(rad) * point.z;
-	point.z = std::sin(rad) * point.x + std::cos(rad) * point.z;
-
-	rad = z;
-	point.x = std::cos(rad) * point.x - std::sin(rad) * point.y;
-	point.y = std::sin(rad) * point.x + std::cos(rad) * point.y;
-}
+//void rotate(vector3& point, float x = 1, float y = 1, float z = 1) //You made a mistake here. Made objects shrink and dissappear.
+//{
+//	float rad = 0;
+//
+//	rad = x;
+//	point.y = std::cos(rad) * point.y - std::sin(rad) * point.z;
+//	point.z = std::sin(rad) * point.y + std::cos(rad) * point.z;
+//
+//	rad = y;
+//	point.x = std::cos(rad) * point.x + std::sin(rad) * point.z;
+//	point.z = -std::sin(rad) * point.x + std::cos(rad) * point.z;
+//
+//	rad = z;
+//	point.x = std::cos(rad) * point.x - std::sin(rad) * point.y;
+//	point.y = std::sin(rad) * point.x + std::cos(rad) * point.y;
+//}
 
 void pixel(float x, float y)
 {
@@ -187,8 +185,8 @@ void close()
 {
 	//SDL_FreeSurface(gStretchedSurface);
 	//gStretchedSurface = NULL;
-	SDL_DestroyTexture(gTexture);
-	gTexture = NULL;
+	//SDL_DestroyTexture(gTexture);
+	//gTexture = NULL;
 
 	points.clear();
 
@@ -254,7 +252,12 @@ int main(int argc, char* args[])
 				for (auto& b : orbiting_bodies)
 				{
 
-					b.Update_Body(deltaTime, 1); // <-- THIS IS NOT THE BOTTLENECK
+					b.Update_Body(deltaTime, time_scale); // Update body
+					/*
+						- Time scale now works! Achieved by multiplying the step size by the same factor that t was multiplied by.
+						Why does this work? NO IDEA.
+						- BREAKS FOR ANYTHING NEAR 100. I THINK TIME SCALE 10 WORKS BEST
+					*/
 					std::vector<vector3> test_verts = b.Get_Vertices();
 					std::vector<edge> test_edges = b.Get_Edges();
 					for (auto& p : test_verts)
@@ -296,9 +299,18 @@ int main(int argc, char* args[])
 						{
 						case SDLK_SPACE:
 							printf("User Pressed The Space Bar\n");
-							for (auto& b : orbiting_bodies)
+							if (time_scale < 1)
 							{
-								b.reset();
+								time_scale = 1;
+								printf("SET TIME SCALE TO 1 \n");
+							}
+							else if(time_scale == 1) {
+								time_scale = 10;
+								printf("SET TIME SCALE TO 10 \n");
+							}
+							else if (time_scale > 1) {
+								time_scale = 0.1;
+								printf("SET TIME SCALE TO 0.1 \n");
 							}
 							break;
 						}
@@ -307,7 +319,6 @@ int main(int argc, char* args[])
 
 				//DELAY UNTIL END
 				deltaTime = Update_Clock();
-				std::cout << (float)1000 / ((float)deltaTime + 1) << " FPS" << "\n";
 				float interval = (float)1000 / MAX_FPS;
 				if (deltaTime < (Uint32)interval)
 				{
@@ -315,6 +326,7 @@ int main(int argc, char* args[])
 					if (delay > 0)
 					{
 						SDL_Delay(delay);
+						//std::cout << (float)1000 / ((float)deltaTime + 1) << " FPS" << "\n";
 					}
 				}
 

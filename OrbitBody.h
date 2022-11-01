@@ -158,12 +158,12 @@ public: void reset()
 	}
 
 
-	public: int Update_Body(float delta, float time_scale = 1)
+	public: int Update_Body(float delta, float time_scale)
 	{
-		rotate(0.001f, 0.002f, 0.003f);
+		rotate(0.005f * time_scale, 0.005f * time_scale, 0.005f * time_scale);
 		vector3 position = {x, y, z};
 		float t = (delta / 1000);
-		std::vector<vector3> sim_step = rk4_step(t * time_scale, position, velocity, t / 6);
+		std::vector<vector3> sim_step = rk4_step(t * time_scale, position, velocity, t * time_scale / 6);
 		position = sim_step[0];
 		MoveToPos(position);
 
@@ -213,7 +213,7 @@ public: void reset()
 		return edges;
 	}
 
-	void rotate(float rot_x = 1, float rot_y = 1, float rot_z = 1)
+	void rotate(float rot_x = 1, float rot_y = 1, float rot_z = 1) //Something is broken.
 	{
 		for (auto& p : vertices)
 		{
@@ -231,8 +231,8 @@ public: void reset()
 			point.z = std::sin(rad) * point.y + std::cos(rad) * point.z;
 
 			rad = rot_y;
-			point.x = std::cos(rad) * point.x - std::sin(rad) * point.z;
-			point.z = std::sin(rad) * point.x + std::cos(rad) * point.z;
+			point.x = std::cos(rad) * point.x + std::sin(rad) * point.z;
+			point.z = -std::sin(rad) * point.x + std::cos(rad) * point.z;
 
 			rad = rot_z;
 			point.x = std::cos(rad) * point.x - std::sin(rad) * point.y;
