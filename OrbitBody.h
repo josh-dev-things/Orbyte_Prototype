@@ -213,7 +213,7 @@ public: void reset()
 		return edges;
 	}
 
-	void rotate(float rot_x = 1, float rot_y = 1, float rot_z = 1) //Something is broken.
+	void rotate(float rot_x = 1, float rot_y = 1, float rot_z = 1) //Something is broken. STILL BROKEN
 	{
 		for (auto& p : vertices)
 		{
@@ -222,6 +222,8 @@ public: void reset()
 			point.x -= x;
 			point.y -= y;
 			point.z -= z;
+
+			float start_magnitude = Magnitude(point);
 
 			//Rotate point
 			float rad = 0;
