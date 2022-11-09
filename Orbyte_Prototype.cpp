@@ -236,13 +236,13 @@ int main(int argc, char* args[])
 						std::cout << "Debug Points: " << p.x << ", " << p.y << ", " << p.z << "\n";
 						pixel(p.x, p.y);
 					}
-					/*for (auto& edg : test_edges)
+					for (auto& edg : test_edges)
 					{
 						line(test_verts[edg.a].x,
 							test_verts[edg.a].y,
 							test_verts[edg.b].x,
 							test_verts[edg.b].y);
-					}*/
+					}
 					test_edges.clear();
 					test_verts.clear();
 				}
