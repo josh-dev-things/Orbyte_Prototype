@@ -17,6 +17,7 @@
 #include <numeric>
 #include "vec3.h"
 #include "OrbitBody.h"
+#include "Camera.h"
 #include <sstream>
 
 const int SCREEN_WIDTH = 700;
@@ -30,6 +31,9 @@ float time_scale = 1;
 //Window
 SDL_Window* gWindow = NULL;
 
+//Camera
+
+Camera gCamera({0, 0, 0}, 1);
 
 //The window renderer
 SDL_Renderer* gRenderer = NULL;

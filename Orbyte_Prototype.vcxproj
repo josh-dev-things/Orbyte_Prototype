@@ -134,6 +134,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="Icosahedron.h" />
     <ClInclude Include="OrbitBody.h" />
     <ClInclude Include="resource.h" />
