@@ -21,7 +21,13 @@ class Camera
 
 	vector3 WorldSpaceToScreenSpace(vector3 world_pos, float screen_height, float screen_width)
 	{
-		 
+		world_pos = world_pos - position;
+		vector3 Screen_Space_Pos = {
+			(world_pos.x / world_pos.z) * screen_width,
+			(world_pos.y / world_pos.z)* screen_height,
+			0
+		};
+		return Screen_Space_Pos;
 	}
 };
 

@@ -21,7 +21,7 @@
 #include <sstream>
 
 const int SCREEN_WIDTH = 700;
-const int SCREEN_HEIGHT = 500;
+const int SCREEN_HEIGHT = 700;
 const int SCREEN_FPS = 60;
 const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
 const float km_per_pixel = 750;
@@ -33,7 +33,7 @@ SDL_Window* gWindow = NULL;
 
 //Camera
 
-Camera gCamera({0, 0, 0}, 1);
+Camera gCamera({0, 0, -500000}, 1);
 
 //The window renderer
 SDL_Renderer* gRenderer = NULL;
@@ -54,39 +54,24 @@ Uint32 deltaTime = 0;
 
 ///FUNCTIONS FOR GRAPHICS https://www.youtube.com/watch?v=kdRJgYO1BJM
 
-//void rotate(vector3& point, float x = 1, float y = 1, float z = 1) //You made a mistake here. Made objects shrink and dissappear.
-//{
-//	float rad = 0;
-//
-//	rad = x;
-//	point.y = std::cos(rad) * point.y - std::sin(rad) * point.z;
-//	point.z = std::sin(rad) * point.y + std::cos(rad) * point.z;
-//
-//	rad = y;
-//	point.x = std::cos(rad) * point.x + std::sin(rad) * point.z;
-//	point.z = -std::sin(rad) * point.x + std::cos(rad) * point.z;
-//
-//	rad = z;
-//	point.x = std::cos(rad) * point.x - std::sin(rad) * point.y;
-//	point.y = std::sin(rad) * point.x + std::cos(rad) * point.y;
-//}
-
 void pixel(float x, float y)
 {
-	SDL_Point _point = { x / km_per_pixel + SCREEN_WIDTH / 2, -y / km_per_pixel + SCREEN_HEIGHT / 2};
+	SDL_Point _point = { x + SCREEN_WIDTH / 2, -y + SCREEN_HEIGHT / 2};
+
 	points.emplace_back(_point);
 }
 
 void line(float x1, float y1, float x2, float y2)
 {
-	float dx = (x2 - x1) / km_per_pixel;
-	float dy = (y2 - y1) / km_per_pixel;
+	float dx = (x2 - x1);
+	float dy = (y2 - y1);
 	float length = std::sqrt(dx * dx + dy * dy);
 	float angle = std::atan2(dy, dx);
+	std::cout << "Drawing line with points: " << length << "\n";
 	for (int i = 0; i < length; i++)
 	{
-		pixel(x1 + std::cos(angle) * i * km_per_pixel,
-			y1 + std::sin(angle) * i * km_per_pixel);
+		pixel(x1 + std::cos(angle) * i,
+			y1 + std::sin(angle) * i);
 	}
 }
 
@@ -155,34 +140,6 @@ bool loadMedia()
 	//Nothing to load
 	return success;
 } //I dont understand the purpose of this I'll be honest!
-
-//Loads media
-//SDL_Surface* loadSurface(std::string path)
-//{
-//	//The final optimized image
-//	SDL_Surface* optimizedSurface = NULL;
-//
-//	//Load image at specified path
-//	SDL_Surface* loadedSurface = SDL_LoadBMP(path.c_str());
-//	if (loadedSurface == NULL)
-//	{
-//		printf("Unable to load image %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
-//	}
-//	else
-//	{
-//		//Convert surface to screen format
-//		optimizedSurface = SDL_ConvertSurface(loadedSurface, gScreenSurface->format, 0);
-//		if (optimizedSurface == NULL)
-//		{
-//			printf("Unable to optimize image %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
-//		}
-//
-//		//Get rid of old loaded surface
-//		SDL_FreeSurface(loadedSurface);
-//	}
-//
-//	return optimizedSurface;
-//}
 
 //Frees media and shuts down SDL
 void close()
@@ -266,19 +223,26 @@ int main(int argc, char* args[])
 					std::vector<edge> test_edges = b.Get_Edges();
 					for (auto& p : test_verts)
 					{
+						p = gCamera.WorldSpaceToScreenSpace(p, SCREEN_HEIGHT, SCREEN_WIDTH);
+						//std::cout << "Debug Points: " << p.x << ", " << p.y << ", " << p.z << "\n";
+					}
+					for (auto& p : test_verts)
+					{
 						pixel(p.x, p.y);
 					}
 					for (auto& p : b.trail_points)
 					{
+						p = gCamera.WorldSpaceToScreenSpace(p, SCREEN_HEIGHT, SCREEN_WIDTH);
+						std::cout << "Debug Points: " << p.x << ", " << p.y << ", " << p.z << "\n";
 						pixel(p.x, p.y);
 					}
-					for (auto& edg : test_edges)
+					/*for (auto& edg : test_edges)
 					{
 						line(test_verts[edg.a].x,
 							test_verts[edg.a].y,
 							test_verts[edg.b].x,
 							test_verts[edg.b].y);
-					}
+					}*/
 					test_edges.clear();
 					test_verts.clear();
 				}
