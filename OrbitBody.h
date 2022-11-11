@@ -30,7 +30,9 @@ private: vector3 start_vel;
 	const float god_mass = 5.9 * pow(10,24);
 	vector3 god_pos;
 
-
+	/// <summary>
+	/// center_X, center_Y, center_Z, scale, _velocity, _god_pos, override_velocity
+	/// </summary>
 	public: body(float center_x, float center_y, float center_z, float _scale, vector3 _velocity, vector3 _god_pos, bool override_velocity = true)
 	{
 		mu = 6.6743 * pow(10, -11) * god_mass;
@@ -47,7 +49,7 @@ private: vector3 start_vel;
 			}
 			if (center_z != 0)
 			{
-				_velocity.z = sqrt(mu / center_z);
+				_velocity.x = sqrt(mu / center_z);
 			}
 		}
 		velocity = _velocity;
@@ -61,6 +63,7 @@ private: vector3 start_vel;
 		z = center_z;
 
 		start_pos = { x, y, z };
+		std::cout << "Instantiated Orbiting Body with initial position: " << start_pos.Debug() << " and velocity: " << velocity.Debug() << "\n";
 		
 		vertices = Generate_Vertices(scale);
 
@@ -165,6 +168,7 @@ public: void reset()
 		float t = (delta / 1000);
 		std::vector<vector3> sim_step = rk4_step(t * time_scale, position, velocity, t * time_scale / 6);
 		position = sim_step[0];
+		if (position.z > 0) { std::cout << position.Debug() << "\n"; std::cout << velocity.Debug() << "\n"; }
 		MoveToPos(position);
 
 		if (Magnitude(position - last_trail_point) > Magnitude(velocity)/ 24)

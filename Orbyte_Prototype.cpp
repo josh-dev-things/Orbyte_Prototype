@@ -20,8 +20,8 @@
 #include "Camera.h"
 #include <sstream>
 
-const int SCREEN_WIDTH = 700;
-const int SCREEN_HEIGHT = 700;
+const int SCREEN_WIDTH = 800;
+const int SCREEN_HEIGHT = 800;
 const int SCREEN_FPS = 60;
 const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
 const float km_per_pixel = 750;
@@ -33,7 +33,7 @@ SDL_Window* gWindow = NULL;
 
 //Camera
 
-Camera gCamera({0, 0, -500000}, 1);
+Camera gCamera({0, 0, -1000000}, 1);
 
 //The window renderer
 SDL_Renderer* gRenderer = NULL;
@@ -67,7 +67,7 @@ void line(float x1, float y1, float x2, float y2)
 	float dy = (y2 - y1);
 	float length = std::sqrt(dx * dx + dy * dy);
 	float angle = std::atan2(dy, dx);
-	std::cout << "Drawing line with points: " << length << "\n";
+	//std::cout << "Drawing line with points: " << length << "\n";
 	for (int i = 0; i < length; i++)
 	{
 		pixel(x1 + std::cos(angle) * i,
@@ -191,7 +191,7 @@ int main(int argc, char* args[])
 			vector3 SUN_POS = { 0, 0, 0 };
 			std::vector<body> orbiting_bodies;
 			body mercury(0, 59000, 0, 2000, { 0, 0, 0 }, SUN_POS);
-			body venus(0, 108000, 0, 6000, { 0, 0, 0 }, SUN_POS);
+			body venus(0, 0, 108000, 6000, { 0, 0, 0 }, SUN_POS);//108000
 			body earth(0, 148000, 0, 6000, { 0, 0, 0 }, SUN_POS);
 			body mars(0, 222000, 0, 3000, { 0, 0, 0 }, SUN_POS);
 			body jupiter(0, 740000, 0, 70000, { 0, 0, 0 }, SUN_POS);
@@ -230,11 +230,11 @@ int main(int argc, char* args[])
 					{
 						pixel(p.x, p.y);
 					}
-					for (auto& p : b.trail_points)
+					for (auto p_t : b.trail_points)
 					{
-						p = gCamera.WorldSpaceToScreenSpace(p, SCREEN_HEIGHT, SCREEN_WIDTH);
-						std::cout << "Debug Points: " << p.x << ", " << p.y << ", " << p.z << "\n";
-						pixel(p.x, p.y);
+						p_t = gCamera.WorldSpaceToScreenSpace(p_t, SCREEN_HEIGHT, SCREEN_WIDTH);
+						//std::cout << "Debug Points: " << p_t.x << ", " << p_t.y << ", " << p_t.z << "\n";
+						pixel(p_t.x, p_t.y);
 					}
 					for (auto& edg : test_edges)
 					{
