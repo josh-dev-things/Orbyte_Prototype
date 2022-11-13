@@ -255,33 +255,49 @@ int main(int argc, char* args[])
 				//Handle events
 				while (SDL_PollEvent(&sdl_event) != 0)
 				{
-					//User requests Quit
-					if (sdl_event.type == SDL_QUIT)
+					switch (sdl_event.type)
 					{
+					default:
+						break;
+
+					case SDL_QUIT:
 						quit = true;
-					}
-					//User Presses a Key
-					else if (sdl_event.type == SDL_KEYDOWN)
-					{
+						break;
+
+					case SDL_KEYDOWN:
 						switch (sdl_event.key.keysym.sym)
 						{
-						case SDLK_SPACE:
-							printf("User Pressed The Space Bar\n");
-							if (time_scale < 1)
-							{
-								time_scale = 1;
-								printf("SET TIME SCALE TO 1 \n");
-							}
-							else if(time_scale == 1) {
-								time_scale = 10;
-								printf("SET TIME SCALE TO 10 \n");
-							}
-							else if (time_scale > 1) {
-								time_scale = 0.1;
-								printf("SET TIME SCALE TO 0.1 \n");
-							}
-							break;
+							case SDLK_SPACE:
+								printf("User Pressed The Space Bar\n");
+								if (time_scale < 1)
+								{
+									time_scale = 1;
+									printf("SET TIME SCALE TO 1 \n");
+								}
+								else if (time_scale == 1) {
+									time_scale = 10;
+									printf("SET TIME SCALE TO 10 \n");
+								}
+								else if (time_scale > 1) {
+									time_scale = 0.1;
+									printf("SET TIME SCALE TO 0.1 \n");
+								}
+								break;
 						}
+						break;
+					
+					case SDL_MOUSEWHEEL:
+						if (sdl_event.wheel.y > 0) //Scroll up
+						{
+							//Zoom in
+							gCamera.position.z += 10000;
+						}
+						if (sdl_event.wheel.y < 0) //Scroll down
+						{
+							//zoom out
+							gCamera.position.z -= 10000;
+						}
+						break;
 					}
 				}
 
