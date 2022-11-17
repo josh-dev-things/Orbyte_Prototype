@@ -168,7 +168,7 @@ public: void reset()
 		float t = (delta / 1000);
 		std::vector<vector3> sim_step = rk4_step(t * time_scale, position, velocity, t * time_scale / 6);
 		position = sim_step[0];
-		if (position.z > 0) { std::cout << position.Debug() << "\n"; std::cout << velocity.Debug() << "\n"; }
+		//if (position.z > 0) { std::cout << position.Debug() << "\n"; std::cout << velocity.Debug() << "\n"; }
 		MoveToPos(position);
 
 		if (Magnitude(position - last_trail_point) > Magnitude(velocity)/ 24)

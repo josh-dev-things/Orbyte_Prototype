@@ -191,7 +191,7 @@ int main(int argc, char* args[])
 			vector3 SUN_POS = { 0, 0, 0 };
 			std::vector<body> orbiting_bodies;
 			body mercury(0, 59000, 0, 2000, { 0, 0, 0 }, SUN_POS);
-			body venus(0, 0, 108000, 6000, { 0, 0, 0 }, SUN_POS);//108000
+			body venus(0, 0, 108000, 12000, {0, 0, 0}, SUN_POS);//108000
 			body earth(0, 148000, 0, 6000, { 0, 0, 0 }, SUN_POS);
 			body mars(0, 222000, 0, 3000, { 0, 0, 0 }, SUN_POS);
 			body jupiter(0, 740000, 0, 70000, { 0, 0, 0 }, SUN_POS);
@@ -199,7 +199,7 @@ int main(int argc, char* args[])
 			orbiting_bodies.emplace_back(venus);
 			orbiting_bodies.emplace_back(earth);
 			orbiting_bodies.emplace_back(mars);
-			//orbiting_bodies.emplace_back(jupiter);
+			orbiting_bodies.emplace_back(jupiter);
 
 
 			//Mainloop time 
@@ -277,7 +277,7 @@ int main(int argc, char* args[])
 								printf("SET TIME SCALE TO 10 \n");
 							}
 							else if (time_scale > 1) {
-								time_scale = 0.1;
+								time_scale = -10;
 								printf("SET TIME SCALE TO 0.1 \n");
 							}
 							break;
