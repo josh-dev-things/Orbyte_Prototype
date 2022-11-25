@@ -227,7 +227,7 @@ public: void reset()
 			point.y -= y;
 			point.z -= z;
 
-			float start_magnitude = Magnitude(point);
+			//float start_magnitude = Magnitude(point);
 
 			//Rotate point
 			float rad = 0;

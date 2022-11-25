@@ -20,8 +20,45 @@ class Camera
 		std::cout << "Instantiated Camera With Position: " << position.Debug() << "\n";
 	}
 
+	vector3 rotate(vector3 rot, vector3 p, vector3 c) //Something is broken. STILL BROKEN
+	{
+		
+		vector3 point = p;
+		//centroid adjustments
+		point.x -= c.x;
+		point.y -= c.y;
+		point.z -= c.z;
+
+		//float start_magnitude = Magnitude(point);
+
+		//Rotate point
+		float rad = 0;
+
+		rad = rot.x;
+		point.y = std::cos(rad) * point.y - std::sin(rad) * point.z;
+		point.z = std::sin(rad) * point.y + std::cos(rad) * point.z;
+
+		rad = rot.y;
+		point.x = std::cos(rad) * point.x + std::sin(rad) * point.z;
+		point.z = -std::sin(rad) * point.x + std::cos(rad) * point.z;
+
+		rad = rot.z;
+		point.x = std::cos(rad) * point.x - std::sin(rad) * point.y;
+		point.y = std::sin(rad) * point.x + std::cos(rad) * point.y;
+
+		//centroid adjustments
+		point.x += c.x;
+		point.y += c.y;
+		point.z += c.z;
+
+		return point;
+		
+	}
+
 	vector3 WorldSpaceToScreenSpace(vector3 world_pos, float screen_height, float screen_width)
 	{
+		//manipulate world_pos here such that it is rotated around centre of universe I guess
+
 		vector3 pos = world_pos - position;
 		//std::cout << "WORLD POS: " << world_pos.x << " | CAMERA POS: " << position.x << " | => " << pos.x;
 		if (pos.z < clipping_z)
