@@ -198,8 +198,8 @@ int main(int argc, char* args[])
 			orbiting_bodies.emplace_back(mercury);
 			orbiting_bodies.emplace_back(venus);
 			orbiting_bodies.emplace_back(earth);
-			orbiting_bodies.emplace_back(mars);
-			orbiting_bodies.emplace_back(jupiter);
+			/*orbiting_bodies.emplace_back(mars);
+			orbiting_bodies.emplace_back(jupiter);*/
 
 
 			//Mainloop time 
@@ -228,16 +228,23 @@ int main(int argc, char* args[])
 					}
 					for (auto& p : test_verts)
 					{
-						pixel(p.x, p.y);
+						if (p.z > 0)
+						{
+							pixel(p.x, p.y);
+						}
 					}
 					for (auto p_t : b.trail_points)
 					{
 						p_t = gCamera.WorldSpaceToScreenSpace(p_t, SCREEN_HEIGHT, SCREEN_WIDTH);
 						//std::cout << "Debug Points: " << p_t.x << ", " << p_t.y << ", " << p_t.z << "\n";
-						pixel(p_t.x, p_t.y);
+						if (p_t.z > 0)
+						{
+							pixel(p_t.x, p_t.y);
+						}
 					}
 					for (auto& edg : test_edges)
 					{
+						if(test_verts[edg.a].z > 0 && test_verts[edg.b].z > 0)
 						line(test_verts[edg.a].x,
 							test_verts[edg.a].y,
 							test_verts[edg.b].x,
@@ -282,6 +289,24 @@ int main(int argc, char* args[])
 									time_scale = 0.1;
 									printf("SET TIME SCALE TO 0.1 \n");
 								}
+								break;
+
+							case SDLK_UP:
+								//Rotate Up
+								gCamera.RotateCamera({ 0.01, 0, 0 });
+								break;
+
+							case SDLK_DOWN:
+								gCamera.RotateCamera({ -0.01, 0, 0 });
+								break;
+
+							case SDLK_LEFT:
+								//Rotate Up
+								gCamera.RotateCamera({ 0, -0.01, 0 });
+								break;
+
+							case SDLK_RIGHT:
+								gCamera.RotateCamera({ 0, 0.01, 0 });
 								break;
 						}
 						break;

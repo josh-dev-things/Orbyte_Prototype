@@ -11,13 +11,19 @@
 #include <sstream>
 
 class Camera
-{
+{	
+private: vector3 camera_rotation;
 	public:vector3 position = {0, 0, 0};
 		  float clipping_z = 1;
 	Camera(vector3 _position, float _near_clipping_plane)
 	{
 		position = _position;
 		std::cout << "Instantiated Camera With Position: " << position.Debug() << "\n";
+	}
+
+	void RotateCamera(vector3 add_rotation)
+	{
+		camera_rotation = camera_rotation + add_rotation;
 	}
 
 	vector3 rotate(vector3 rot, vector3 p, vector3 c) //Something is broken. STILL BROKEN
@@ -58,12 +64,15 @@ class Camera
 	vector3 WorldSpaceToScreenSpace(vector3 world_pos, float screen_height, float screen_width)
 	{
 		//manipulate world_pos here such that it is rotated around centre of universe I guess
+		vector3 rotated_world_pos = rotate(camera_rotation, world_pos, { 0, 0, 0 });
 
-		vector3 pos = world_pos - position;
+		vector3 pos = rotated_world_pos - position;
 		//std::cout << "WORLD POS: " << world_pos.x << " | CAMERA POS: " << position.x << " | => " << pos.x;
 		if (pos.z < clipping_z)
 		{
 			//DONT DRAW IT
+			vector3 do_not_draw_this = { 0, 0, -100 };
+			return do_not_draw_this;
 		}
 		vector3 Screen_Space_Pos = {
 			(pos.x / pos.z) * screen_width,
