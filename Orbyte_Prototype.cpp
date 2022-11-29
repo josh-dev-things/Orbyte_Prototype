@@ -28,6 +28,8 @@ const float km_per_pixel = 750;
 const int MAX_FPS = 60;
 float time_scale = 1;
 
+bool LMB_Down = false;
+
 //Window
 SDL_Window* gWindow = NULL;
 
@@ -258,7 +260,8 @@ int main(int argc, char* args[])
 				//END GRAPHICS
 
 
-
+				int current_mouse_x = 0;
+				int current_mouse_y = 0;
 				//Handle events
 				while (SDL_PollEvent(&sdl_event) != 0)
 				{
@@ -310,6 +313,24 @@ int main(int argc, char* args[])
 								break;
 						}
 						break;
+
+					/*case SDL_MOUSEMOTION:
+						SDL_GetMouseState(&current_mouse_x, &current_mouse_y);
+						break;
+
+					case SDL_MOUSEBUTTONDOWN:
+						if (sdl_event.button.button == SDL_BUTTON_LEFT)
+						{
+							LMB_Down = true;
+							gCamera.Start_Rotate(current_mouse_x, current_mouse_y);
+						}
+					
+					case SDL_MOUSEBUTTONUP:
+						if (sdl_event.button.button == SDL_BUTTON_LEFT)
+						{
+							LMB_Down = false;
+							gCamera.End_Rotate(current_mouse_x, current_mouse_y);
+						}*/
 					
 					case SDL_MOUSEWHEEL:
 						if (sdl_event.wheel.y > 0) //Scroll up
@@ -325,6 +346,11 @@ int main(int argc, char* args[])
 						break;
 					}
 				}
+
+				/*if (LMB_Down)
+				{
+					gCamera.End_Rotate(current_mouse_x, current_mouse_y);
+				}*/
 
 				//DELAY UNTIL END
 				deltaTime = Update_Clock();

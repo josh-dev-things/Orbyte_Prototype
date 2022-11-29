@@ -15,6 +15,9 @@ class Camera
 private: vector3 camera_rotation;
 	public:vector3 position = {0, 0, 0};
 		  float clipping_z = 1;
+		  float start_rotate_x;
+		  float start_rotate_y;
+
 	Camera(vector3 _position, float _near_clipping_plane)
 	{
 		position = _position;
@@ -24,6 +27,17 @@ private: vector3 camera_rotation;
 	void RotateCamera(vector3 add_rotation)
 	{
 		camera_rotation = camera_rotation + add_rotation;
+	}
+
+	void Start_Rotate(float x, float y)
+	{
+		start_rotate_x = x;
+		start_rotate_y = y;
+	}
+
+	void End_Rotate(float x, float y)
+	{
+		RotateCamera({(x-start_rotate_x)/ 10000, (y-start_rotate_y) / 10000,0});
 	}
 
 	vector3 rotate(vector3 rot, vector3 p, vector3 c) //Something is broken. STILL BROKEN
