@@ -20,6 +20,7 @@
 #include "Camera.h"
 #include <sstream>
 #include <SDL_ttf.h>
+#include <SDL_image.h>
 
 
 const int SCREEN_WIDTH = 800;
@@ -30,6 +31,12 @@ const float km_per_pixel = 750;
 const int MAX_FPS = 60;
 float time_scale = 1;
 bool LMB_Down = false;
+
+//Globally used font
+TTF_Font* gFont = NULL;
+
+//Rendered texture
+LTexture gTextTexture;
 
 //Window
 SDL_Window* gWindow = NULL;
