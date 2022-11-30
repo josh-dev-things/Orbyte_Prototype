@@ -97,7 +97,7 @@ void show()
 
 
 
-
+////https://github.com/actsl/kiss_sdl <-- USE THIS FOR GUI
 
 
 //Initialize SDL and window
@@ -195,8 +195,6 @@ int main(int argc, char* args[])
 			body mercury(0, 59000, 0, 2000, { 0, 0, 0 }, SUN_POS);
 			body venus(0, 0, 108000, 12000, {0, 0, 0}, SUN_POS);//108000
 			body earth(0, 148000, 0, 6000, { 0, 0, 0 }, SUN_POS);
-			body mars(0, 222000, 0, 3000, { 0, 0, 0 }, SUN_POS);
-			body jupiter(0, 740000, 0, 70000, { 0, 0, 0 }, SUN_POS);
 			orbiting_bodies.emplace_back(mercury);
 			orbiting_bodies.emplace_back(venus);
 			orbiting_bodies.emplace_back(earth);
