@@ -34,8 +34,5 @@
     <ClInclude Include="Camera.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="kiss_sdl.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

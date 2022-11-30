@@ -136,7 +136,6 @@
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Icosahedron.h" />
-    <ClInclude Include="kiss_sdl.h" />
     <ClInclude Include="OrbitBody.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="vec3.h" />
@@ -151,7 +150,8 @@
     <Import Project="packages\glew.v140.1.12.0\build\native\glew.v140.targets" Condition="Exists('packages\glew.v140.1.12.0\build\native\glew.v140.targets')" />
     <Import Project="packages\freetype.redist.2.6.2.1\build\native\freetype.redist.targets" Condition="Exists('packages\freetype.redist.2.6.2.1\build\native\freetype.redist.targets')" />
     <Import Project="packages\sdl2.v140.redist.2.0.4\build\native\sdl2.v140.redist.targets" Condition="Exists('packages\sdl2.v140.redist.2.0.4\build\native\sdl2.v140.redist.targets')" />
-    <Import Project="packages\sdl2_ttf.v140.redist.2.0.14\build\native\sdl2_ttf.v140.redist.targets" Condition="Exists('packages\sdl2_ttf.v140.redist.2.0.14\build\native\sdl2_ttf.v140.redist.targets')" />
+    <Import Project="packages\sdl2_ttf.nuget.redist.2.20.1\build\native\sdl2_ttf.nuget.redist.targets" Condition="Exists('packages\sdl2_ttf.nuget.redist.2.20.1\build\native\sdl2_ttf.nuget.redist.targets')" />
+    <Import Project="packages\sdl2_ttf.nuget.2.20.1\build\native\sdl2_ttf.nuget.targets" Condition="Exists('packages\sdl2_ttf.nuget.2.20.1\build\native\sdl2_ttf.nuget.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -164,6 +164,7 @@
     <Error Condition="!Exists('packages\glew.v140.1.12.0\build\native\glew.v140.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\glew.v140.1.12.0\build\native\glew.v140.targets'))" />
     <Error Condition="!Exists('packages\freetype.redist.2.6.2.1\build\native\freetype.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\freetype.redist.2.6.2.1\build\native\freetype.redist.targets'))" />
     <Error Condition="!Exists('packages\sdl2.v140.redist.2.0.4\build\native\sdl2.v140.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\sdl2.v140.redist.2.0.4\build\native\sdl2.v140.redist.targets'))" />
-    <Error Condition="!Exists('packages\sdl2_ttf.v140.redist.2.0.14\build\native\sdl2_ttf.v140.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\sdl2_ttf.v140.redist.2.0.14\build\native\sdl2_ttf.v140.redist.targets'))" />
+    <Error Condition="!Exists('packages\sdl2_ttf.nuget.redist.2.20.1\build\native\sdl2_ttf.nuget.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\sdl2_ttf.nuget.redist.2.20.1\build\native\sdl2_ttf.nuget.redist.targets'))" />
+    <Error Condition="!Exists('packages\sdl2_ttf.nuget.2.20.1\build\native\sdl2_ttf.nuget.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\sdl2_ttf.nuget.2.20.1\build\native\sdl2_ttf.nuget.targets'))" />
   </Target>
 </Project>

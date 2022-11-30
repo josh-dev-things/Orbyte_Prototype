@@ -19,6 +19,8 @@
 #include "OrbitBody.h"
 #include "Camera.h"
 #include <sstream>
+#include <SDL_ttf.h>
+
 
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 800;
@@ -27,7 +29,6 @@ const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
 const float km_per_pixel = 750;
 const int MAX_FPS = 60;
 float time_scale = 1;
-
 bool LMB_Down = false;
 
 //Window
