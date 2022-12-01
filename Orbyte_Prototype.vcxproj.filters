@@ -35,4 +35,7 @@
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <Font Include="SourceSerifPro-Regular.ttf" />
+  </ItemGroup>
 </Project>
