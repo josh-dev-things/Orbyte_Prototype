@@ -307,7 +307,7 @@ bool loadMedia()
 	bool success = true;
 
 	//Open the font
-	gFont = TTF_OpenFont("SourceSerifPro-Regular.ttf", 28); //Open_My_Font
+	gFont = TTF_OpenFont("SourceSerifPro-Regular.ttf", 13); //Open_My_Font
 	if (gFont == NULL)
 	{
 		printf("Failed to load lazy font! SDL_ttf Error: %s\n", TTF_GetError());
@@ -317,7 +317,7 @@ bool loadMedia()
 	{
 		//Render text
 		SDL_Color textColor = { 255, 255, 255 };
-		if (!gTextTexture.loadFromRenderedText("The quick brown fox jumps over the lazy dog", textColor))
+		if (!gTextTexture.loadFromRenderedText("poiuytrefghjuiy7tfghu", textColor))
 		{
 			printf("Failed to render text texture!\n");
 			success = false;
