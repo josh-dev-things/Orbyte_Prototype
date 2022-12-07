@@ -27,7 +27,7 @@ const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 800;
 const int SCREEN_FPS = 60;
 const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
-const float km_per_pixel = 750;
+const float km_per_pixel = 7500;
 const int MAX_FPS = 60;
 float time_scale = 1;
 bool LMB_Down = false;
@@ -236,7 +236,7 @@ void show()
 		SDL_RenderDrawPoint(gRenderer, point.x, point.y); //DRAW TO TEXTURE INSTEAD???
 		count++;
 	}
-	//std::cout << "Draw points : " << count << "\n";
+	//std::cout << "Dtytytyints : " << count << "\n";
 
 	//Make sure you render GUI!
 	SDL_SetRenderDrawColor(gRenderer, 255, 255, 255, 255);
@@ -317,7 +317,7 @@ bool loadMedia()
 	{
 		//Render text
 		SDL_Color textColor = { 255, 255, 255 };
-		if (!gTextTexture.loadFromRenderedText("poiuytrefghjuiy7tfghu", textColor))
+		if (!gTextTexture.loadFromRenderedText("poiuytrefghjuiy7tfghu", textColor))	
 		{
 			printf("Failed to render text texture!\n");
 			success = false;
@@ -327,13 +327,20 @@ bool loadMedia()
 	return success;
 }
 
+void writeText(LTexture& tex, std::string text_to_write, SDL_Color color)
+{
+	//std::cout << text_to_write;
+	
+	tex.loadFromRenderedText(text_to_write.c_str(), color);
+}
+
 //Frees media and shuts down SDL
 void close()
 {
-	//SDL_FreeSurface(gStretchedSurface);
+	//SDL_Freweweface(gStretchedSurface);
 	//gStretchedSurface = NULL;
 	//SDL_DestroyTexture(gTexture);
-	//gTexture = NULL;
+	//gTexture = NUL;
 
 	gTextTexture.free();
 	TTF_CloseFont(gFont);
@@ -381,12 +388,12 @@ int main(int argc, char* args[])
 			//Experimenting with orbit body
 			vector3 SUN_POS = { 0, 0, 0 };
 			std::vector<body> orbiting_bodies;
-			body mercury(0, 59000, 0, 2000, { 0, 0, 0 }, SUN_POS);
-			body venus(0, 0, 108000, 12000, {0, 0, 0}, SUN_POS);//108000
-			body earth(0, 148000, 0, 6000, { 0, 0, 0 }, SUN_POS);
+			body mercury("mercury", 0, 59000, 0, 2000, {0, 0, 0}, SUN_POS);
+			//body venus(0, 0, 108000, 12000, {0, 0, 0}, SUN_POS);//108000
+			//body earth(0, 148000, 0, 6000, { 0, 0, 0 }, SUN_POS);
 			orbiting_bodies.emplace_back(mercury);
-			orbiting_bodies.emplace_back(venus);
-			orbiting_bodies.emplace_back(earth);
+			//orbiting_bodies.emplace_back(venus);
+			//orbiting_bodies.emplace_back(earth);
 			/*orbiting_bodies.emplace_back(mars);
 			orbiting_bodies.emplace_back(jupiter);*/
 
@@ -403,6 +410,10 @@ int main(int argc, char* args[])
 				{
 
 					b.Update_Body(deltaTime, time_scale); // Update body
+
+					SDL_Color textColor = { 255, 255, 255 };
+					writeText(gTextTexture, b.GetBodyData(), textColor);
+
 					/*
 						- Time scale now works! Achieved by multiplying the step size by the same factor that t was multiplied by.
 						Why does this work? NO IDEA.
@@ -425,7 +436,7 @@ int main(int argc, char* args[])
 					for (auto p_t : b.trail_points)
 					{
 						p_t = gCamera.WorldSpaceToScreenSpace(p_t, SCREEN_HEIGHT, SCREEN_WIDTH);
-						//std::cout << "Debug Points: " << p_t.x << ", " << p_t.y << ", " << p_t.z << "\n";
+						//std::cout << "Debug wasds: " << p_t.x << ", " << p_t.y << ", " << p_t.z << "\n";
 						if (p_t.z > 0)
 						{
 							pixel(p_t.x, p_t.y);

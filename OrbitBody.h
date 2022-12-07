@@ -18,6 +18,7 @@ class body
 	std::vector<edge> edges;
 	vector3 last_trail_point;
 	public: std::vector<vector3> trail_points;
+		  std::string name;
 	public: float x, y, z;
 		  float scale;
 
@@ -33,7 +34,7 @@ private: vector3 start_vel;
 	/// <summary>
 	/// center_X, center_Y, center_Z, scale, _velocity, _god_pos, override_velocity
 	/// </summary>
-	public: body(float center_x, float center_y, float center_z, float _scale, vector3 _velocity, vector3 _god_pos, bool override_velocity = true)
+public: body(std::string name, float center_x, float center_y, float center_z, float _scale, vector3 _velocity, vector3 _god_pos, bool override_velocity = true)
 	{
 		mu = 6.6743 * pow(10, -11) * god_mass;
 		if (override_velocity)
@@ -204,6 +205,12 @@ public: void reset()
 			p.y += dy;
 			p.z += dz;
 		}
+	}
+
+	std::string GetBodyData()
+	{
+		std::string text = name + " velocity: " + velocity.Debug();
+		return text;
 	}
 
 	std::vector<vector3> Get_Vertices()
