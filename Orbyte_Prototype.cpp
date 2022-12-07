@@ -307,7 +307,7 @@ bool loadMedia()
 	bool success = true;
 
 	//Open the font
-	gFont = TTF_OpenFont("SourceSerifPro-Regular.ttf", 13); //Open_My_Font
+	gFont = TTF_OpenFont("SourceSerifPro-Regular.ttf", 6); //Open_My_Font
 	if (gFont == NULL)
 	{
 		printf("Failed to load lazy font! SDL_ttf Error: %s\n", TTF_GetError());
@@ -388,7 +388,7 @@ int main(int argc, char* args[])
 			//Experimenting with orbit body
 			vector3 SUN_POS = { 0, 0, 0 };
 			std::vector<body> orbiting_bodies;
-			body mercury("mercury", 0, 59000, 0, 2000, {0, 0, 0}, SUN_POS);
+			body mercury("mercury", 0, 59000, 0, 2000, {59000, 0, 0}, SUN_POS, false);
 			//body venus(0, 0, 108000, 12000, {0, 0, 0}, SUN_POS);//108000
 			//body earth(0, 148000, 0, 6000, { 0, 0, 0 }, SUN_POS);
 			orbiting_bodies.emplace_back(mercury);

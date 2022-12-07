@@ -34,9 +34,10 @@ private: vector3 start_vel;
 	/// <summary>
 	/// center_X, center_Y, center_Z, scale, _velocity, _god_pos, override_velocity
 	/// </summary>
-public: body(std::string name, float center_x, float center_y, float center_z, float _scale, vector3 _velocity, vector3 _god_pos, bool override_velocity = true)
+public: body(std::string _name, float center_x, float center_y, float center_z, float _scale, vector3 _velocity, vector3 _god_pos, bool override_velocity = true)
 	{
 		mu = 6.6743 * pow(10, -11) * god_mass;
+		name = _name;
 		if (override_velocity)
 		{
 			//We manipulate the velocity so that a perfectly circular orbit is achieved
