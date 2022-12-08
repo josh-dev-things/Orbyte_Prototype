@@ -24,6 +24,7 @@ class body
 
 private : vector3 start_pos;
 private: vector3 start_vel;
+	   float time_since_start = 0;
 
 	//Orbit information
 	vector3 velocity{ 0,0,0 };
@@ -165,10 +166,11 @@ public: void reset()
 
 	public: int Update_Body(float delta, float time_scale)
 	{
+		time_since_start += delta * time_scale;
 		rotate(0.0005f * time_scale, 0.0005f * time_scale, 0.0005f * time_scale);
 		vector3 position = {x, y, z};
 		float t = (delta / 1000);
-		std::vector<vector3> sim_step = rk4_step(t * time_scale, position, velocity, t * time_scale / 6);
+		std::vector<vector3> sim_step = rk4_step(t * time_scale, position, velocity, t * time_scale / 1000);
 		position = sim_step[0];
 		//if (position.z > 0) { std::cout << position.Debug() << "\n"; std::cout << velocity.Debug() << "\n"; }
 		MoveToPos(position);
@@ -210,7 +212,7 @@ public: void reset()
 
 	std::string GetBodyData()
 	{
-		std::string text = name + " velocity: " + velocity.Debug();
+		std::string text = name + " velocity: " + velocity.Debug() + "|| Time: " + std::to_string(time_since_start);
 		return text;
 	}
 

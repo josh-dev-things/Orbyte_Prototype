@@ -27,7 +27,7 @@ const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 800;
 const int SCREEN_FPS = 60;
 const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
-const float km_per_pixel = 7500;
+const float km_per_pixel = 750;
 const int MAX_FPS = 60;
 float time_scale = 1;
 bool LMB_Down = false;
@@ -307,7 +307,7 @@ bool loadMedia()
 	bool success = true;
 
 	//Open the font
-	gFont = TTF_OpenFont("SourceSerifPro-Regular.ttf", 6); //Open_My_Font
+	gFont = TTF_OpenFont("SourceSerifPro-Regular.ttf", 12); //Open_My_Font
 	if (gFont == NULL)
 	{
 		printf("Failed to load lazy font! SDL_ttf Error: %s\n", TTF_GetError());
