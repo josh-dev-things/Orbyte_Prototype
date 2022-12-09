@@ -31,7 +31,7 @@ struct OrbitBodyData
 		//SO VECTOR3 is 3 x 32 BITS
 
 		// 8 x name.length + 3x32 + 32 + 3x32 + 1 = number of bits in file
-		bytes_for_name = name.length();
+		bytes_for_name = (uint8_t)name.length();
 	}
 
 };
@@ -41,14 +41,22 @@ class DataController
 {
 public: 
 
-	int WriteDataToFile()
+	int WriteDataToFile(OrbitBodyData data)
 	{
-		std::ofstream wf("solar_system.orbyte", std::ios::out | std::ios::binary);
+		std::ofstream wf;
+		wf.open("solar_system.orbyte", std::ios::out | std::ios::binary);
 		if (!wf)
 		{
 			std::cout << "Could not open .orbyte file to write data.";
 			return 1;
 		}
+
+		//Start writing
+		std::cout << "Writing data to file: " << &data.bytes_for_name << "\n";
+		uint8_t bfn = data.bytes_for_name;
+		wf.write((char *)&bfn, sizeof(bfn));
+		wf.close();
+
 		return 0;
 	}
 

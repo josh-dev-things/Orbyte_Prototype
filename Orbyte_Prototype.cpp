@@ -21,6 +21,7 @@
 #include <sstream>
 #include <SDL_ttf.h>
 #include <SDL_image.h>
+#include "Orbyte_Data.h"
 
 
 const int SCREEN_WIDTH = 800;
@@ -297,6 +298,10 @@ bool init()
 		return false;
 	}
 
+	//TESTING DATA STORAGE
+	OrbitBodyData body_data = OrbitBodyData("name", {1, 1, 1}, 1, {2, 2, 2}, true);
+	DataController data_controller;
+	data_controller.WriteDataToFile(body_data);
 	//gScreenSurface = SDL_GetWindowSurface(gWindow);
 	return true;
 }
