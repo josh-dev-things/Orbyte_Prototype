@@ -132,11 +132,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="solar_system.orbyte" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Icosahedron.h" />
     <ClInclude Include="OrbitBody.h" />
+    <ClInclude Include="Orbyte_Data.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="vec3.h" />
   </ItemGroup>

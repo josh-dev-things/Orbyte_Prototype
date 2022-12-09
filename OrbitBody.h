@@ -170,7 +170,7 @@ public: void reset()
 		rotate(0.0005f * time_scale, 0.0005f * time_scale, 0.0005f * time_scale);
 		vector3 position = {x, y, z};
 		float t = (delta / 1000);
-		std::vector<vector3> sim_step = rk4_step(t * time_scale, position, velocity, t * time_scale / 1000);
+		std::vector<vector3> sim_step = rk4_step(t * time_scale, position, velocity, t * time_scale / 100);
 		position = sim_step[0];
 		//if (position.z > 0) { std::cout << position.Debug() << "\n"; std::cout << velocity.Debug() << "\n"; }
 		MoveToPos(position);

@@ -17,6 +17,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="solar_system.orbyte">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -32,6 +35,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Camera.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Orbyte_Data.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
