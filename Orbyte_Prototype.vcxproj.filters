@@ -42,6 +42,8 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Font Include="SourceSerifPro-Regular.ttf" />
+    <Font Include="SourceSerifPro-Regular.ttf">
+      <Filter>Source Files</Filter>
+    </Font>
   </ItemGroup>
 </Project>

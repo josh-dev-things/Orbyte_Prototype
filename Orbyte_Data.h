@@ -5,6 +5,7 @@
 #include<iostream>
 #include<fstream>
 #include "vec3.h"
+#include <bitset>
 
 struct OrbitBodyData
 {
@@ -18,7 +19,7 @@ struct OrbitBodyData
 
 	//Information for storage
 	uint8_t bytes_for_name; //So the first 8 bits of the file will tell us how many bytes the name contains. Name being the only var with "unlimited length"
-	OrbitBodyData(std::string _name, vector3 _center, float _scale, vector3 _velocity, bool _override_velocity)
+	OrbitBodyData(std::string _name = "", vector3 _center = { 0, 0, 0 }, float _scale = 1, vector3 _velocity = {0, 0, 0}, bool _override_velocity = false)
 	{
 		name = _name;
 		center = _center;
@@ -36,27 +37,79 @@ struct OrbitBodyData
 
 };
 
+struct SimulationData
+{
+	std::vector<OrbitBodyData> OrbitBodies;
+	SimulationData(std::vector<OrbitBodyData> _bodies)
+	{
+		OrbitBodies = _bodies;
+	}
+};
+
 //So this header file is going to contain the data controller. The big bad wolf in charge of all the data being read into and written out of the application.
 class DataController
 {
 public: 
 
+	std::string EncodeVec3(vector3 vec)
+	{
+		return EncodeFloat(vec.x) + EncodeFloat(vec.y) + EncodeFloat(vec.z);
+	}
+
+	std::string EncodeFloat(float fl)
+	{
+		return std::bitset<32>(fl).to_string();
+	}
+
+	std::string EncodeString(std::string str)
+	{
+		std::string result = "";
+		for (char const& c : str)
+		{
+			result += std::bitset<8>(c).to_string();
+		}
+		return result;
+	}
+
+	std::string EncodeBool(bool b)
+	{
+		if (b)
+		{
+			return "1";
+		}
+		else {
+			return "0";
+		}
+	}
+
 	int WriteDataToFile(OrbitBodyData data)
 	{
-		std::ofstream wf;
-		wf.open("solar_system.orbyte", std::ios::out | std::ios::binary);
-		if (!wf)
-		{
-			std::cout << "Could not open .orbyte file to write data.";
-			return 1;
-		}
+		std::string to_write;
+		std::ofstream out("solar_system.orbyte");
 
 		//Start writing
-		std::cout << "Writing data to file: " << &data.bytes_for_name << "\n";
-		uint8_t bfn = data.bytes_for_name;
-		wf.write((char *)&bfn, sizeof(bfn));
-		wf.close();
+		to_write += std::bitset<8>(data.bytes_for_name).to_string()
+			+ EncodeString(data.name)
+			+ EncodeVec3(data.center)
+			+ EncodeFloat(data.scale)
+			+ EncodeVec3(data.velocity)
+			+ EncodeBool(data.override_velocity);
 
+		std::cout << "Writing data to file: " << to_write << "\n";
+
+		out << to_write;
+		out.close();
+		ReadDataFromFile();
+		return 0;
+	}
+
+	int ReadDataFromFile()
+	{
+		std::ifstream in("solar_system.orbyte");
+		std::string data; //should only be one line :)
+		std::getline(in, data);
+		std::cout << "Read data from file: " << data << "\n";
+		//FIRST 8 BITS ALLOCATED TO LENGTH OF NAME
 		return 0;
 	}
 

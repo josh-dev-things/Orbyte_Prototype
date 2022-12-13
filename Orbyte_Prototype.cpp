@@ -298,7 +298,7 @@ bool init()
 		return false;
 	}
 
-	//TESTING DATA STORAGE
+	////TESTING DATA STORAGE
 	OrbitBodyData body_data = OrbitBodyData("name", {1, 1, 1}, 1, {2, 2, 2}, true);
 	DataController data_controller;
 	data_controller.WriteDataToFile(body_data);
@@ -394,6 +394,7 @@ int main(int argc, char* args[])
 			vector3 SUN_POS = { 0, 0, 0 };
 			std::vector<body> orbiting_bodies;
 			body mercury("mercury", 0, 59000, 0, 2000, {59000, 0, 0}, SUN_POS, false);
+			//mercury.GetBodyData()
 			//body venus(0, 0, 108000, 12000, {0, 0, 0}, SUN_POS);//108000
 			//body earth(0, 148000, 0, 6000, { 0, 0, 0 }, SUN_POS);
 			orbiting_bodies.emplace_back(mercury);

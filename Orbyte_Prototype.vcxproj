@@ -24,6 +24,7 @@
     <ProjectGuid>{5d0487fb-aa29-49af-a2ec-accae1479485}</ProjectGuid>
     <RootNamespace>OrbytePrototype</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>Orbyte</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -132,7 +133,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="solar_system.orbyte" />
+    <None Include="solar_system.orbyte">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />

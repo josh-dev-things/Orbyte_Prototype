@@ -11,6 +11,7 @@
 #include <numeric>
 #include <sstream>
 #include "vec3.h"
+#include "Orbyte_Data.h"
 
 class body
 {
@@ -108,6 +109,11 @@ public: body(std::string _name, float center_x, float center_y, float center_z, 
 		};
 		//std::cout << "rk_result: " << (pow(nr.z, 3)) << "\n";
 		return { v, a };
+	}
+
+	OrbitBodyData GetOrbitBodyData()
+	{
+		return OrbitBodyData(name, {x, y, z}, scale, velocity, false);
 	}
 
 public: void reset()
