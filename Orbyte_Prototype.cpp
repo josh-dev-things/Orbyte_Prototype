@@ -308,7 +308,7 @@ bool init()
 
 bool loadMedia()
 {
-	//Loading success flag
+	//success flag
 	bool success = true;
 
 	//Open the font
