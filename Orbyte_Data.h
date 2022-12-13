@@ -46,7 +46,7 @@ struct SimulationData
 	}
 };
 
-//So this header file is going to contain the data controller. The big bad wolf in charge of all the data being read into and written out of the application.
+//So this header file is going to contain the data controller. The big bad wolf in charge of all the data being read and written out of the application.
 class DataController
 {
 public: 
