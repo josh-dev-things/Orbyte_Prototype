@@ -39,6 +39,11 @@ struct vector3
 		vector3 result = { x * v.x, y * v.y, z * v.z };
 		return result;
 	}
+
+	std::string Debug()
+	{
+		return std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z);
+	}
 	
 };
 

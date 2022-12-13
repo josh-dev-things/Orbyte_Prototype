@@ -11,6 +11,7 @@
 #include <numeric>
 #include <sstream>
 #include "vec3.h"
+#include "Orbyte_Data.h"
 
 class body
 {
@@ -18,28 +19,55 @@ class body
 	std::vector<edge> edges;
 	vector3 last_trail_point;
 	public: std::vector<vector3> trail_points;
+		  std::string name;
 	public: float x, y, z;
+		  float scale;
+
+private : vector3 start_pos;
+private: vector3 start_vel;
+	   float time_since_start = 0;
 
 	//Orbit information
-	float time_since_start = 0;
-
 	vector3 velocity{ 0,0,0 };
 	float mu = 0;
-	float mass = 1;
-	float god_mass = 1.9 * pow(11,10);
+	const float god_mass = 5.9 * pow(10,24);
 	vector3 god_pos;
 
-
-
-	public: body(float center_x, float center_y, float center_z, float scale, vector3 _velocity, vector3 _god_pos)
+	/// <summary>
+	/// center_X, center_Y, center_Z, scale, _velocity, _god_pos, override_velocity
+	/// </summary>
+public: body(std::string _name, float center_x, float center_y, float center_z, float _scale, vector3 _velocity, vector3 _god_pos, bool override_velocity = true)
 	{
 		mu = 6.6743 * pow(10, -11) * god_mass;
+		name = _name;
+		if (override_velocity)
+		{
+			//We manipulate the velocity so that a perfectly circular orbit is achieved
+			if (center_x != 0)
+			{
+				_velocity.y = sqrt(mu / center_x);
+			}
+			if (center_y != 0)
+			{
+				_velocity.x = sqrt(mu / center_y);
+			}
+			if (center_z != 0)
+			{
+				_velocity.x = sqrt(mu / center_z);
+			}
+		}
 		velocity = _velocity;
+		start_vel = velocity;
 		god_pos = _god_pos;
+
+		scale = _scale;
 
 		x = center_x;
 		y = center_y;
 		z = center_z;
+
+		start_pos = { x, y, z };
+		std::cout << "Instantiated Orbiting Body with initial position: " << start_pos.Debug() << " and velocity: " << velocity.Debug() << "\n";
 		
 		vertices = Generate_Vertices(scale);
 
@@ -82,6 +110,20 @@ class body
 		//std::cout << "rk_result: " << (pow(nr.z, 3)) << "\n";
 		return { v, a };
 	}
+
+	OrbitBodyData GetOrbitBodyData()
+	{
+		return OrbitBodyData(name, {x, y, z}, scale, velocity, false);
+	}
+
+public: void reset()
+{
+	x = start_pos.x;
+	y = start_pos.y;
+	z = start_pos.z;
+
+	velocity = start_vel;
+}
 
 	//TODO: rk4_step function https://www.youtube.com/watch?v=TzX6bg3Kc0E&t=241s
 	std::vector<vector3> rk4_step(float _time, vector3 _position, vector3 _velocity, float _dt = 1) //SHITS THE BED WHEN Y = 0
@@ -128,16 +170,18 @@ class body
 	}
 
 
-	public: int Update_Body(Uint32 delta)
+	public: int Update_Body(float delta, float time_scale)
 	{
-		rotate(0.001f, 0.002f, 0.003f);
+		time_since_start += delta * time_scale;
+		rotate(0.0005f * time_scale, 0.0005f * time_scale, 0.0005f * time_scale);
 		vector3 position = {x, y, z};
-		std::vector<vector3> sim_step = rk4_step(time_since_start / 1000, position, velocity, 10);
+		float t = (delta / 1000);
+		std::vector<vector3> sim_step = rk4_step(t * time_scale, position, velocity, t * time_scale / 100);
 		position = sim_step[0];
+		//if (position.z > 0) { std::cout << position.Debug() << "\n"; std::cout << velocity.Debug() << "\n"; }
 		MoveToPos(position);
-		time_since_start += delta / 1000;
 
-		if (Magnitude(position - last_trail_point) > 5)
+		if (Magnitude(position - last_trail_point) > Magnitude(velocity)/ 24)
 		{
 			trail_points.emplace_back(position);
 			last_trail_point = position;
@@ -160,11 +204,22 @@ class body
 		y = new_pos.y;
 		z = new_pos.z;
 
+		float dx = x - old_pos.x;
+		float dy = y - old_pos.y;
+		float dz = z - old_pos.z;
 
 		for (auto& p : vertices)
 		{
-			p = p + (new_pos - old_pos);
+			p.x += dx;
+			p.y += dy;
+			p.z += dz;
 		}
+	}
+
+	std::string GetBodyData()
+	{
+		std::string text = name + " velocity: " + velocity.Debug() + "|| Time: " + std::to_string(time_since_start);
+		return text;
 	}
 
 	std::vector<vector3> Get_Vertices()
@@ -178,7 +233,7 @@ class body
 		return edges;
 	}
 
-	void rotate(float rot_x = 1, float rot_y = 1, float rot_z = 1)
+	void rotate(float rot_x = 1, float rot_y = 1, float rot_z = 1) //Something is broken. STILL BROKEN
 	{
 		for (auto& p : vertices)
 		{
@@ -188,6 +243,8 @@ class body
 			point.y -= y;
 			point.z -= z;
 
+			//float start_magnitude = Magnitude(point);
+
 			//Rotate point
 			float rad = 0;
 
@@ -196,8 +253,8 @@ class body
 			point.z = std::sin(rad) * point.y + std::cos(rad) * point.z;
 
 			rad = rot_y;
-			point.x = std::cos(rad) * point.x - std::sin(rad) * point.z;
-			point.z = std::sin(rad) * point.x + std::cos(rad) * point.z;
+			point.x = std::cos(rad) * point.x + std::sin(rad) * point.z;
+			point.z = -std::sin(rad) * point.x + std::cos(rad) * point.z;
 
 			rad = rot_z;
 			point.x = std::cos(rad) * point.x - std::sin(rad) * point.y;
