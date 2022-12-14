@@ -139,7 +139,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
-    <ClInclude Include="Icosahedron.h" />
     <ClInclude Include="OrbitBody.h" />
     <ClInclude Include="Orbyte_Data.h" />
     <ClInclude Include="Orbyte_Graphics.h" />

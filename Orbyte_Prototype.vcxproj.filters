@@ -25,9 +25,6 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Icosahedron.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="vec3.h">
       <Filter>Source Files</Filter>
     </ClInclude>
