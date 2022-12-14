@@ -64,9 +64,11 @@ class Graphyte
 		return success;
 	}
 
+	//This method instantiates a new Text object and returns it. The new text object will be added to the array of text objects: texts.
 	Text CreateText(std::string str, int font_size, SDL_Color color = { 255, 255, 255 })
 	{
 		Text newText(str, font_size, {0, 0}, Renderer, Font, color);
+		texts.emplace_back(&newText);
 		return newText;
 	}
 
