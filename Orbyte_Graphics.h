@@ -7,6 +7,8 @@
 #include <SDL_image.h>
 #include <vector>
 #include <string>
+#include <numeric>
+#include <iostream>
 
 /*
 	Handles all graphics for the application. This includes all pixel writes to the screen; loading and writing to textures; rendering
@@ -17,12 +19,13 @@ class Graphyte
 
 	const float km_per_pixel = 750; //The number of kilometres per pixel on screen.
 	const int SCREEN_WIDTH = 800; //What it says on the tin.
-	const int SCREEN_Height = 800;
+	const int SCREEN_HEIGHT = 800; //TOM IS A TWIT
 
 	SDL_Renderer* Renderer = NULL; //Renderer.
 	TTF_Font* Font = NULL; //True Type Font. Needs to be loaded at init.
 	Texture TextTexture;
 
+	std::vector<Texture> texts; //Vector of text elements to be drawn to the screen.
 	std::vector<SDL_Point> points; //Vector of points to be drawn to the screen. Iterate through & draw each point to screen as a pixel.
 
 	public:  //Public attributes & Methods
@@ -60,6 +63,55 @@ class Graphyte
 
 		return success;
 	}
+
+	Text CreateText(std::string str, int font_size, SDL_Color color = { 255, 255, 255 })
+	{
+		Text newText(str, font_size, {0, 0}, Renderer, Font, color);
+		return newText;
+	}
+
+	void pixel(float x, float y)
+	{
+		SDL_Point _point = { x + SCREEN_WIDTH / 2, -y + SCREEN_HEIGHT / 2 };
+
+		points.emplace_back(_point);
+	}
+
+	void line(float x1, float y1, float x2, float y2)
+	{
+		float dx = (x2 - x1);
+		float dy = (y2 - y1);
+		float length = std::sqrt(dx * dx + dy * dy);
+		float angle = std::atan2(dy, dx);
+		//std::cout << "Drawing line with points: " << length << "\n";
+		for (int i = 0; i < length; i++)
+		{
+			pixel(x1 + std::cos(angle) * i,
+				y1 + std::sin(angle) * i);
+		}
+	}
+
+	//Draw everything to the screen. Called AFTER all points added to the render queue
+	void draw()
+	{
+		SDL_SetRenderDrawColor(Renderer, 0, 0, 0, 255);
+		SDL_RenderClear(Renderer);
+		int count = 0;
+
+		for (auto& point : points)
+		{
+			SDL_SetRenderDrawColor(Renderer, 255, ((float)point.x / (float)SCREEN_WIDTH) * 255, ((float)point.y / (float)SCREEN_HEIGHT) * 255, 255);
+			SDL_RenderDrawPoint(Renderer, point.x, point.y); //DRAW TO TEXTURE INSTEAD???
+			count++;
+		}
+
+		//Make sure you render GUI!
+		SDL_SetRenderDrawColor(Renderer, 255, 255, 255, 255);
+		TextTexture.render((SCREEN_WIDTH - TextTexture.getWidth()) / 2, (SCREEN_HEIGHT - TextTexture.getHeight()) / 2);
+
+		SDL_RenderPresent(Renderer);
+		points.clear();
+	}
 };
 
 class Text
@@ -68,9 +120,20 @@ private:
 	Texture texture;
 
 public:
-	Text(std::string str, int font_size, SDL_Color color = { 255, 255, 255 })
+	int pos_x;
+	int pos_y;
+
+	Text(std::string str, int font_size, std::vector<int> position,  SDL_Renderer* _renderer, TTF_Font* _font, SDL_Color color = { 255, 255, 255 })
 	{
 		//Constructor for the text class.
+		Texture textTexture(_renderer, _font);
+		
+		if (!textTexture.loadFromRenderedText("Text Is Working Correctly", color))
+		{
+			printf("Failed to render text texture!\n");
+		}
+		pos_x = position[0];
+		pos_y = position[1];
 	}
 };
 
