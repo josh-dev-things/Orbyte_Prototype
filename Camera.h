@@ -85,15 +85,17 @@ private: vector3 camera_rotation;
 		if (pos.z < clipping_z)
 		{
 			//DONT DRAW IT
-			vector3 do_not_draw_this = { 0, 0, -100 };
-			return do_not_draw_this;
+			printf("Culled a stupid vertex hopefully \n");
+			return { 0, 0, -1 };
 		}
-		vector3 Screen_Space_Pos = {
+		else {
+			vector3 Screen_Space_Pos = {
 			(pos.x / pos.z) * screen_width,
-			(pos.y / pos.z)* screen_height,
+			(pos.y / pos.z) * screen_height,
 			pos.z
-		};
-		return Screen_Space_Pos;
+			};
+			return Screen_Space_Pos;
+		}
 	}
 };
 

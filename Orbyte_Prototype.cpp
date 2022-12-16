@@ -209,7 +209,6 @@ LTexture gTextTexture;
 void pixel(float x, float y)
 {
 	SDL_Point _point = { x + SCREEN_WIDTH / 2, -y + SCREEN_HEIGHT / 2};
-
 	points.emplace_back(_point);
 }
 
@@ -412,7 +411,8 @@ int main(int argc, char* args[])
 				//GRAPHICS
 
 				//render sun
-				pixel(SUN_POS.x, SUN_POS.y);
+				vector3 _ss_sun_pos = gCamera.WorldSpaceToScreenSpace(SUN_POS, SCREEN_HEIGHT, SCREEN_WIDTH);
+				if (_ss_sun_pos.z > 0) { pixel(_ss_sun_pos.x, _ss_sun_pos.y); }
 
 				for (auto& b : orbiting_bodies)
 				{
@@ -420,7 +420,8 @@ int main(int argc, char* args[])
 					b.Update_Body(deltaTime, time_scale); // Update body
 
 					SDL_Color textColor = { 255, 255, 255 };
-					writeText(gTextTexture, b.GetBodyData(), textColor);
+					//writeText(gTextTexture, b.GetBodyData(), textColor);
+					/*writeText(gTextTexture, "_", textColor);*/
 
 					/*
 						- Time scale now works! Achieved by multiplying the step size by the same factor that t was multiplied by.
@@ -441,7 +442,8 @@ int main(int argc, char* args[])
 							pixel(p.x, p.y);
 						}
 					}
-					for (auto p_t : b.trail_points)
+					std::vector<vector3> trail_points = b.trail_points;
+					for (auto& p_t : trail_points)
 					{
 						p_t = gCamera.WorldSpaceToScreenSpace(p_t, SCREEN_HEIGHT, SCREEN_WIDTH);
 						//std::cout << "Debug wasds: " << p_t.x << ", " << p_t.y << ", " << p_t.z << "\n";
@@ -452,14 +454,17 @@ int main(int argc, char* args[])
 					}
 					for (auto& edg : test_edges)
 					{
-						if(test_verts[edg.a].z > 0 && test_verts[edg.b].z > 0)
-						line(test_verts[edg.a].x,
-							test_verts[edg.a].y,
-							test_verts[edg.b].x,
-							test_verts[edg.b].y);
+						if (test_verts[edg.a].z > 0 && test_verts[edg.b].z > 0)
+						{
+							line(test_verts[edg.a].x,
+								test_verts[edg.a].y,
+								test_verts[edg.b].x,
+								test_verts[edg.b].y);
+						}
 					}
 					test_edges.clear();
 					test_verts.clear();
+					trail_points.clear();
 				}
 
 				show();
