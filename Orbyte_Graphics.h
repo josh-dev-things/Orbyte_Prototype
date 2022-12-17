@@ -17,11 +17,11 @@
 
 	Largely used for fonts in this application.
 */
-class Texture
+class GTexture
 {
 private:
 	//The actual hardware texture
-	SDL_Texture* mTexture;
+	SDL_Texture* mTexture = NULL;
 
 	//The renderer
 	SDL_Renderer* renderer = NULL;
@@ -35,7 +35,7 @@ private:
 
 public:
 	//Constructor
-	Texture(SDL_Renderer* _renderer = NULL, TTF_Font* _font = NULL)
+	GTexture(SDL_Renderer* _renderer = NULL, TTF_Font* _font = NULL)
 	{
 		//Initialize
 		renderer = _renderer;
@@ -48,7 +48,7 @@ public:
 	}
 
 	//Deallocates memory
-	~Texture()
+	~GTexture()
 	{
 		//Deallocate
 		free();
@@ -167,7 +167,7 @@ public:
 class Text
 {
 private:
-	Texture texture;
+	GTexture texture;
 
 public:
 	int pos_x;
@@ -176,10 +176,10 @@ public:
 	Text(std::string str, int font_size, std::vector<int> position, SDL_Renderer* _renderer, TTF_Font* _font, SDL_Color color = { 255, 255, 255 })
 	{
 		//Constructor for the text class.
-		Texture textTexture(_renderer, _font);
+		GTexture textTexture(_renderer, _font);
 		texture = textTexture;
 
-		if (!textTexture.loadFromRenderedText("Text Is Working Correctly", color))
+		if (!texture.loadFromRenderedText("Text Is Working Correctly", color))
 		{
 			printf("Failed to render text texture!\n");
 		}
@@ -201,9 +201,9 @@ class Graphyte
 
 	SDL_Renderer* Renderer = NULL; //Renderer.
 	TTF_Font* Font = NULL; //True Type Font. Needs to be loaded at init.
-	Texture TextTexture;
+	GTexture TextTexture;
 
-	std::vector<Texture> texts; //Vector of text elements to be drawn to the screen.
+	//std::vector<GTexture> texts; //Vector of text elements to be drawn to the screen.
 	std::vector<SDL_Point> points; //Vector of points to be drawn to the screen. Iterate through & draw each point to screen as a pixel.
 
 	public:  //Public attributes & Methods
@@ -212,40 +212,19 @@ class Graphyte
 	{
 		Renderer = _renderer;
 		Font = _font;
-		TextTexture = Texture(Renderer, Font);
-	}
-
-	bool LoadMedia(SDL_Renderer* _renderer, TTF_Font* _font)
-	{
-		//success flag
-		bool success = true;
-
-		//Open the font
-		Font = TTF_OpenFont("SourceSerifPro-Regular.ttf", 12); //Open_My_Font
-		if (Font == NULL)
+		if (Renderer == NULL || Font == NULL)
 		{
-			printf("Failed to load lazy font! SDL_ttf Error: %s\n", TTF_GetError());
-			success = false;
+			return false;
 		}
-		else
-		{
-			//Render text
-			SDL_Color textColor = { 255, 255, 255 };
-			if (!TextTexture.loadFromRenderedText("Text Is Working Correctly", textColor))
-			{
-				printf("Failed to render text texture!\n");
-				success = false;
-			}
-		}
-
-		return success;
+		TextTexture = GTexture(Renderer, Font);
+		return true;
 	}
 
 	//This method instantiates a new Text object and returns it. The new text object will be added to the array of text objects: texts.
 	Text CreateText(std::string str, int font_size, SDL_Color color = { 255, 255, 255 })
 	{
 		Text newText(str, font_size, {0, 0}, Renderer, Font, color);
-		texts.emplace_back(&newText);
+		//texts.emplace_back(newText);
 		return newText;
 	}
 
@@ -295,7 +274,7 @@ class Graphyte
 	void free()
 	{
 		TextTexture.free();
-		texts.clear();
+		//texts.clear();
 		points.clear();
 	}
 };
