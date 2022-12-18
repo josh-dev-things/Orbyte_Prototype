@@ -40,7 +40,7 @@ TTF_Font* gFont = NULL;
 SDL_Window* gWindow = NULL;
 
 //Camera
-Camera gCamera({0, 0, -1000000}, 1);
+Camera gCamera({0, 0, -150000}, 1);
 
 //The window renderer
 SDL_Renderer* gRenderer = NULL;
