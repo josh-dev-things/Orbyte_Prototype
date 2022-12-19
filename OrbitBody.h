@@ -246,11 +246,17 @@ public:
 		velocity = start_vel;
 	}
 
+	int Add_Satellite(const Satellite& sat); //This is defined after Satellite is defined.
+
+	int Update_Satellites(float delta, float time_scale);
+
+	int Draw_Satellites(Graphyte& g, Camera& c);
+
 	int Update_Body(float delta, float time_scale)
 	{
 		time_since_start += delta * time_scale;
 		rotate(0.0005f * time_scale, 0.0005f * time_scale, 0.0005f * time_scale);
-		vector3 position = {x, y, z};
+		vector3 position = {x, y, z}; //god_pos is normally origin, but not for a satellite.
 		float t = (delta / 1000);
 		std::vector<vector3> sim_step = rk4_step(t * time_scale, position, velocity, t * time_scale / 100);
 		position = sim_step[0];
@@ -270,6 +276,8 @@ public:
 		}
 		
 		velocity = sim_step[1];
+
+		Update_Satellites(delta, time_scale);
 		return 0;
 	}
 
@@ -309,10 +317,11 @@ public:
 		}
 
 		verts.clear();
+
+		Draw_Satellites(g, c);
+
 		return 0;
 	}
-
-	int Add_Satellite(const Satellite& sat); //This is defined after Satellite is defined.
 
 	std::vector<vector3> Get_Vertices()
 	{
@@ -333,6 +342,11 @@ public:
 	vector3 Get_Tangential_Velocity()
 	{
 		return velocity;
+	}
+
+	vector3 Get_Position()
+	{
+		return{ x,y,z };
 	}
 };
 
@@ -414,10 +428,9 @@ public:
 	/// <param name="center"></param>
 	/// <param name="_scale"></param>
 	/// <param name="_velocity"></param>
-	/// <param name="_god_pos"></param>
 	/// <param name="override_velocity"></param>
-	Satellite(std::string _name, const Body _parentBody, vector3 center, float _scale, vector3 _velocity, vector3 _god_pos, bool override_velocity = true): 
-		Body(_name, center, _scale, _velocity, _god_pos, override_velocity), parentBody(_parentBody)
+	Satellite(std::string _name, Body _parentBody, vector3 center, float _scale, vector3 _velocity, bool override_velocity = true): 
+		Body(_name, center, _scale, _velocity, _parentBody.Get_Position(), override_velocity), parentBody(_parentBody)
 	{
 		//Now do some satellite thingies I guess
 
@@ -428,6 +441,25 @@ int Body::Add_Satellite(const Satellite& sat)
 {
 	satellites.emplace_back(sat);
 	std::cout << name << " has a new satellite: " << sat.name << " | Total number of satellites: " << satellites.size() << "\n";
+	return 0;
+}
+
+int Body::Update_Satellites(float delta, float time_scale)
+{
+	//Now update Satellites
+	for (auto& sat : satellites)
+	{
+		sat.Update_Body(delta, time_scale);
+	}
+	return 0;
+}
+
+int Body::Draw_Satellites(Graphyte& g, Camera& c)
+{
+	for (auto& sat : satellites)
+	{
+		sat.Draw(g, c);
+	}
 	return 0;
 }
 #endif /*ORBITBODY_H*/

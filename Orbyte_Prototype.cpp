@@ -184,6 +184,8 @@ int main(int argc, char* args[])
 		vector3 SUN_POS = { 0, 0, 0 };
 		std::vector<Body> orbiting_bodies;
 		Body mercury("mercury", {0, 59000, 0}, 2000, { 59000, 0, 0 }, SUN_POS, true);
+		Satellite merc_sat("mercury_sat", mercury, { 1200, 0, 0 }, 0.1, {0,0,0}, true);
+		mercury.Add_Satellite(merc_sat);
 		//mercury.GetBodyData()
 		//body venus(0, 0, 108000, 12000, {0, 0, 0}, SUN_POS);//108000
 		//body earth(0, 148000, 0, 6000, { 0, 0, 0 }, SUN_POS);
