@@ -3,10 +3,7 @@
 // https://lazyfoo.net/tutorials/SDL/01_hello_SDL/index2.php
 // https://lazyfoo.net/tutorials/SDL/index.php
 
-//Note: Skipping loading pngs since we dont want textures. Everything will be done in code.
-
-//TODO: Lesson 08, Rendering Geometry [DONE]
-//TODO: Lesson 09, Viewport Stuff
+//TODO: SWITCH EVERYTHING TO USING DOUBLES INSTEAD OF FLOATS >:(
 
 
 #include <iostream>
@@ -185,8 +182,8 @@ int main(int argc, char* args[])
 		
 		//Experimenting with orbit body
 		vector3 SUN_POS = { 0, 0, 0 };
-		std::vector<body> orbiting_bodies;
-		body mercury("mercury", 0, 59000, 0, 2000, {59000, 0, 0}, SUN_POS, false);
+		std::vector<Body> orbiting_bodies;
+		Body mercury("mercury", {0, 59000, 0}, 2000, { 59000, 0, 0 }, SUN_POS, true);
 		//mercury.GetBodyData()
 		//body venus(0, 0, 108000, 12000, {0, 0, 0}, SUN_POS);//108000
 		//body earth(0, 148000, 0, 6000, { 0, 0, 0 }, SUN_POS);
@@ -220,43 +217,7 @@ int main(int argc, char* args[])
 					Why does this work? NO IDEA.
 					- BREAKS FOR ANYTHING NEAR 100. I THINK TIME SCALE 10 WORKS BEST
 				*/
-				std::vector<vector3> test_verts = b.Get_Vertices();
-				std::vector<edge> test_edges = b.Get_Edges();
-				for (auto& p : test_verts)
-				{
-					p = gCamera.WorldSpaceToScreenSpace(p, SCREEN_HEIGHT, SCREEN_WIDTH);
-					//std::cout << "Debug Points: " << p.x << ", " << p.y << ", " << p.z << "\n";
-				}
-				for (auto& p : test_verts)
-				{
-					if (p.z > 0)
-					{
-						graphyte.pixel(p.x, p.y);
-					}
-				}
-				std::vector<vector3> trail_points = b.trail_points;
-				for (auto& p_t : trail_points)
-				{
-					p_t = gCamera.WorldSpaceToScreenSpace(p_t, SCREEN_HEIGHT, SCREEN_WIDTH);
-					//std::cout << "Debug wasds: " << p_t.x << ", " << p_t.y << ", " << p_t.z << "\n";
-					if (p_t.z > 0)
-					{
-						graphyte.pixel(p_t.x, p_t.y);
-					}
-				}
-				for (auto& edg : test_edges)
-				{
-					if (test_verts[edg.a].z > 0 && test_verts[edg.b].z > 0)
-					{
-						graphyte.line(test_verts[edg.a].x,
-							test_verts[edg.a].y,
-							test_verts[edg.b].x,
-							test_verts[edg.b].y);
-					}
-				}
-				test_edges.clear();
-				test_verts.clear();
-				trail_points.clear();
+				b.Draw(graphyte, gCamera);
 			}
 
 			graphyte.draw();

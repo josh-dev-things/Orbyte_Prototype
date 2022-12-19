@@ -12,10 +12,19 @@
 #include <sstream>
 #include "vec3.h"
 #include "Orbyte_Data.h"
+#include "Orbyte_Graphics.h"
+#include "Camera.h"
 
-class body
+class Satellite; //A Forward Declaration so nothing collapses
+
+class Body
 {
 private:
+	const float god_mass = 5.9 * pow(10, 24); //We are dealing with very large numbers... Also god mass is about to be redundant :)
+	vector3 god_pos;
+	std::vector<Satellite> satellites;
+
+protected:
 	std::vector<vector3> vertices;
 	std::vector<edge> edges;
 	vector3 last_trail_point;
@@ -31,8 +40,6 @@ private:
 	//Orbit information
 	vector3 velocity{ 0,0,0 };
 	float mu = 0;
-	const float god_mass = 5.9 * pow(10,24); //We are dealing with very large numbers... Also god mass is about to be redundant :)
-	vector3 god_pos;
 
 	std::vector<vector3> two_body_ode(float t, vector3 _r, vector3 _v)
 	{
@@ -72,7 +79,28 @@ private:
 		return { result_pos, result_vel };
 	}
 
-	std::vector<vector3> Generate_Vertices(float scale)
+	//We need to override initial velocities in case user wants a perfectly circular orbit.
+	virtual void Project_Circular_Orbit(vector3& _velocity)
+	{
+		//We manipulate the velocity so that a perfectly circular orbit is achieved
+		if (x != 0)
+		{
+			_velocity.y = sqrt(mu / x);
+		}
+		if (y != 0)
+		{
+			_velocity.x = sqrt(mu / y);
+		}
+		if (z != 0)
+		{
+			_velocity.x = sqrt(mu / z);
+		}
+
+		//Don't have to return a value because parameter is passed by reference.
+	}
+
+	//Hooray, polymorphism!
+	virtual std::vector<vector3> Generate_Vertices(float scale)
 	{
 		std::vector<vector3> _vertices{
 			{1, 0, 0},
@@ -94,6 +122,26 @@ private:
 			v.z *= scale;
 			v.z += z;
 		}
+
+		//Edges Now
+		std::vector<edge> _edges{
+			{0, 3},
+			{0, 2},
+			{0, 4},
+			{0,5},
+
+			{1, 2},
+			{1,3},
+			{1,4},
+			{1,5},
+
+			{2,4},
+			{2,5},
+			{3,4},
+			{3,5}
+		};
+		edges = _edges; //I want to put this in its own method, however that's unnecessary as this is static soooo...
+
 		return _vertices;
 	}
 
@@ -153,25 +201,18 @@ private:
 	}
 
 public: 
-	body(std::string _name, float center_x, float center_y, float center_z, float _scale, vector3 _velocity, vector3 _god_pos, bool override_velocity = true)
+	Body(std::string _name, vector3 center, float _scale, vector3 _velocity, vector3 _god_pos, bool override_velocity = true)
 	{
+
+		x = center.x;
+		y = center.y;
+		z = center.z;
+
 		mu = 6.6743 * pow(10, -11) * god_mass;
 		name = _name;
 		if (override_velocity)
 		{
-			//We manipulate the velocity so that a perfectly circular orbit is achieved
-			if (center_x != 0)
-			{
-				_velocity.y = sqrt(mu / center_x);
-			}
-			if (center_y != 0)
-			{
-				_velocity.x = sqrt(mu / center_y);
-			}
-			if (center_z != 0)
-			{
-				_velocity.x = sqrt(mu / center_z);
-			}
+			Project_Circular_Orbit(_velocity);
 		}
 		velocity = _velocity;
 		start_vel = velocity;
@@ -179,33 +220,10 @@ public:
 
 		scale = _scale;
 
-		x = center_x;
-		y = center_y;
-		z = center_z;
-
 		start_pos = { x, y, z };
 		std::cout << "Instantiated Orbiting Body with initial position: " << start_pos.Debug() << " and velocity: " << velocity.Debug() << "\n";
 		
 		vertices = Generate_Vertices(scale);
-
-		//Edges Now
-		std::vector<edge> _edges{
-			{0, 3},
-			{0, 2},
-			{0, 4},
-			{0,5},
-
-			{1, 2},
-			{1,3},
-			{1,4},
-			{1,5},
-
-			{2,4},
-			{2,5},
-			{3,4},
-			{3,5}
-		};
-		edges = _edges;
 	}
 
 	OrbitBodyData GetOrbitBodyData() //To be used when saving to a .orbyte file
@@ -255,6 +273,47 @@ public:
 		return 0;
 	}
 
+	int Draw(Graphyte& g, Camera& c)
+	{
+		vector3 screen_dimensions = g.Get_Screen_Dimensions(); //Vector3 containing Screen Dimensions, we ignore z
+		std::vector<vector3> verts = Get_Vertices(); //Why are we using an accessor inside the class? Because its tidy and we need to get all the vertices in a new structure
+		for (auto& p : verts)
+		{
+			p = c.WorldSpaceToScreenSpace(p, screen_dimensions.x, screen_dimensions.y);
+
+			if (p.z > 0)
+			{
+				g.pixel(p.x, p.y);
+			}
+		}
+
+		for (auto t_p : trail_points)
+		{
+			t_p = c.WorldSpaceToScreenSpace(t_p, screen_dimensions.x, screen_dimensions.y);
+			if (t_p.z > 0)
+			{
+				g.pixel(t_p.x, t_p.y);
+			}
+		}
+
+		for (auto edg : edges)
+		{
+			if (verts[edg.a].z > 0 && verts[edg.b].z > 0)
+			{
+				g.line(verts[edg.a].x,
+					verts[edg.a].y,
+					verts[edg.b].x,
+					verts[edg.b].y
+				);
+			}
+		}
+
+		verts.clear();
+		return 0;
+	}
+
+	int Add_Satellite(const Satellite& sat); //This is defined after Satellite is defined.
+
 	std::vector<vector3> Get_Vertices()
 	{
 		//Return vertices
@@ -265,6 +324,110 @@ public:
 	{
 		return edges;
 	}
+
+	std::vector<vector3> Get_Trail_Points()
+	{
+		return trail_points;
+	}
+
+	vector3 Get_Tangential_Velocity()
+	{
+		return velocity;
+	}
 };
 
+class Satellite : public Body
+{
+private:
+	Body parentBody;
+	std::vector<vector3> Generate_Vertices(float scale) override {
+		//thing
+		std::vector<vector3> _vertices{
+			{1, 0, 0},
+			{-1, 0, 0},
+
+			{0, 1, 0}, //2
+			{0, -1, 0},
+
+			{0, 0, 1}, //4
+			{0, 0, -1}
+		};
+
+		for (auto& v : _vertices)
+		{
+			v.x *= scale;
+			v.x += x;
+			v.y *= scale;
+			v.y += y;
+			v.z *= scale;
+			v.z += z;
+		}
+
+		//Edges Now
+		std::vector<edge> _edges{
+			{0, 3},
+			{0, 2},
+			{0, 4},
+			{0,5},
+
+			{1, 2},
+			{1,3},
+			{1,4},
+			{1,5},
+
+			{2,4},
+			{2,5},
+			{3,4},
+			{3,5}
+		};
+		edges = _edges; //I want to put this in its own method, however that's unnecessary as this is static soooo...
+
+		return _vertices;
+	};
+
+	void Project_Circular_Orbit(vector3& _velocity) override {
+		vector3 p_velocity = parentBody.Get_Tangential_Velocity();
+		//We manipulate the velocity so that a perfectly circular orbit is achieved
+		if (x != 0)
+		{
+			_velocity.y = sqrt(mu / x);
+		}
+		if (y != 0)
+		{
+			_velocity.x = sqrt(mu / y);
+		}
+		if (z != 0)
+		{
+			_velocity.x = sqrt(mu / z);
+		}
+
+		_velocity = _velocity + p_velocity; // Adding the parent velocity because we need this to orbit something moving through space, not orbiting where it thought it was.
+
+		//Don't have to return a value because parameter is passed by reference.
+	}
+public:
+	/// <summary>
+	/// Constructor for the Satellite object. It initializes the parent class: Body, and the parentBody attribute.
+	/// </summary>
+	/// <param name="_name"></param>
+	/// <param name="_parentBody"></param>
+	/// <param name="center"></param>
+	/// <param name="_scale"></param>
+	/// <param name="_velocity"></param>
+	/// <param name="_god_pos"></param>
+	/// <param name="override_velocity"></param>
+	Satellite(std::string _name, const Body _parentBody, vector3 center, float _scale, vector3 _velocity, vector3 _god_pos, bool override_velocity = true): 
+		Body(_name, center, _scale, _velocity, _god_pos, override_velocity), parentBody(_parentBody)
+	{
+		//Now do some satellite thingies I guess
+
+	}
+};
+
+int Body::Add_Satellite(const Satellite& sat)
+{
+	satellites.emplace_back(sat);
+	std::cout << name << " has a new satellite: " << sat.name << " | Total number of satellites: " << satellites.size() << "\n";
+	return 0;
+}
 #endif /*ORBITBODY_H*/

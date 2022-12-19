@@ -228,6 +228,11 @@ class Graphyte
 		return newText;
 	}
 
+	vector3 Get_Screen_Dimensions()
+	{
+		return { (float)SCREEN_WIDTH, (float)SCREEN_HEIGHT, 0 };
+	}
+
 	void pixel(float x, float y)
 	{
 		SDL_Point _point = { x + SCREEN_WIDTH / 2, -y + SCREEN_HEIGHT / 2 };

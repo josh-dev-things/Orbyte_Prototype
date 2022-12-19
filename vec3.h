@@ -52,13 +52,21 @@ float Magnitude(vector3 vec)
 	return sqrtf((vec.x * vec.x) + (vec.y * vec.y) + (vec.z * vec.z));
 }
 
+float Distance(vector3 vecFrom, vector3 vecTo)
+{
+	vector3 a = vecTo - vecFrom; //Thank you past me for making those operator overloads 
+	float distance = Magnitude(a);
+	
+	return distance;
+}
+
 vector3 Normalize(vector3 vec)
 {
 	float mag = Magnitude(vec);
 	vector3 norm = {
 		vec.x / mag,
 		vec.y / mag,
-		vec.z / mag // Problem here?
+		vec.z / mag
 	};
 	return norm;
 }
