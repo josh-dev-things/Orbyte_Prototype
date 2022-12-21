@@ -25,7 +25,6 @@ const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 800;
 const int SCREEN_FPS = 60;
 const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
-const float km_per_pixel = 750;
 const int MAX_FPS = 60;
 float time_scale = 1;
 bool LMB_Down = false;
@@ -37,7 +36,7 @@ TTF_Font* gFont = NULL;
 SDL_Window* gWindow = NULL;
 
 //Camera
-Camera gCamera({0, 0, -150000}, 1);
+Camera gCamera({0, 0, -1.5E9}, 1);
 
 //The window renderer
 SDL_Renderer* gRenderer = NULL;
@@ -183,23 +182,15 @@ int main(int argc, char* args[])
 		//Experimenting with orbit body
 		vector3 SUN_POS = { 0, 0, 0 };
 		std::vector<Body> orbiting_bodies;
-		Body mercury("mercury", {0, 59000, 0}, 2000, { 59000, 0, 0 }, SUN_POS, true);
-		Satellite merc_sat("mercury_sat", mercury, { 1200, 0, 0 }, 0.1, {0,0,0}, true);
-		mercury.Add_Satellite(merc_sat);
-		//mercury.GetBodyData()
-		//body venus(0, 0, 108000, 12000, {0, 0, 0}, SUN_POS);//108000
-		//body earth(0, 148000, 0, 6000, { 0, 0, 0 }, SUN_POS);
-		orbiting_bodies.emplace_back(mercury);
-		//orbiting_bodies.emplace_back(venus);
-		//orbiting_bodies.emplace_back(earth);
-		/*orbiting_bodies.emplace_back(mars);
-		orbiting_bodies.emplace_back(jupiter);*/
-
+		//OK ALL NUMBERS NEED TO BE ENTERED IN  MegaMetres
+		Body earth = Body("earth", {0, 1.49E11, 0}, 6.37E6, { 30000, 0, 0 }, SUN_POS, false); //152000000000 metres. That number is too large so we have a problem
+		
+		orbiting_bodies.emplace_back(earth); 
 
 		//Mainloop time 
 		while (!quit)
-		{
-			//GRAPHICS
+		{ 
+			//GRAPHICS 
 
 			//render sun
 			vector3 _ss_sun_pos = gCamera.WorldSpaceToScreenSpace(SUN_POS, SCREEN_HEIGHT, SCREEN_WIDTH);
@@ -209,16 +200,8 @@ int main(int argc, char* args[])
 			{
 
 				b.Update_Body(deltaTime, time_scale); // Update body
-
-				SDL_Color textColor = { 255, 255, 255 };
-				//writeText(gTextTexture, b.GetBodyData(), textColor);
-				/*writeText(gTextTexture, "_", textColor);*/
-
-				/*
-					- Time scale now works! Achieved by multiplying the step size by the same factor that t was multiplied by.
-					Why does this work? NO IDEA.
-					- BREAKS FOR ANYTHING NEAR 100. I THINK TIME SCALE 10 WORKS BEST
-				*/
+				//std::cout<<b.Get_Position().Debug()<<"\n"; 
+				//std::cout << b.Calculate_Period() / (60 * 60 * 24) << " Days\n"; 
 				b.Draw(graphyte, gCamera);
 			}
 
@@ -251,7 +234,7 @@ int main(int argc, char* args[])
 								printf("SET TIME SCALE TO 1 \n");
 							}
 							else if (time_scale == 1) {
-								time_scale = 10;
+								time_scale = 10; 
 								printf("SET TIME SCALE TO 10 \n");
 							}
 							else if (time_scale > 1) {
@@ -302,12 +285,14 @@ int main(int argc, char* args[])
 					if (sdl_event.wheel.y > 0) //Scroll up
 					{
 						//Zoom in
-						gCamera.position.z += 10000;
+						gCamera.position.z *= 1.4;
+						std::cout << "Moved Camera to new pos: " << gCamera.position.z;
 					}
 					if (sdl_event.wheel.y < 0) //Scroll down
 					{
 						//zoom out
-						gCamera.position.z -= 10000;
+						gCamera.position.z /= 1.4;
+						std::cout << "Moved Camera to new pos: " << gCamera.position.z;
 					}
 					break;
 				}

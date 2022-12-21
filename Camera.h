@@ -85,7 +85,7 @@ private: vector3 camera_rotation;
 		if (pos.z < clipping_z)
 		{
 			//DONT DRAW IT
-			printf("Culled a stupid vertex hopefully \n");
+			//printf("Culled a stupid vertex hopefully \n");
 			return { 0, 0, -1 };
 		}
 		else {

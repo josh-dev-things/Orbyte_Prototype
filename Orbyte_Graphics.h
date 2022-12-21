@@ -235,9 +235,12 @@ class Graphyte
 
 	void pixel(float x, float y)
 	{
-		SDL_Point _point = { x + SCREEN_WIDTH / 2, -y + SCREEN_HEIGHT / 2 };
+		if (x < SCREEN_WIDTH && y < SCREEN_HEIGHT)
+		{
+			SDL_Point _point = { x + SCREEN_WIDTH / 2, -y + SCREEN_HEIGHT / 2 };
 
-		points.emplace_back(_point);
+			points.emplace_back(_point);
+		}
 	}
 
 	void line(float x1, float y1, float x2, float y2)

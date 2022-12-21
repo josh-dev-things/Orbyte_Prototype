@@ -15,12 +15,19 @@
 #include "Orbyte_Graphics.h"
 #include "Camera.h"
 
+class CentralBody
+{
+	double mass = 1.989E30; //I want to make this a constant, but we want to let the user change these parameters.
+	double mu;
+	const double Gravitational_Constant = 6.6743E-11;
+};
+
 class Satellite; //A Forward Declaration so nothing collapses
 
 class Body
 {
 private:
-	const float god_mass = 5.9 * pow(10, 24); //We are dealing with very large numbers... Also god mass is about to be redundant :)
+	const double god_mass = 1.989E30; //We are dealing with very large numbers... Also god mass is about to be redundant :)
 	vector3 god_pos;
 	std::vector<Satellite> satellites;
 
@@ -30,17 +37,19 @@ protected:
 	vector3 last_trail_point;
 	std::vector<vector3> trail_points;
 	std::string name;
-	float x, y, z;
-	float scale;
+	double scale;
 
 	vector3 start_pos;
 	vector3 start_vel;
-	float time_since_start = 0;
+	double time_since_start = 0;
 
 	//Orbit information
+	vector3 position{ 0, 0, 0 };
+	double radius;
 	vector3 velocity{ 0,0,0 };
-	float mu = 0;
+	double mu = 0;
 
+	//ALL CALCULATIONS ARE DONE IN MEGA-METRES
 	std::vector<vector3> two_body_ode(float t, vector3 _r, vector3 _v)
 	{
 		vector3 r = _r; //r.z is wrong
@@ -51,7 +60,7 @@ protected:
 		if (nr.z == 0) { nr.z = 1; r.z = 0; }
 		if (nr.y == 0) { nr.y = 1; r.y = 0; }
 		if (nr.x == 0) { nr.x = 1; r.x = 0; }
-		float mag = Magnitude(r);
+		double mag = Magnitude(r);
 		vector3 a = {
 			(-mu * r.x) / (pow(mag, 3)),
 			(-mu * r.y) / (pow(mag, 3)),
@@ -83,24 +92,24 @@ protected:
 	virtual void Project_Circular_Orbit(vector3& _velocity)
 	{
 		//We manipulate the velocity so that a perfectly circular orbit is achieved
-		if (x != 0)
+		if (position.x != 0)
 		{
-			_velocity.y = sqrt(mu / x);
+			_velocity.y = sqrt(mu / position.x);
 		}
-		if (y != 0)
+		if (position.y != 0)
 		{
-			_velocity.x = sqrt(mu / y);
+			_velocity.x = sqrt(mu / position.y);
 		}
-		if (z != 0)
+		if (position.z != 0)
 		{
-			_velocity.x = sqrt(mu / z);
+			_velocity.x = sqrt(mu / position.z);
 		}
 
 		//Don't have to return a value because parameter is passed by reference.
 	}
 
 	//Hooray, polymorphism!
-	virtual std::vector<vector3> Generate_Vertices(float scale)
+	virtual std::vector<vector3> Generate_Vertices(double scale)
 	{
 		std::vector<vector3> _vertices{
 			{1, 0, 0},
@@ -116,11 +125,11 @@ protected:
 		for (auto& v : _vertices)
 		{
 			v.x *= scale;
-			v.x += x;
+			v.x += position.x;
 			v.y *= scale;
-			v.y += y;
+			v.y += position.y;
 			v.z *= scale;
-			v.z += z;
+			v.z += position.z;
 		}
 
 		//Edges Now
@@ -147,20 +156,14 @@ protected:
 
 	void MoveToPos(vector3 new_pos)
 	{
-		vector3 old_pos = { x, y ,z };
-		x = new_pos.x;
-		y = new_pos.y;
-		z = new_pos.z;
+		vector3 old_pos = position;
+		position = new_pos;
 
-		float dx = x - old_pos.x;
-		float dy = y - old_pos.y;
-		float dz = z - old_pos.z;
+		vector3 d = position - old_pos;
 
 		for (auto& p : vertices)
 		{
-			p.x += dx;
-			p.y += dy;
-			p.z += dz;
+			p = p + d;
 		}
 	}
 
@@ -170,9 +173,7 @@ protected:
 		{
 			vector3 point = p;
 			//centroid adjustments
-			point.x -= x;
-			point.y -= y;
-			point.z -= z;
+			point = point - position;
 
 			//float start_magnitude = Magnitude(point);
 
@@ -192,23 +193,19 @@ protected:
 			point.y = std::sin(rad) * point.x + std::cos(rad) * point.y;
 
 			//centroid adjustments
-			point.x += x;
-			point.y += y;
-			point.z += z;
+			point = point + position;
 
 			p = point;
 		}
 	}
 
 public: 
-	Body(std::string _name, vector3 center, float _scale, vector3 _velocity, vector3 _god_pos, bool override_velocity = true)
+	Body(std::string _name, vector3 center, double _scale, vector3 _velocity, vector3 _god_pos, bool override_velocity = true)
 	{
+		position = center;
+		radius = Magnitude(position);
 
-		x = center.x;
-		y = center.y;
-		z = center.z;
-
-		mu = 6.6743 * pow(10, -11) * god_mass;
+		mu = 6.6743E-11 * god_mass;
 		name = _name;
 		if (override_velocity)
 		{
@@ -220,7 +217,7 @@ public:
 
 		scale = _scale;
 
-		start_pos = { x, y, z };
+		start_pos = position;
 		std::cout << "Instantiated Orbiting Body with initial position: " << start_pos.Debug() << " and velocity: " << velocity.Debug() << "\n";
 		
 		vertices = Generate_Vertices(scale);
@@ -228,7 +225,7 @@ public:
 
 	OrbitBodyData GetOrbitBodyData() //To be used when saving to a .orbyte file
 	{
-		return OrbitBodyData(name, {x, y, z}, scale, velocity, false);
+		return OrbitBodyData(name, position, scale, velocity, false);
 	}
 
 	std::string GetBodyData() //For debugging purposes...
@@ -239,9 +236,7 @@ public:
 
 	void Reset()
 	{
-		x = start_pos.x;
-		y = start_pos.y;
-		z = start_pos.z;
+		position = start_pos;
 
 		velocity = start_vel;
 	}
@@ -256,17 +251,17 @@ public:
 	{
 		time_since_start += delta * time_scale;
 		rotate(0.0005f * time_scale, 0.0005f * time_scale, 0.0005f * time_scale);
-		vector3 position = {x, y, z}; //god_pos is normally origin, but not for a satellite.
+		vector3 this_pos = position; //god_pos is normally origin, but not for a satellite.
 		float t = (delta / 1000);
-		std::vector<vector3> sim_step = rk4_step(t * time_scale, position, velocity, t * time_scale / 100);
-		position = sim_step[0];
+		std::vector<vector3> sim_step = rk4_step(t * time_scale, this_pos, velocity, t * time_scale / 100);
+		this_pos = sim_step[0];
 		//if (position.z > 0) { std::cout << position.Debug() << "\n"; std::cout << velocity.Debug() << "\n"; }
-		MoveToPos(position);
+		MoveToPos(this_pos);
 
-		if (Magnitude(position - last_trail_point) > Magnitude(velocity)/ 24)
+		if (Magnitude(this_pos - last_trail_point) > Magnitude(velocity)/ 24)
 		{
-			trail_points.emplace_back(position);
-			last_trail_point = position;
+			trail_points.emplace_back(this_pos);
+			last_trail_point = this_pos;
 			//printf("Added Point");
 		}
 		if (trail_points.size() > 24)
@@ -346,7 +341,20 @@ public:
 
 	vector3 Get_Position()
 	{
-		return{ x,y,z };
+		return position;
+	}
+
+	/// <summary>
+	/// The amount of time in seconds for the body to complete 1 orbit
+	/// </summary>
+	/// <returns>Time period</returns>
+	double Calculate_Period()
+	{
+		double T = 2 * 3.14159265359 * sqrt((pow(radius, 3) / mu)); //THIS DOES NOT GIVE A GOOD VALUE :(
+		double length_of_orbit = 2 * 3.14159265359 * radius; //YEP
+		double t = length_of_orbit / Magnitude(velocity); //THIS GIVES CORRECT VALUE
+		std::cout << "Orbit Characteristics: \n" << T << " seconds | Calculated orbit period\n" << length_of_orbit << " metres\n" << t << " other t value\n" << mu << "\n";
+		return T;
 	}
 };
 
@@ -354,7 +362,7 @@ class Satellite : public Body
 {
 private:
 	Body parentBody;
-	std::vector<vector3> Generate_Vertices(float scale) override {
+	std::vector<vector3> Generate_Vertices(double scale) override {
 		//thing
 		std::vector<vector3> _vertices{
 			{1, 0, 0},
@@ -370,11 +378,11 @@ private:
 		for (auto& v : _vertices)
 		{
 			v.x *= scale;
-			v.x += x;
+			v.x += position.x;
 			v.y *= scale;
-			v.y += y;
+			v.y += position.y;
 			v.z *= scale;
-			v.z += z;
+			v.z += position.z;
 		}
 
 		//Edges Now
@@ -402,17 +410,17 @@ private:
 	void Project_Circular_Orbit(vector3& _velocity) override {
 		vector3 p_velocity = parentBody.Get_Tangential_Velocity();
 		//We manipulate the velocity so that a perfectly circular orbit is achieved
-		if (x != 0)
+		if (position.x != 0)
 		{
-			_velocity.y = sqrt(mu / x);
+			_velocity.y = sqrt(mu / position.x);
 		}
-		if (y != 0)
+		if (position.y != 0)
 		{
-			_velocity.x = sqrt(mu / y);
+			_velocity.x = sqrt(mu / position.y);
 		}
-		if (z != 0)
+		if (position.z != 0)
 		{
-			_velocity.x = sqrt(mu / z);
+			_velocity.x = sqrt(mu / position.z);
 		}
 
 		_velocity = _velocity + p_velocity; // Adding the parent velocity because we need this to orbit something moving through space, not orbiting where it thought it was.
@@ -430,7 +438,7 @@ public:
 	/// <param name="_velocity"></param>
 	/// <param name="override_velocity"></param>
 	Satellite(std::string _name, Body _parentBody, vector3 center, float _scale, vector3 _velocity, bool override_velocity = true): 
-		Body(_name, center, _scale, _velocity, _parentBody.Get_Position(), override_velocity), parentBody(_parentBody)
+		Body(_name, center + _parentBody.Get_Position(), _scale, _velocity, _parentBody.Get_Position(), override_velocity), parentBody(_parentBody)
 	{
 		//Now do some satellite thingies I guess
 
