@@ -28,7 +28,6 @@ class Body
 {
 private:
 	const double god_mass = 1.989E30; //We are dealing with very large numbers... Also god mass is about to be redundant :)
-	vector3 god_pos;
 	std::vector<Satellite> satellites;
 
 protected:
@@ -49,7 +48,9 @@ protected:
 	vector3 velocity{ 0,0,0 };
 	double mu = 0;
 
-	//ALL CALCULATIONS ARE DONE IN MEGA-METRES
+	//Label
+	Text* label = NULL;
+	
 	std::vector<vector3> two_body_ode(float t, vector3 _r, vector3 _v)
 	{
 		vector3 r = _r; //r.z is wrong
@@ -159,11 +160,11 @@ protected:
 		vector3 old_pos = position;
 		position = new_pos;
 
-		vector3 d = position - old_pos;
+		vector3 delta = position - old_pos;
 
 		for (auto& p : vertices)
 		{
-			p = p + d;
+			p = p + delta;
 		}
 	}
 
@@ -200,10 +201,14 @@ protected:
 	}
 
 public: 
-	Body(std::string _name, vector3 center, double _scale, vector3 _velocity, vector3 _god_pos, bool override_velocity = true)
+	Body(std::string _name, vector3 center, double _scale, vector3 _velocity, vector3 god_pos, Graphyte& g, bool override_velocity = true)
 	{
 		position = center;
 		radius = Magnitude(position);
+
+		label = g.CreateText(_name, 20);
+		label->pos_x = 0;
+		label->pos_y = 0;
 
 		mu = 6.6743E-11 * god_mass;
 		name = _name;
@@ -213,7 +218,6 @@ public:
 		}
 		velocity = _velocity;
 		start_vel = velocity;
-		god_pos = _god_pos;
 
 		scale = _scale;
 
@@ -312,6 +316,10 @@ public:
 		}
 
 		verts.clear();
+
+		//Move Label
+		vector3 label_pos = c.WorldSpaceToScreenSpace(position, screen_dimensions.x, screen_dimensions.y);
+		label->Set_Position(label_pos);
 
 		Draw_Satellites(g, c);
 
@@ -437,8 +445,8 @@ public:
 	/// <param name="_scale"></param>
 	/// <param name="_velocity"></param>
 	/// <param name="override_velocity"></param>
-	Satellite(std::string _name, Body _parentBody, vector3 center, float _scale, vector3 _velocity, bool override_velocity = true): 
-		Body(_name, center + _parentBody.Get_Position(), _scale, _velocity, _parentBody.Get_Position(), override_velocity), parentBody(_parentBody)
+	Satellite(std::string _name, Body _parentBody, vector3 center, float _scale, vector3 _velocity, Graphyte& g, bool override_velocity = true): 
+		Body(_name, center + _parentBody.Get_Position(), _scale, _velocity, _parentBody.Get_Position(), g, override_velocity), parentBody(_parentBody)
 	{
 		//Now do some satellite thingies I guess
 

@@ -21,13 +21,13 @@ class GTexture
 {
 private:
 	//The actual hardware texture
-	SDL_Texture* mTexture = NULL;
+	SDL_Texture* mTexture;
 
 	//The renderer
-	SDL_Renderer* renderer = NULL;
+	SDL_Renderer* renderer;
 
 	//The font
-	TTF_Font* font = NULL;
+	TTF_Font* font;
 
 	//Image dimensions
 	int mWidth;
@@ -45,6 +45,19 @@ public:
 		mWidth = 0;
 		mHeight = 0;
 
+	}
+
+	GTexture(const GTexture& source) : GTexture{&*source.renderer, &*source.font}
+	{
+		std::cout << "Copy constructor";
+	}
+
+	GTexture(GTexture&& source) : mTexture{ source.mTexture }, font{ source.font }, renderer{ source.renderer }, mWidth{ source.mWidth }, mHeight{source.mHeight}
+	{
+		std::cout << "Move constructor apparently";
+		source.mTexture = nullptr;
+		source.font = nullptr;
+		source.renderer = nullptr;
 	}
 
 	//Deallocates memory
@@ -97,7 +110,7 @@ public:
 	//Creates image from font string
 	bool loadFromRenderedText(std::string textureText, SDL_Color textColor)
 	{
-		//Get rid of preexisting texture
+		////Get rid of preexisting texture
 		free();
 
 		//Render text surface
@@ -124,17 +137,17 @@ public:
 			//Get rid of old surface
 			SDL_FreeSurface(textSurface);
 		}
-
 		//Return success
 		return mTexture != NULL;
 	}
 
 	//Deallocates texture
-	void free()
-	{
+ 	void free()
+ 	{
 		//Free texture if it exists
 		if (mTexture != NULL)
 		{
+			//printf("FREE TEXTURE\n");
 			SDL_DestroyTexture(mTexture);
 			mTexture = NULL;
 			renderer = NULL;
@@ -149,7 +162,20 @@ public:
 	{
 		//Set rendering space and render to screen
 		SDL_Rect renderQuad = { x, y, mWidth, mHeight };
-		SDL_RenderCopy(renderer, mTexture, NULL, &renderQuad);
+		if (mTexture != NULL)
+		{
+			SDL_Rect dst;
+			dst.x = 0;
+			dst.y = 0;
+			//Query the texture to get its width and height to use
+
+			SDL_QueryTexture(mTexture, NULL, NULL, &dst.w, &dst.h);
+			//printf("Problems accessing text: %s\n", SDL_GetError());
+		}
+		if (SDL_RenderCopy(renderer, mTexture, NULL, &renderQuad) == -1) {
+			//mTexture seems to be a problem => https://stackoverflow.com/questions/25738096/c-sdl2-error-when-trying-to-render-sdl-texture-invalid-texture FIXED
+			printf("Problems rendering text: %s\n", SDL_GetError());
+		}
 	}
 
 	//Accessor Methods for retrieving dimensions
@@ -167,27 +193,71 @@ public:
 class Text
 {
 private:
-	GTexture texture;
+	GTexture texture = NULL;
 
 public:
-	int pos_x;
-	int pos_y;
+	int pos_x; //Position along x axis in screenspace
+	int pos_y; //Position along y axis in screenspace
+	std::string text;
+	bool visible = true;
 
-	Text(std::string str, int font_size, std::vector<int> position, SDL_Renderer* _renderer, TTF_Font* _font, SDL_Color color = { 255, 255, 255 })
+	Text(std::string str, int font_size, std::vector<int> position, SDL_Renderer& _renderer, TTF_Font& _font, SDL_Color color = { 255, 255, 255 })
+		: texture(GTexture(&_renderer, &_font))
 	{
 		//Constructor for the text class.
-		GTexture textTexture(_renderer, _font);
-		texture = textTexture;
+		text = str;
 
-		if (!texture.loadFromRenderedText("Text Is Working Correctly", color))
+		if (!texture.loadFromRenderedText(str, color))
 		{
 			printf("Failed to render text texture!\n");
 		}
 		pos_x = position[0];
 		pos_y = position[1];
 	}
-};
 
+	void Set_Position(vector3 pos)
+	{
+		std::cout << "Setting label pos: " << pos.Debug() << "\n";
+		pos_x = pos.x;
+		pos_y = pos.y;
+		visible = pos.z > 0;
+	}
+
+	GTexture& Get_Texture()
+	{
+		return texture;
+	}
+
+	int Render(const vector3 screen_dimensions)
+	{
+		int s_x = screen_dimensions.x;
+		int s_y = screen_dimensions.y;
+		
+		if (pos_x < s_x && pos_y < s_y && visible)
+		{
+			//t->Debug();
+			//x + SCREEN_WIDTH / 2, -y + SCREEN_HEIGHT / 2
+			std::cout << "Trying to render @: " << pos_x << "," << pos_y<<"\n";
+			texture.render(pos_x + (s_x) / 2, -pos_y + (s_y) / 2);
+		}
+		return 0;
+	}
+
+	void Debug()
+	{
+		std::cout << text << "\n";
+	}
+
+	~Text()
+	{
+		free(); //THIS IS GETTING CALLED... PROBABLY BECAUSE YOU ARE AN IDIOT
+	}
+
+	void free()
+	{
+		texture.free();
+	}
+};
 /*
 	Handles all graphics for the application. This includes all pixel writes to the screen; loading and writing to textures; rendering
 */
@@ -196,35 +266,34 @@ class Graphyte
 	private: //Private attributes & Methods
 
 	const float km_per_pixel = 750; //The number of kilometres per pixel on screen.
-	const int SCREEN_WIDTH = 800; //What it says on the tin.
-	const int SCREEN_HEIGHT = 800; //TOM IS A TWIT
+	const double SCREEN_WIDTH = 800; //What it says on the tin.
+	const double SCREEN_HEIGHT = 800;
 
 	SDL_Renderer* Renderer = NULL; //Renderer.
 	TTF_Font* Font = NULL; //True Type Font. Needs to be loaded at init.
-	GTexture TextTexture;
 
-	//std::vector<GTexture> texts; //Vector of text elements to be drawn to the screen.
+	std::vector<Text*> texts; //Vector of text elements to be drawn to the screen.
 	std::vector<SDL_Point> points; //Vector of points to be drawn to the screen. Iterate through & draw each point to screen as a pixel.
 
 	public:  //Public attributes & Methods
 
-	bool Init(SDL_Renderer* _renderer, TTF_Font* _font)
+	bool Init(SDL_Renderer& _renderer, TTF_Font& _font)
 	{
-		Renderer = _renderer;
-		Font = _font;
+		Renderer = &_renderer;
+		Font = &_font;
 		if (Renderer == NULL || Font == NULL)
 		{
 			return false;
 		}
-		TextTexture = GTexture(Renderer, Font);
+
 		return true;
 	}
 
 	//This method instantiates a new Text object and returns it. The new text object will be added to the array of text objects: texts.
-	Text CreateText(std::string str, int font_size, SDL_Color color = { 255, 255, 255 })
+	Text* CreateText(std::string str, int font_size, SDL_Color color = { 255, 255, 255 })
 	{
-		Text newText(str, font_size, {0, 0}, Renderer, Font, color);
-		//texts.emplace_back(newText);
+		Text* newText = new Text(str, font_size, { 0, 0 }, *Renderer, *Font, color);
+		texts.push_back(new Text(str, font_size, { 0, 0 }, *Renderer, *Font, color));
 		return newText;
 	}
 
@@ -273,7 +342,10 @@ class Graphyte
 
 		//Make sure you render GUI!
 		SDL_SetRenderDrawColor(Renderer, 255, 255, 255, 255);
-		TextTexture.render((SCREEN_WIDTH - TextTexture.getWidth()) / 2, (SCREEN_HEIGHT - TextTexture.getHeight()) / 2);
+		for (Text* t : texts)
+		{
+			t->Render({ SCREEN_WIDTH, SCREEN_HEIGHT, 0 });
+		}
 
 		SDL_RenderPresent(Renderer);
 		points.clear();
@@ -281,8 +353,11 @@ class Graphyte
 
 	void free()
 	{
-		TextTexture.free();
-		//texts.clear();
+		for (auto& t : texts)
+		{
+			t->free();
+		}
+		texts.clear();
 		points.clear();
 	}
 };

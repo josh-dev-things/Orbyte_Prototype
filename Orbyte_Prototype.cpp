@@ -127,7 +127,7 @@ bool init()
 	}
 
 	//Starting Graphyte
-	if (!graphyte.Init(gRenderer, gFont))
+	if (!graphyte.Init(*gRenderer, *gFont))
 	{
 		printf("Graphyte could not initialize!");
 		return false;
@@ -183,12 +183,12 @@ int main(int argc, char* args[])
 		vector3 SUN_POS = { 0, 0, 0 };
 		std::vector<Body> orbiting_bodies;
 		//OK ALL NUMBERS NEED TO BE ENTERED IN  MegaMetres
-		Body earth = Body("earth", {0, 1.49E11, 0}, 6.37E6, { 30000, 0, 0 }, SUN_POS, false); //152000000000 metres. That number is too large so we have a problem
+		Body earth = Body("earth", {0, 1.49E11, 0}, 6.37E6, { 30000, 0, 0 }, SUN_POS, graphyte, false); //152000000000 metres. That number is too large so we have a problem
 		
 		orbiting_bodies.emplace_back(earth); 
 
 		//Mainloop time 
-		while (!quit)
+		while (!quit)    
 		{ 
 			//GRAPHICS 
 

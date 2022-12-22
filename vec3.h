@@ -57,7 +57,7 @@ struct vector3
 
 double Magnitude(vector3 vec)
 {
-	return sqrtf((vec.x * vec.x) + (vec.y * vec.y) + (vec.z * vec.z));
+	return sqrt((vec.x * vec.x) + (vec.y * vec.y) + (vec.z * vec.z));
 }
 
 double Distance(vector3 vecFrom, vector3 vecTo)
@@ -70,7 +70,7 @@ double Distance(vector3 vecFrom, vector3 vecTo)
 
 vector3 Normalize(vector3 vec)
 {
-	float mag = Magnitude(vec);
+	double mag = Magnitude(vec);
 	vector3 norm = {
 		vec.x / mag,
 		vec.y / mag,
