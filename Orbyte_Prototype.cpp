@@ -180,12 +180,15 @@ int main(int argc, char* args[])
 	{
 		
 		//Experimenting with orbit body
-		vector3 SUN_POS = { 0, 0, 0 };
+		CentralBody Sun = CentralBody();
 		std::vector<Body> orbiting_bodies;
-		//OK ALL NUMBERS NEED TO BE ENTERED IN  MegaMetres
-		Body earth = Body("earth", {0, 1.49E11, 0}, 6.37E6, { 30000, 0, 0 }, SUN_POS, graphyte, false); //152000000000 metres. That number is too large so we have a problem
 		
+		Body earth = Body("Earth", {0, 1.49E11, 0}, 6.37E6, { 30000, 0, 0 }, Sun.position, graphyte, false); //152000000000 metres. That number is too large so we have a problem
+		Body mercury = Body("Mercury", { 0, 5.06E10, 0 }, 2.44E6, { 47000, 0, 0 }, Sun.position, graphyte, false);
+
+
 		orbiting_bodies.emplace_back(earth); 
+		orbiting_bodies.emplace_back(mercury);
 
 		//Mainloop time 
 		while (!quit)    
@@ -193,15 +196,14 @@ int main(int argc, char* args[])
 			//GRAPHICS 
 
 			//render sun
-			vector3 _ss_sun_pos = gCamera.WorldSpaceToScreenSpace(SUN_POS, SCREEN_HEIGHT, SCREEN_WIDTH);
-			if (_ss_sun_pos.z > 0) { graphyte.pixel(_ss_sun_pos.x, _ss_sun_pos.y); }
+			Sun.Draw(graphyte, gCamera);
 
 			for (auto& b : orbiting_bodies)
 			{
 
 				b.Update_Body(deltaTime, time_scale); // Update body
 				//std::cout<<b.Get_Position().Debug()<<"\n"; 
-				//std::cout << b.Calculate_Period() / (60 * 60 * 24) << " Days\n"; 
+				b.Calculate_Period();
 				b.Draw(graphyte, gCamera);
 			}
 

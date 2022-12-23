@@ -17,9 +17,117 @@
 
 class CentralBody
 {
-	double mass = 1.989E30; //I want to make this a constant, but we want to let the user change these parameters.
-	double mu;
+	/*
+		Why does this class not inherit from Orbit Body? Because this is designed to be static. Any similarity between class attributes and methods
+		is due to how graphics have been implemented and consistency with naming conventions, not a design oversight.
+	*/
+private:
+	std::vector<vector3> vertices;
+	std::vector<edge> edges;
+
+	void Generate_Vertices(double scale)
+	{
+		std::vector<vector3> _vertices{
+			{1, 0, 0},
+			{-1, 0, 0},
+
+			{0, 1, 0}, //2
+			{0, -1, 0},
+
+			{0, 0, 1}, //4
+			{0, 0, -1}
+		};
+
+		for (auto& v : _vertices)
+		{
+			v.x *= scale;
+			v.x += position.x;
+			v.y *= scale;
+			v.y += position.y;
+			v.z *= scale;
+			v.z += position.z;
+		}
+
+		vertices = _vertices;
+
+		//Edges Now
+		std::vector<edge> _edges{
+			{0, 3},
+			{0, 2},
+			{0, 4},
+			{0,5},
+
+			{1, 2},
+			{1,3},
+			{1,4},
+			{1,5},
+
+			{2,4},
+			{2,5},
+			{3,4},
+			{3,5}
+		};
+		edges = _edges; //I want to put this in its own method, however that's unnecessary as this is static soooo...
+
+	}
+
+public:
+	double mass = 1.989E30;
+	double mu = 0;
 	const double Gravitational_Constant = 6.6743E-11;
+	vector3 position;
+
+	CentralBody(double _mass = 1.989E30, double _scale=6.96E8)
+	{
+		mu = Gravitational_Constant * mass;
+		position = { 0, 0, 0 };
+		Generate_Vertices(_scale);
+	}
+
+	int Draw(Graphyte& g, Camera& c)
+	{
+		vector3 screen_dimensions = g.Get_Screen_Dimensions(); //Vector3 containing Screen Dimensions, we ignore z
+		std::vector<vector3> verts = Get_Vertices(); //Why are we using an accessor inside the class? Because its tidy and we need to get all the vertices in a new structure so that we can write the screen space positions by reference.
+
+		for (auto& p : verts)
+		{
+			p = c.WorldSpaceToScreenSpace(p, screen_dimensions.x, screen_dimensions.y);
+
+			if (p.z > 0)
+			{
+				g.pixel(p.x, p.y);
+			}
+		}
+
+		for (auto edg : edges)
+		{
+			if (verts[edg.a].z > 0 && verts[edg.b].z > 0)
+			{
+				g.line(verts[edg.a].x,
+					verts[edg.a].y,
+					verts[edg.b].x,
+					verts[edg.b].y
+				);
+			}
+		}
+
+		verts.clear();
+
+		return 0;
+	}
+
+	std::vector<vector3> Get_Vertices()
+	{
+		//Return vertices
+		return vertices;
+	}
+
+	std::vector<edge> Get_Edges()
+	{
+		return edges;
+	}
+
+
 };
 
 class Satellite; //A Forward Declaration so nothing collapses
@@ -35,7 +143,6 @@ protected:
 	std::vector<edge> edges;
 	vector3 last_trail_point;
 	std::vector<vector3> trail_points;
-	std::string name;
 	double scale;
 
 	vector3 start_pos;
@@ -201,14 +308,15 @@ protected:
 	}
 
 public: 
+	std::string name;
 	Body(std::string _name, vector3 center, double _scale, vector3 _velocity, vector3 god_pos, Graphyte& g, bool override_velocity = true)
 	{
 		position = center;
 		radius = Magnitude(position);
 
 		label = g.CreateText(_name, 20);
-		label->pos_x = 0;
-		label->pos_y = 0;
+		label->pos_x = 100;
+		label->pos_y = 100;
 
 		mu = 6.6743E-11 * god_mass;
 		name = _name;
@@ -283,7 +391,8 @@ public:
 	int Draw(Graphyte& g, Camera& c)
 	{
 		vector3 screen_dimensions = g.Get_Screen_Dimensions(); //Vector3 containing Screen Dimensions, we ignore z
-		std::vector<vector3> verts = Get_Vertices(); //Why are we using an accessor inside the class? Because its tidy and we need to get all the vertices in a new structure
+		std::vector<vector3> verts = Get_Vertices(); //Why are we using an accessor inside the class? Because its tidy and we need to get all the vertices in a new structure so that we can write the screen space positions by reference.
+
 		for (auto& p : verts)
 		{
 			p = c.WorldSpaceToScreenSpace(p, screen_dimensions.x, screen_dimensions.y);
@@ -361,7 +470,7 @@ public:
 		double T = 2 * 3.14159265359 * sqrt((pow(radius, 3) / mu)); //THIS DOES NOT GIVE A GOOD VALUE :(
 		double length_of_orbit = 2 * 3.14159265359 * radius; //YEP
 		double t = length_of_orbit / Magnitude(velocity); //THIS GIVES CORRECT VALUE
-		std::cout << "Orbit Characteristics: \n" << T << " seconds | Calculated orbit period\n" << length_of_orbit << " metres\n" << t << " other t value\n" << mu << "\n";
+		std::cout << name <<" Orbit Characteristics: \n" << T << " seconds | Calculated orbit period\n" << length_of_orbit << " metres\n" << t << " other t value\n" << mu << "\n";
 		return T;
 	}
 };

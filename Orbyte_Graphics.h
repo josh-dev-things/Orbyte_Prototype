@@ -215,6 +215,17 @@ public:
 		pos_y = position[1];
 	}
 
+	int Set_Text(std::string str, SDL_Color color = {255,255,255})
+	{
+		text = str;
+		if (!texture.loadFromRenderedText(str, color))
+		{
+			printf("Failed to render text texture!\n");
+			return -1;
+		}
+		return 0;
+	}
+
 	void Set_Position(vector3 pos)
 	{
 		std::cout << "Setting label pos: " << pos.Debug() << "\n";
@@ -238,14 +249,14 @@ public:
 			//t->Debug();
 			//x + SCREEN_WIDTH / 2, -y + SCREEN_HEIGHT / 2
 			std::cout << "Trying to render @: " << pos_x << "," << pos_y<<"\n";
-			texture.render(pos_x + (s_x) / 2, -pos_y + (s_y) / 2);
+			texture.render(pos_x + (s_x - texture.getWidth()) / 2, -pos_y + (s_y - texture.getHeight()) / 2);
 		}
 		return 0;
 	}
 
 	void Debug()
 	{
-		std::cout << text << "\n";
+		std::cout << text<<" | "<<pos_x << "\n";
 	}
 
 	~Text()
@@ -293,7 +304,7 @@ class Graphyte
 	Text* CreateText(std::string str, int font_size, SDL_Color color = { 255, 255, 255 })
 	{
 		Text* newText = new Text(str, font_size, { 0, 0 }, *Renderer, *Font, color);
-		texts.push_back(new Text(str, font_size, { 0, 0 }, *Renderer, *Font, color));
+		texts.push_back(newText);
 		return newText;
 	}
 
