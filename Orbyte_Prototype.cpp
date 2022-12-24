@@ -25,7 +25,7 @@ const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 800;
 const int SCREEN_FPS = 60;
 const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
-const int MAX_FPS = 60;
+const int MAX_FPS = 120;
 float time_scale = 1;
 bool LMB_Down = false;
 
@@ -183,12 +183,18 @@ int main(int argc, char* args[])
 		CentralBody Sun = CentralBody();
 		std::vector<Body> orbiting_bodies;
 		
-		Body earth = Body("Earth", {0, 1.49E11, 0}, 6.37E6, { 30000, 0, 0 }, Sun.position, graphyte, false); //152000000000 metres. That number is too large so we have a problem
-		Body mercury = Body("Mercury", { 0, 5.06E10, 0 }, 2.44E6, { 47000, 0, 0 }, Sun.position, graphyte, false);
+		Body earth = Body("Earth", {0, 1.49E11, 0}, 6.37E6, { 30000, 0, 0 }, Sun, graphyte, false); //152000000000 metres. That number is too large so we have a problem
+		Body mercury = Body("Mercury", { 0, 5.06E10, 0 }, 2.44E6, { 47000, 0, 0 }, Sun, graphyte, false);
+		Body venus = Body("Venus", { 0, 1E11, 0 }, 6E6, { 35000, 0, 0 }, Sun, graphyte, false);
 
 
 		orbiting_bodies.emplace_back(earth); 
 		orbiting_bodies.emplace_back(mercury);
+		orbiting_bodies.emplace_back(venus);
+
+		//DEBUG
+		Text* text_FPS_Display = graphyte.CreateText("TESTING TEXT DEBUG", 20);
+		text_FPS_Display->Set_Position({ 0, 0, 0 });
 
 		//Mainloop time 
 		while (!quit)    
@@ -203,7 +209,7 @@ int main(int argc, char* args[])
 
 				b.Update_Body(deltaTime, time_scale); // Update body
 				//std::cout<<b.Get_Position().Debug()<<"\n"; 
-				b.Calculate_Period();
+				//b.Calculate_Period();
 				b.Draw(graphyte, gCamera);
 			}
 
@@ -236,8 +242,8 @@ int main(int argc, char* args[])
 								printf("SET TIME SCALE TO 1 \n");
 							}
 							else if (time_scale == 1) {
-								time_scale = 10; 
-								printf("SET TIME SCALE TO 10 \n");
+								time_scale = 86400;
+								printf("SET TIME SCALE TO 86400 \n");
 							}
 							else if (time_scale > 1) {
 								time_scale = 0.1;
@@ -288,22 +294,17 @@ int main(int argc, char* args[])
 					{
 						//Zoom in
 						gCamera.position.z *= 1.4;
-						std::cout << "Moved Camera to new pos: " << gCamera.position.z;
+						std::cout << "Moved Camera to new pos: " << gCamera.position.z << "\n";
 					}
 					if (sdl_event.wheel.y < 0) //Scroll down
 					{
 						//zoom out
 						gCamera.position.z /= 1.4;
-						std::cout << "Moved Camera to new pos: " << gCamera.position.z;
+						std::cout << "Moved Camera to new pos: " << gCamera.position.z << "\n";
 					}
 					break;
 				}
 			}
-
-			/*if (LMB_Down)
-			{
-				gCamera.End_Rotate(current_mouse_x, current_mouse_y);
-			}*/
 
 			//DELAY UNTIL END
 			deltaTime = Update_Clock();
@@ -314,10 +315,18 @@ int main(int argc, char* args[])
 				if (delay > 0)
 				{
 					SDL_Delay(delay);
-					//std::cout << (float)1000 / ((float)deltaTime + 1) << " FPS" << "\n";
 				}
 			}
 
+			//Debug FPS
+			float fps = (float)1000 / ((float)deltaTime + 1);
+			if (fps > MAX_FPS)
+			{
+				fps = MAX_FPS;
+			}
+			//std::cout << std::to_string(fps) << "\n";
+			text_FPS_Display->Set_Text(std::to_string(fps));
+			//text_FPS_Display->Render({ SCREEN_WIDTH, SCREEN_HEIGHT, 0 });
 		}	
 
 	}
@@ -326,15 +335,3 @@ int main(int argc, char* args[])
 
 	return 0;
 }
-
-
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file

@@ -135,7 +135,6 @@ class Satellite; //A Forward Declaration so nothing collapses
 class Body
 {
 private:
-	const double god_mass = 1.989E30; //We are dealing with very large numbers... Also god mass is about to be redundant :)
 	std::vector<Satellite> satellites;
 
 protected:
@@ -144,6 +143,7 @@ protected:
 	vector3 last_trail_point;
 	std::vector<vector3> trail_points;
 	double scale;
+	CentralBody central_body;
 
 	vector3 start_pos;
 	vector3 start_vel;
@@ -309,16 +309,17 @@ protected:
 
 public: 
 	std::string name;
-	Body(std::string _name, vector3 center, double _scale, vector3 _velocity, vector3 god_pos, Graphyte& g, bool override_velocity = true)
+	Body(std::string _name, vector3 _center, double _scale, vector3 _velocity, CentralBody c_body, Graphyte& g, bool override_velocity = true):
+		central_body{c_body}
 	{
-		position = center;
+		position = _center;
 		radius = Magnitude(position);
 
-		label = g.CreateText(_name, 20);
+		label = g.CreateText(_name, 16);
 		label->pos_x = 100;
 		label->pos_y = 100;
 
-		mu = 6.6743E-11 * god_mass;
+		mu = central_body.mu;
 		name = _name;
 		if (override_velocity)
 		{
@@ -365,12 +366,13 @@ public:
 		rotate(0.0005f * time_scale, 0.0005f * time_scale, 0.0005f * time_scale);
 		vector3 this_pos = position; //god_pos is normally origin, but not for a satellite.
 		float t = (delta / 1000);
-		std::vector<vector3> sim_step = rk4_step(t * time_scale, this_pos, velocity, t * time_scale / 100);
+		std::vector<vector3> sim_step = rk4_step(t * time_scale, this_pos, velocity, t * time_scale);
 		this_pos = sim_step[0];
 		//if (position.z > 0) { std::cout << position.Debug() << "\n"; std::cout << velocity.Debug() << "\n"; }
 		MoveToPos(this_pos);
 
-		if (Magnitude(this_pos - last_trail_point) > Magnitude(velocity)/ 24)
+
+		if (Magnitude(this_pos - last_trail_point) > (0.5 * radius) / 24)
 		{
 			trail_points.emplace_back(this_pos);
 			last_trail_point = this_pos;
@@ -426,9 +428,19 @@ public:
 
 		verts.clear();
 
-		//Move Label
-		vector3 label_pos = c.WorldSpaceToScreenSpace(position, screen_dimensions.x, screen_dimensions.y);
+		//Make two lines for the orbit body label:
+		vector3 start = position;
+		vector3 end1 = position + vector3{scale, -scale, 0};
+		start = c.WorldSpaceToScreenSpace(start, screen_dimensions.x, screen_dimensions.y);
+		end1 = c.WorldSpaceToScreenSpace(end1, screen_dimensions.x, screen_dimensions.y);
+		vector3 end2 = end1 + vector3{ (double)label->Get_Texture().getWidth(), 0, 0 };
+		vector3 label_pos = end1 + ((end2 - end1) * 0.5);
+		label_pos.y += (double)label->Get_Texture().getHeight() / 2;
+		//Move & Draw Label: Done in the draw method because we need access to the camera and creating a new method makes no sense.
+		g.line(start.x, start.y, end1.x, end1.y);
+		g.line(end1.x, end1.y, end2.x, end2.y);
 		label->Set_Position(label_pos);
+		//label->Render(screen_dimensions);
 
 		Draw_Satellites(g, c);
 
@@ -555,7 +567,7 @@ public:
 	/// <param name="_velocity"></param>
 	/// <param name="override_velocity"></param>
 	Satellite(std::string _name, Body _parentBody, vector3 center, float _scale, vector3 _velocity, Graphyte& g, bool override_velocity = true): 
-		Body(_name, center + _parentBody.Get_Position(), _scale, _velocity, _parentBody.Get_Position(), g, override_velocity), parentBody(_parentBody)
+		Body(_name, center + _parentBody.Get_Position(), _scale, _velocity, CentralBody(), g, override_velocity), parentBody(_parentBody)
 	{
 		//Now do some satellite thingies I guess
 

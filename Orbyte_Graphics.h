@@ -111,13 +111,17 @@ public:
 	bool loadFromRenderedText(std::string textureText, SDL_Color textColor)
 	{
 		////Get rid of preexisting texture
-		free();
+		reset_texture();
 
 		//Render text surface
 		SDL_Surface* textSurface = TTF_RenderText_Solid(font, textureText.c_str(), textColor);
 		if (textSurface == NULL)
 		{
 			printf("Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError());
+			if (font == NULL)
+			{
+				printf("Font pointer was null\n");
+			}
 		}
 		else
 		{
@@ -139,6 +143,17 @@ public:
 		}
 		//Return success
 		return mTexture != NULL;
+	}
+
+	void reset_texture()
+	{
+		if (mTexture != NULL)
+		{
+			SDL_DestroyTexture(mTexture);
+			mTexture = NULL;
+			mWidth = 0;
+			mHeight = 0;
+		}
 	}
 
 	//Deallocates texture
@@ -228,10 +243,10 @@ public:
 
 	void Set_Position(vector3 pos)
 	{
-		std::cout << "Setting label pos: " << pos.Debug() << "\n";
+		//std::cout << "Setting label pos: " << pos.Debug() << "\n";
 		pos_x = pos.x;
 		pos_y = pos.y;
-		visible = pos.z > 0;
+		visible = pos.z >= 0;
 	}
 
 	GTexture& Get_Texture()
@@ -248,7 +263,7 @@ public:
 		{
 			//t->Debug();
 			//x + SCREEN_WIDTH / 2, -y + SCREEN_HEIGHT / 2
-			std::cout << "Trying to render @: " << pos_x << "," << pos_y<<"\n";
+			//std::cout << "Trying to render @: " << pos_x << "," << pos_y<<"\n";
 			texture.render(pos_x + (s_x - texture.getWidth()) / 2, -pos_y + (s_y - texture.getHeight()) / 2);
 		}
 		return 0;
@@ -304,6 +319,7 @@ class Graphyte
 	Text* CreateText(std::string str, int font_size, SDL_Color color = { 255, 255, 255 })
 	{
 		Text* newText = new Text(str, font_size, { 0, 0 }, *Renderer, *Font, color);
+		std::cout << "Created new text: " << newText->text << "\n";
 		texts.push_back(newText);
 		return newText;
 	}
@@ -352,7 +368,6 @@ class Graphyte
 		}
 
 		//Make sure you render GUI!
-		SDL_SetRenderDrawColor(Renderer, 255, 255, 255, 255);
 		for (Text* t : texts)
 		{
 			t->Render({ SCREEN_WIDTH, SCREEN_HEIGHT, 0 });
@@ -373,5 +388,9 @@ class Graphyte
 	}
 };
 
-
+//GUI Helpers
+struct GUI_Block //"Blocks" are collections of text elements to help with positioning them on screen. It is objectively awesome that its possible for me to do this off the framework I've created.
+{
+	std::vector<Text*> elements;
+};
 #endif /*ORBYTE_GRAPHICS_H*/
