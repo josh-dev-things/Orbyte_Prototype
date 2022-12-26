@@ -440,7 +440,14 @@ public:
 		g.line(start.x, start.y, end1.x, end1.y);
 		g.line(end1.x, end1.y, end2.x, end2.y);
 		label->Set_Position(label_pos);
-		//label->Render(screen_dimensions);
+		
+		//Draw arrow
+		Arrow arrow_velocity;
+		vector3 arrow_end = c.WorldSpaceToScreenSpace(position + (velocity * 5E5), screen_dimensions.x, screen_dimensions.y);
+		vector3 dir = arrow_end - start;
+		arrow_velocity.Draw(start, Normalize(dir), Magnitude(dir), g);
+		std::cout << dir.Debug()<<"\n";
+
 
 		Draw_Satellites(g, c);
 

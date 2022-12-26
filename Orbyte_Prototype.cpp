@@ -193,8 +193,13 @@ int main(int argc, char* args[])
 		orbiting_bodies.emplace_back(venus);
 
 		//DEBUG
-		Text* text_FPS_Display = graphyte.CreateText("TESTING TEXT DEBUG", 20);
-		text_FPS_Display->Set_Position({ 0, 0, 0 });
+		GUI_Block Debug_Block(vector3{ -SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 0});
+
+		Text* text_FPS_Display = graphyte.CreateText("TESTING TEXT DEBUG", 10);
+		Debug_Block.Add_Stacked_Element(text_FPS_Display);
+
+		Text* text_Vertex_Count_Display = graphyte.CreateText("Vertices", 10);
+		Debug_Block.Add_Stacked_Element(text_Vertex_Count_Display);
 
 		//Mainloop time 
 		while (!quit)    
@@ -213,6 +218,7 @@ int main(int argc, char* args[])
 				b.Draw(graphyte, gCamera);
 			}
 
+			double debug_no_pixels = graphyte.Get_Number_Of_Points();
 			graphyte.draw();
 			//END GRAPHICS
 
@@ -318,15 +324,16 @@ int main(int argc, char* args[])
 				}
 			}
 
-			//Debug FPS
-			float fps = (float)1000 / ((float)deltaTime + 1);
-			if (fps > MAX_FPS)
+			/*DEBUG*/
+			float debug_fps = (float)1000 / ((float)deltaTime + 1);
+			if (debug_fps > MAX_FPS)
 			{
-				fps = MAX_FPS;
+				debug_fps = MAX_FPS;
 			}
-			//std::cout << std::to_string(fps) << "\n";
-			text_FPS_Display->Set_Text(std::to_string(fps));
-			//text_FPS_Display->Render({ SCREEN_WIDTH, SCREEN_HEIGHT, 0 });
+			text_FPS_Display->Set_Text("FPS: " + std::to_string(debug_fps));
+
+			text_Vertex_Count_Display->Set_Text("Vertex Count: " + std::to_string(debug_no_pixels));
+	
 		}	
 
 	}

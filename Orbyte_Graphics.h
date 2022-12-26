@@ -205,6 +205,9 @@ public:
 	}
 };
 
+/*
+	Encapsulates all key text functionality, such as creating text, moving and setting text.
+*/
 class Text
 {
 private:
@@ -254,6 +257,11 @@ public:
 		return texture;
 	}
 
+	vector3 Get_Position()
+	{
+		return vector3{ (double)pos_x, (double)pos_y, 0 };
+	}
+
 	int Render(const vector3 screen_dimensions)
 	{
 		int s_x = screen_dimensions.x;
@@ -284,6 +292,7 @@ public:
 		texture.free();
 	}
 };
+
 /*
 	Handles all graphics for the application. This includes all pixel writes to the screen; loading and writing to textures; rendering
 */
@@ -327,6 +336,11 @@ class Graphyte
 	vector3 Get_Screen_Dimensions()
 	{
 		return { (float)SCREEN_WIDTH, (float)SCREEN_HEIGHT, 0 };
+	}
+
+	double Get_Number_Of_Points()
+	{
+		return points.size();
 	}
 
 	void pixel(float x, float y)
@@ -388,9 +402,72 @@ class Graphyte
 	}
 };
 
+class Arrow
+{
+public:
+	void Draw(vector3 position, vector3 direction, double magnitude, Graphyte& graphyte)
+	{
+		//These are all 2D vectors.
+		vector3 start = position;
+		vector3 end = position + (direction * magnitude);
+		vector3 perp_dir = vector3{ direction.y, -direction.x, 0 };
+		double arrow_head_size = magnitude / 10;
+
+		vector3 ah1 = end + (direction * arrow_head_size);
+		vector3 ah2 = end + (perp_dir * arrow_head_size);
+		vector3 ah3 = end + (perp_dir * -arrow_head_size);
+
+		graphyte.line(start.x, start.y, end.x, end.y);
+		graphyte.line(ah1.x, ah1.y, ah2.x, ah2.y);
+		graphyte.line(ah2.x, ah2.y, ah3.x, ah3.y);
+		graphyte.line(ah3.x, ah3.y, ah1.x, ah1.y);
+	}
+};
+
 //GUI Helpers
 struct GUI_Block //"Blocks" are collections of text elements to help with positioning them on screen. It is objectively awesome that its possible for me to do this off the framework I've created.
 {
+	//This struct is going to facilitate pretty much all application GUI. Lol.
 	std::vector<Text*> elements;
+	vector3 position;
+
+	GUI_Block(vector3 _position = {0, 0, 0})
+	{
+		position = _position;
+	}
+
+	~GUI_Block() //Deconstructor... I love c++
+	{
+		elements.clear();
+	}
+
+	void Add_Floating_Element(Text* text, vector3 relative_position)
+	{
+		elements.push_back(text);
+		text->Set_Position(position + relative_position);
+	}
+
+	void Add_Stacked_Element(Text* text) //This method adds the text to the bottom of the block.
+	{
+		vector3 new_pos = position;
+
+		if (elements.size() > 0)
+		{
+			Text* above_this = elements.back();
+			new_pos = above_this->Get_Position();
+
+			new_pos.y -= (above_this->Get_Texture().getHeight() / 2); //Bottom of the element above this one.
+			//new_pos.x -= (above_this->Get_Texture().getWidth() / 2); //Left of the element above this one.
+		}
+		new_pos.y -= text->Get_Texture().getHeight() / 2; //This is the height we want.
+		new_pos.x += text->Get_Texture().getWidth() / 2;
+
+		std::cout<< position.Debug() << "=>" << new_pos.Debug();
+
+		text->Set_Position(new_pos);
+		elements.push_back(text);
+	}
+
+	//void Move();//TODO
 };
 #endif /*ORBYTE_GRAPHICS_H*/
