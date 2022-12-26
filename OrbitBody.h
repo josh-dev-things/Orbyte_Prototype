@@ -443,10 +443,11 @@ public:
 		
 		//Draw arrow
 		Arrow arrow_velocity;
-		vector3 arrow_end = c.WorldSpaceToScreenSpace(position + (velocity * 5E5), screen_dimensions.x, screen_dimensions.y);
+		double arrow_modifier = c.position.z < 0 ? c.position.z * -(1 / 1E6) : c.position.z * (1 / 1E6);
+		vector3 arrow_end = c.WorldSpaceToScreenSpace(position + (velocity * arrow_modifier), screen_dimensions.x, screen_dimensions.y);
 		vector3 dir = arrow_end - start;
 		arrow_velocity.Draw(start, Normalize(dir), Magnitude(dir), g);
-		std::cout << dir.Debug()<<"\n";
+		std::cout << c.position.z<<"\n";
 
 
 		Draw_Satellites(g, c);
