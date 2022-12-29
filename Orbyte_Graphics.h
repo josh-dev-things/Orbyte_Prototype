@@ -405,7 +405,7 @@ class Graphyte
 class Arrow
 {
 public:
-	void Draw(vector3 position, vector3 direction, double magnitude, Graphyte& graphyte)
+	void Draw(vector3 position, vector3 direction, double magnitude, int heads, Graphyte& graphyte)
 	{
 		//These are all 2D vectors.
 		vector3 start = position;
@@ -413,14 +413,19 @@ public:
 		vector3 perp_dir = vector3{ direction.y, -direction.x, 0 };
 		double arrow_head_size = magnitude / 10;
 
-		vector3 ah1 = end + (direction * arrow_head_size);
-		vector3 ah2 = end + (perp_dir * arrow_head_size);
-		vector3 ah3 = end + (perp_dir * -arrow_head_size);
+		for (int i = 0; i < heads; i++)
+		{
+			vector3 ah1 = end + (direction * arrow_head_size);
+			vector3 ah2 = end + (perp_dir * arrow_head_size);
+			vector3 ah3 = end + (perp_dir * -arrow_head_size);
 
-		graphyte.line(start.x, start.y, end.x, end.y);
-		graphyte.line(ah1.x, ah1.y, ah2.x, ah2.y);
-		graphyte.line(ah2.x, ah2.y, ah3.x, ah3.y);
-		graphyte.line(ah3.x, ah3.y, ah1.x, ah1.y);
+			graphyte.line(start.x, start.y, end.x, end.y);
+			graphyte.line(ah1.x, ah1.y, ah2.x, ah2.y);
+			/*graphyte.line(ah2.x, ah2.y, ah3.x, ah3.y);*/
+			graphyte.line(ah3.x, ah3.y, ah1.x, ah1.y);
+
+			end = ah1;
+		}
 	}
 };
 

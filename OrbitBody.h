@@ -441,13 +441,14 @@ public:
 		g.line(end1.x, end1.y, end2.x, end2.y);
 		label->Set_Position(label_pos);
 		
-		//Draw arrow
+		//Draw arrow for velocity
 		Arrow arrow_velocity;
 		double arrow_modifier = c.position.z < 0 ? c.position.z * -(1 / 1E6) : c.position.z * (1 / 1E6);
 		vector3 arrow_end = c.WorldSpaceToScreenSpace(position + (velocity * arrow_modifier), screen_dimensions.x, screen_dimensions.y);
 		vector3 dir = arrow_end - start;
-		arrow_velocity.Draw(start, Normalize(dir), Magnitude(dir), g);
-		std::cout << c.position.z<<"\n";
+		arrow_velocity.Draw(start, Normalize(dir), Magnitude(dir), 1, g); //Draw arrow, with 1 head.
+		
+		//Draw arrow for acceleration
 
 
 		Draw_Satellites(g, c);
