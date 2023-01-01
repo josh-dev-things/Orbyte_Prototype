@@ -153,6 +153,7 @@ protected:
 	vector3 position{ 0, 0, 0 };
 	double radius;
 	vector3 velocity{ 0,0,0 };
+	vector3 acceleration{ 0, 0, 0 };
 	double mu = 0;
 
 	//Label
@@ -193,7 +194,7 @@ protected:
 		vector3 result_pos = _position + (rk1[0] + (rk2[0] * 2.0f) + (rk3[0] * 2.0f) + rk4[0]) * (_dt / 6.0f);
 		//std::cout << (_velocity + (rk2[1] * 0.5f * _dt)).x << "\n"; //RK4 STEP IS BROKEN! BUG IS HERE! | RK3 VELOCITY -> output is bad see 2bodyODE function
 		vector3 result_vel = _velocity + (rk1[1] + rk2[1] * 2 + rk3[1] * 2 + rk4[1]) * (_dt / 6);
-		return { result_pos, result_vel };
+		return { result_pos, result_vel, rk1[1]};
 	}
 
 	//We need to override initial velocities in case user wants a perfectly circular orbit.
@@ -385,8 +386,27 @@ public:
 		}
 		
 		velocity = sim_step[1];
+		acceleration = sim_step[2];
 
 		Update_Satellites(delta, time_scale);
+		return 0;
+	}
+
+	int Draw_Arrows(Graphyte& g, Camera& c, vector3 start, vector3 screen_dimensions)
+	{
+		//Draw arrow for velocity
+		Arrow arrow_velocity;
+		double arrow_modifier = c.position.z < 0 ? c.position.z * -(1 / 1E6) : c.position.z * (1 / 1E6);
+		vector3 arrow_end = c.WorldSpaceToScreenSpace(position + (velocity * arrow_modifier), screen_dimensions.x, screen_dimensions.y);
+		vector3 dir = arrow_end - start;
+		arrow_velocity.Draw(start, Normalize(dir), Magnitude(dir), 1, g); //Draw arrow, with 1 head.
+
+		//Draw arrow for acceleration
+		Arrow arrow_acceleration;
+		arrow_end = c.WorldSpaceToScreenSpace(position + (acceleration * arrow_modifier * 5E5), screen_dimensions.x, screen_dimensions.y);
+		dir = arrow_end - start;
+		arrow_acceleration.Draw(start, Normalize(dir), Magnitude(dir), 2, g); //Draw arrow, with 2 heads.
+
 		return 0;
 	}
 
@@ -441,15 +461,8 @@ public:
 		g.line(end1.x, end1.y, end2.x, end2.y);
 		label->Set_Position(label_pos);
 		
-		//Draw arrow for velocity
-		Arrow arrow_velocity;
-		double arrow_modifier = c.position.z < 0 ? c.position.z * -(1 / 1E6) : c.position.z * (1 / 1E6);
-		vector3 arrow_end = c.WorldSpaceToScreenSpace(position + (velocity * arrow_modifier), screen_dimensions.x, screen_dimensions.y);
-		vector3 dir = arrow_end - start;
-		arrow_velocity.Draw(start, Normalize(dir), Magnitude(dir), 1, g); //Draw arrow, with 1 head.
 		
-		//Draw arrow for acceleration
-
+		Draw_Arrows(g, c, start, screen_dimensions);
 
 		Draw_Satellites(g, c);
 

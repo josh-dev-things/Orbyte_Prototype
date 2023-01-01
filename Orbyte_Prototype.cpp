@@ -201,6 +201,10 @@ int main(int argc, char* args[])
 		Text* text_Vertex_Count_Display = graphyte.CreateText("Vertices", 10);
 		Debug_Block.Add_Stacked_Element(text_Vertex_Count_Display);
 
+		//Testing input Fields
+		TextField test_field(graphyte);
+		test_field.Enable();
+
 		//Mainloop time 
 		while (!quit)    
 		{ 
@@ -237,9 +241,19 @@ int main(int argc, char* args[])
 					quit = true;
 					break;
 
+				case SDL_TEXTINPUT:
+					printf("User is typing: %s\n", sdl_event.text.text);
+					test_field.Add_Character(sdl_event.text.text);
+					break;
+
 				case SDL_KEYDOWN:
 					switch (sdl_event.key.keysym.sym)
 					{
+						case SDLK_BACKSPACE:
+							printf("User Pressed the Backspace\n");
+							test_field.Backspace();
+							break;
+
 						case SDLK_SPACE:
 							printf("User Pressed The Space Bar\n");
 							if (time_scale < 1)

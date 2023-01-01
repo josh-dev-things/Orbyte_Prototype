@@ -235,7 +235,13 @@ public:
 
 	int Set_Text(std::string str, SDL_Color color = {255,255,255})
 	{
+		if (str == "") //Just a tiny bit of redundancy to be safe.
+		{
+			str = " ";
+		}
+
 		text = str;
+
 		if (!texture.loadFromRenderedText(str, color))
 		{
 			printf("Failed to render text texture!\n");
@@ -429,6 +435,64 @@ public:
 	}
 };
 
+class TextField
+{
+private:
+	SDL_Color text_color = { 255, 255, 255, 0xFF };
+	std::string input_text = "Enter Some Text: ";
+	Text* text = NULL;
+
+	void Update_Text()
+	{
+		if (input_text != "")
+		{
+			text->Set_Text(input_text, text_color);
+		}
+		else {
+			text->Set_Text(input_text, text_color);
+		}
+	}
+public:
+	TextField(Graphyte& g)
+	{
+		text = g.CreateText(input_text, 16, text_color);
+		text->Set_Position({ 0, 0, 10 });
+	}
+
+	void Backspace()
+	{
+		if (input_text.length() > 0)
+		{
+			input_text.pop_back();
+			Update_Text();
+		}
+	}
+
+	void Add_Character(char* chr)
+	{
+		input_text += chr;
+		Update_Text();
+	}
+
+	void Enable()
+	{
+		SDL_StartTextInput();
+	}
+
+	void Disable()
+	{
+		SDL_StopTextInput();
+	}
+
+	~TextField()
+	{
+		text->free();
+		text = NULL;
+		Disable();
+		//Should be safely destroyed now.
+	}
+};
+
 //GUI Helpers
 struct GUI_Block //"Blocks" are collections of text elements to help with positioning them on screen. It is objectively awesome that its possible for me to do this off the framework I've created.
 {
@@ -475,4 +539,5 @@ struct GUI_Block //"Blocks" are collections of text elements to help with positi
 
 	//void Move();//TODO
 };
+
 #endif /*ORBYTE_GRAPHICS_H*/
