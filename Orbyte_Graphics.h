@@ -114,7 +114,7 @@ public:
 		reset_texture();
 
 		//Render text surface
-		SDL_Surface* textSurface = TTF_RenderText_Solid(font, textureText.c_str(), textColor);
+		SDL_Surface* textSurface = TTF_RenderUTF8_Solid_Wrapped(font, textureText.c_str(), textColor, 320);
 		if (textSurface == NULL)
 		{
 			printf("Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError());
@@ -307,8 +307,8 @@ class Graphyte
 	private: //Private attributes & Methods
 
 	const float km_per_pixel = 750; //The number of kilometres per pixel on screen.
-	const double SCREEN_WIDTH = 800; //What it says on the tin.
-	const double SCREEN_HEIGHT = 800;
+	double SCREEN_WIDTH = 0; //What it says on the tin.
+	double SCREEN_HEIGHT = 0; //These dimensions are not const values because they need to be set in the Init() method.
 
 	SDL_Renderer* Renderer = NULL; //Renderer.
 	TTF_Font* Font = NULL; //True Type Font. Needs to be loaded at init.
@@ -318,10 +318,14 @@ class Graphyte
 
 	public:  //Public attributes & Methods
 
-	bool Init(SDL_Renderer& _renderer, TTF_Font& _font)
+	bool Init(SDL_Renderer& _renderer, TTF_Font& _font, vector3 _screen_dimensions)
 	{
 		Renderer = &_renderer;
 		Font = &_font;
+
+		SCREEN_WIDTH = _screen_dimensions.x;
+		SCREEN_HEIGHT = _screen_dimensions.y;
+
 		if (Renderer == NULL || Font == NULL)
 		{
 			return false;
@@ -379,6 +383,8 @@ class Graphyte
 		SDL_SetRenderDrawColor(Renderer, 0, 0, 0, 255);
 		SDL_RenderClear(Renderer);
 		int count = 0;
+
+		pixel(100, 100);
 
 		for (auto& point : points)
 		{

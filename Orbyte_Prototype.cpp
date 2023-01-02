@@ -21,7 +21,7 @@
 #include "Orbyte_Data.h"
 #include "Orbyte_Graphics.h"
 
-const int SCREEN_WIDTH = 800;
+const int SCREEN_WIDTH = 1200;
 const int SCREEN_HEIGHT = 800;
 const int SCREEN_FPS = 60;
 const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
@@ -127,7 +127,7 @@ bool init()
 	}
 
 	//Starting Graphyte
-	if (!graphyte.Init(*gRenderer, *gFont))
+	if (!graphyte.Init(*gRenderer, *gFont, {SCREEN_WIDTH, SCREEN_HEIGHT, 0}))
 	{
 		printf("Graphyte could not initialize!");
 		return false;
@@ -200,6 +200,9 @@ int main(int argc, char* args[])
 
 		Text* text_Vertex_Count_Display = graphyte.CreateText("Vertices", 10);
 		Debug_Block.Add_Stacked_Element(text_Vertex_Count_Display);
+
+		Text* text_Vertex_Count_Display2 = graphyte.CreateText("TESTING A \n NEW LINE", 10);
+		Debug_Block.Add_Stacked_Element(text_Vertex_Count_Display2);
 
 		//Testing input Fields
 		TextField test_field(graphyte);

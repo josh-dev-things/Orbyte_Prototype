@@ -89,8 +89,9 @@ private: vector3 camera_rotation;
 			return { 0, 0, -1 };
 		}
 		else {
+			//Why ignore the screen_width? Because the screen is wide and we don't want to stretch the projection
 			vector3 Screen_Space_Pos = {
-			(pos.x / pos.z) * screen_width,
+			(pos.x / pos.z) * screen_height,
 			(pos.y / pos.z) * screen_height,
 			pos.z
 			};
