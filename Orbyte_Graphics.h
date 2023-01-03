@@ -252,7 +252,15 @@ public:
 
 	void Set_Position(vector3 pos)
 	{
-		//std::cout << "Setting label pos: " << pos.Debug() << "\n";
+		//Sets the position of the text with centering
+		pos_x = pos.x - texture.getWidth() / 2;
+		pos_y = pos.y + texture.getHeight() / 2;
+		visible = pos.z >= 0;
+	}
+
+	void Set_Position_TL(vector3 pos)
+	{
+		//In some cases it is more helpful to set the position of the text with the top left anchor point, what SDL uses as the pivot for textures.
 		pos_x = pos.x;
 		pos_y = pos.y;
 		visible = pos.z >= 0;
@@ -278,7 +286,7 @@ public:
 			//t->Debug();
 			//x + SCREEN_WIDTH / 2, -y + SCREEN_HEIGHT / 2
 			//std::cout << "Trying to render @: " << pos_x << "," << pos_y<<"\n";
-			texture.render(pos_x + (s_x - texture.getWidth()) / 2, -pos_y + (s_y - texture.getHeight()) / 2);
+			texture.render(pos_x + (s_x) / 2, -pos_y + (s_y) / 2);
 		}
 		return 0;
 	}
@@ -384,7 +392,7 @@ class Graphyte
 		SDL_RenderClear(Renderer);
 		int count = 0;
 
-		pixel(100, 100);
+		//pixel(100, 100);
 
 		for (auto& point : points)
 		{
@@ -519,7 +527,7 @@ struct GUI_Block //"Blocks" are collections of text elements to help with positi
 	void Add_Floating_Element(Text* text, vector3 relative_position)
 	{
 		elements.push_back(text);
-		text->Set_Position(position + relative_position);
+		text->Set_Position_TL(position + relative_position);
 	}
 
 	void Add_Stacked_Element(Text* text) //This method adds the text to the bottom of the block.
@@ -529,17 +537,12 @@ struct GUI_Block //"Blocks" are collections of text elements to help with positi
 		if (elements.size() > 0)
 		{
 			Text* above_this = elements.back();
-			new_pos = above_this->Get_Position();
-
-			new_pos.y -= (above_this->Get_Texture().getHeight() / 2); //Bottom of the element above this one.
-			//new_pos.x -= (above_this->Get_Texture().getWidth() / 2); //Left of the element above this one.
+			new_pos.y  = above_this->Get_Position().y - (above_this->Get_Texture().getHeight());
 		}
-		new_pos.y -= text->Get_Texture().getHeight() / 2; //This is the height we want.
-		new_pos.x += text->Get_Texture().getWidth() / 2;
 
-		std::cout<< position.Debug() << "=>" << new_pos.Debug();
+		std::cout<< position.Debug() << "=>" << new_pos.Debug() << " WIDTH IS: " << text->Get_Texture().getWidth() / 2 << "\n";
 
-		text->Set_Position(new_pos);
+		text->Set_Position_TL(new_pos);
 		elements.push_back(text);
 	}
 
