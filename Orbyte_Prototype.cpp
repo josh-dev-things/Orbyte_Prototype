@@ -43,6 +43,7 @@ SDL_Renderer* gRenderer = NULL;
 
 //Graphyte
 Graphyte graphyte;
+TextField* active_text_field = NULL; //This pointer will be used to edit text fields
 
 
 //Runtime variables
@@ -52,8 +53,6 @@ SDL_Event sdl_event;
 //Current time start time
 Uint32 startTime = 0;
 Uint32 deltaTime = 0;
-
-
 
 ////https://lazyfoo.net/tutorials/SDL/16_true_type_fonts/index.php <-- USE THIS FOR GUI
 
@@ -161,6 +160,13 @@ void close()
 	SDL_Quit();
 }
 
+void click(int mX, int mY)
+{
+	std::cout << "\n" << mX << " " << mY << "\n";
+	active_text_field = NULL;
+
+}
+
 Uint32 Update_Clock() //https://lazyfoo.net/tutorials/SDL/25_capping_frame_rate/index.php
 {
 	Uint32 current_time = SDL_GetTicks(); //milliseconds
@@ -195,18 +201,14 @@ int main(int argc, char* args[])
 		//DEBUG
 		GUI_Block Debug_Block(vector3{ -SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 0});
 
+		Text* text_Vertex_Count_Display2 = graphyte.CreateText("PERFORMANCE METRICS\n__________________", 24);
+		Debug_Block.Add_Stacked_Element(text_Vertex_Count_Display2);
+
 		Text* text_FPS_Display = graphyte.CreateText("TESTING TEXT DEBUG", 10);
 		Debug_Block.Add_Stacked_Element(text_FPS_Display);
 
 		Text* text_Vertex_Count_Display = graphyte.CreateText("Vertices", 10);
 		Debug_Block.Add_Stacked_Element(text_Vertex_Count_Display);
-
-		Text* text_Vertex_Count_Display2 = graphyte.CreateText("TESTING A \n NEW LINE", 10);
-		Debug_Block.Add_Stacked_Element(text_Vertex_Count_Display2);
-
-		//Testing input Fields
-		TextField test_field(graphyte);
-		test_field.Enable();
 
 		//Mainloop time 
 		while (!quit)    
@@ -246,7 +248,10 @@ int main(int argc, char* args[])
 
 				case SDL_TEXTINPUT:
 					printf("User is typing: %s\n", sdl_event.text.text);
-					test_field.Add_Character(sdl_event.text.text);
+					if (active_text_field != NULL)
+					{
+						active_text_field -> Add_Character(sdl_event.text.text);
+					}
 					break;
 
 				case SDL_KEYDOWN:
@@ -254,7 +259,10 @@ int main(int argc, char* args[])
 					{
 						case SDLK_BACKSPACE:
 							printf("User Pressed the Backspace\n");
-							test_field.Backspace();
+							if (active_text_field != NULL)
+							{
+								active_text_field->Backspace();
+							}
 							break;
 
 						case SDLK_SPACE:
@@ -294,23 +302,15 @@ int main(int argc, char* args[])
 					}
 					break;
 
-				/*case SDL_MOUSEMOTION:
-					SDL_GetMouseState(&current_mouse_x, &current_mouse_y);
-					break;
-
 				case SDL_MOUSEBUTTONDOWN:
 					if (sdl_event.button.button == SDL_BUTTON_LEFT)
 					{
-						LMB_Down = true;
-						gCamera.Start_Rotate(current_mouse_x, current_mouse_y);
+						int mX = 0;
+						int mY = 0;
+						SDL_GetMouseState(&mX, &mY);
+						click(mX - SCREEN_WIDTH / 2, mY - SCREEN_HEIGHT / 2);
 					}
-					
-				case SDL_MOUSEBUTTONUP:
-					if (sdl_event.button.button == SDL_BUTTON_LEFT)
-					{
-						LMB_Down = false;
-						gCamera.End_Rotate(current_mouse_x, current_mouse_y);
-					}*/
+					break;
 					
 				case SDL_MOUSEWHEEL:
 					if (sdl_event.wheel.y > 0) //Scroll up

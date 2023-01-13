@@ -212,6 +212,7 @@ class Text
 {
 private:
 	GTexture texture = NULL;
+	bool underline = false;
 
 public:
 	int pos_x; //Position along x axis in screenspace
@@ -449,12 +450,25 @@ public:
 	}
 };
 
+class Button
+{
+private:
+	int (*on_clicked);
+	int (*on_unclick);
+public:
+	Button(vector3 position, vector3 rect,int* click_method, int* unclick_method) : on_clicked(click_method), on_unclick(unclick_method)
+	{
+
+	}
+};
+
 class TextField
 {
 private:
 	SDL_Color text_color = { 255, 255, 255, 0xFF };
 	std::string input_text = "Enter Some Text: ";
 	Text* text = NULL;
+	bool enabled = false;
 
 	void Update_Text()
 	{
@@ -475,7 +489,7 @@ public:
 
 	void Backspace()
 	{
-		if (input_text.length() > 0)
+		if (input_text.length() > 0 && enabled)
 		{
 			input_text.pop_back();
 			Update_Text();
@@ -484,18 +498,23 @@ public:
 
 	void Add_Character(char* chr)
 	{
-		input_text += chr;
-		Update_Text();
+		if (enabled)
+		{
+			input_text += chr;
+			Update_Text();
+		}
 	}
 
 	void Enable()
 	{
 		SDL_StartTextInput();
+		enabled = true;
 	}
 
 	void Disable()
 	{
 		SDL_StopTextInput();
+		enabled = false;
 	}
 
 	~TextField()

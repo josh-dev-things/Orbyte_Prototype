@@ -364,7 +364,7 @@ public:
 	int Update_Body(float delta, float time_scale)
 	{
 		time_since_start += delta * time_scale;
-		rotate(0.0005f * time_scale, 0.0005f * time_scale, 0.0005f * time_scale);
+		rotate(0.0005f, 0.0005f, 0.0005f);
 		vector3 this_pos = position; //god_pos is normally origin, but not for a satellite.
 		float t = (delta / 1000);
 		std::vector<vector3> sim_step = rk4_step(t * time_scale, this_pos, velocity, t * time_scale);
