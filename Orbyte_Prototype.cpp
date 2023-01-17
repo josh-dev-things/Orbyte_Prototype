@@ -44,6 +44,7 @@ SDL_Renderer* gRenderer = NULL;
 //Graphyte
 Graphyte graphyte;
 TextField* active_text_field = NULL; //This pointer will be used to edit text fields
+std::vector<TextField*> text_fields;
 
 
 //Runtime variables
@@ -163,8 +164,21 @@ void close()
 void click(int mX, int mY)
 {
 	std::cout << "\n" << mX << " " << mY << "\n";
+	if (active_text_field != NULL)
+	{
+		active_text_field->Disable();
+	}
 	active_text_field = NULL;
 
+	for (TextField* tf : text_fields)
+	{
+		if (tf->CheckForClick(mX, mY))
+		{
+			active_text_field = tf;
+			printf("\n YOU CLICKED A THING \n");
+			return;
+		}
+	}
 }
 
 Uint32 Update_Clock() //https://lazyfoo.net/tutorials/SDL/25_capping_frame_rate/index.php
@@ -209,6 +223,10 @@ int main(int argc, char* args[])
 
 		Text* text_Vertex_Count_Display = graphyte.CreateText("Vertices", 10);
 		Debug_Block.Add_Stacked_Element(text_Vertex_Count_Display);
+
+		//Testing input fields I guess
+		TextField* tf = new TextField({ 0,0,0 }, graphyte);
+		text_fields.push_back(tf);
 
 		//Mainloop time 
 		while (!quit)    

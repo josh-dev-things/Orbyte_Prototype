@@ -99,7 +99,7 @@ public:
 			}
 		}
 
-		for (auto edg : edges)
+		for (edge edg : edges)
 		{
 			if (verts[edg.a].z > 0 && verts[edg.b].z > 0)
 			{
@@ -425,7 +425,7 @@ public:
 			}
 		}
 
-		for (auto t_p : trail_points)
+		for (vector3 t_p : trail_points)
 		{
 			t_p = c.WorldSpaceToScreenSpace(t_p, screen_dimensions.x, screen_dimensions.y);
 			if (t_p.z > 0)
@@ -434,7 +434,7 @@ public:
 			}
 		}
 
-		for (auto edg : edges)
+		for (edge edg : edges)
 		{
 			if (verts[edg.a].z > 0 && verts[edg.b].z > 0)
 			{

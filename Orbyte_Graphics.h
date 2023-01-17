@@ -9,6 +9,7 @@
 #include <string>
 #include <numeric>
 #include <iostream>
+#include <functional>
 
 /*
 	A "Texture" class is a way of encapsulating the rendering of more complex graphics. Images, fonts etc. would be loaded to a texture.
@@ -453,12 +454,41 @@ public:
 class Button
 {
 private:
-	int (*on_clicked);
-	int (*on_unclick);
+	vector3 position;
+	int width;
+	int height;
 public:
-	Button(vector3 position, vector3 rect,int* click_method, int* unclick_method) : on_clicked(click_method), on_unclick(unclick_method)
+	Button(vector3 pos, vector3 dimensions)
 	{
+		position = pos;
+		width = dimensions.x;
+		height = dimensions.y;
+	}
 
+	void SetDimensions(vector3 dimensions)
+	{
+		width = dimensions.x;
+		height = dimensions.y;
+	}
+
+	bool Clicked(int x, int y)
+	{
+		// (0<AM.AB<AB.AB) ^ (0<AM.AD<AD.AD) Where M is a point we're checking
+		vector3 A = { position.x - width / 2, position.y + height / 2, 0 };
+		vector3 B = { position.x + width / 2, position.y + height / 2, 0 };
+		vector3 D = { position.x - width / 2, position.y - height / 2, 0 };
+		vector3 C = { position.x + width / 2, position.y - height / 2, 0 }; //All the vertices
+		std::cout << "\n VERTECIES: " << A.Debug() << " | " << B.Debug() << " | " << C.Debug() << " | " << D.Debug();
+		vector3 M = { x, y, 0 };
+
+		vector3 AM = M - A;
+		vector3 AB = B - A;
+		vector3 BC = C - B;
+		vector3 BM = M - A;
+
+		bool in_area = 0 <= AB*AM && AB*AM <= AB*AB && 0 <= BC*BM && BC*BM <= BC*BC;
+		std::cout << "\n RESULT: " << in_area;
+		return in_area;
 	}
 };
 
@@ -469,6 +499,7 @@ private:
 	std::string input_text = "Enter Some Text: ";
 	Text* text = NULL;
 	bool enabled = false;
+	Button* button = NULL;
 
 	void Update_Text()
 	{
@@ -480,11 +511,19 @@ private:
 			text->Set_Text(input_text, text_color);
 		}
 	}
+
+	void update_button_dimensions()
+	{
+		vector3 dimensions = { text->Get_Texture().getWidth(), text->Get_Texture().getHeight(), 0 };
+		button->SetDimensions(dimensions);
+	}
 public:
-	TextField(Graphyte& g)
+	TextField(vector3 position, Graphyte& g)
 	{
 		text = g.CreateText(input_text, 16, text_color);
-		text->Set_Position({ 0, 0, 10 });
+		text->Set_Position({ position.x, position.y, 10 });
+		vector3 dimensions = { text->Get_Texture().getWidth(), text->Get_Texture().getHeight(), 0 };
+		button = new Button(position, dimensions);
 	}
 
 	void Backspace()
@@ -505,6 +544,17 @@ public:
 		}
 	}
 
+	bool CheckForClick(int x, int y)
+	{
+		if (button->Clicked(x, y))
+		{
+			//Button has been clicked => 
+			Enable();
+			return true;
+		}
+		return false;
+	}
+
 	void Enable()
 	{
 		SDL_StartTextInput();
@@ -515,6 +565,7 @@ public:
 	{
 		SDL_StopTextInput();
 		enabled = false;
+		update_button_dimensions(); // We do this so that the button resizes after this new text commit.
 	}
 
 	~TextField()

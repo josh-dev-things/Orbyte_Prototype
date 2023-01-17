@@ -34,9 +34,9 @@ struct vector3
 		return result;
 	}
 
-	vector3 operator*(vector3 v)
+	double operator*(vector3 v)
 	{
-		vector3 result = { x * v.x, y * v.y, z * v.z };
+		double result = (x*v.x) + (y*v.y) + (z*v.z);
 		return result;
 	}
 
@@ -66,6 +66,11 @@ double Distance(vector3 vecFrom, vector3 vecTo)
 	double distance = Magnitude(a);
 	
 	return distance;
+}
+
+double Scalar_Product(vector3 a, vector3 b)
+{
+	return (a.x * b.x) + (a.y * b.y) + (a.z * b.z);
 }
 
 vector3 Normalize(vector3 vec)
