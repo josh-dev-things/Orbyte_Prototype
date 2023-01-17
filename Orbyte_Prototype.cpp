@@ -215,8 +215,8 @@ int main(int argc, char* args[])
 		//DEBUG
 		GUI_Block Debug_Block(vector3{ -SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 0});
 
-		Text* text_Vertex_Count_Display2 = graphyte.CreateText("PERFORMANCE METRICS\n__________________", 24);
-		Debug_Block.Add_Stacked_Element(text_Vertex_Count_Display2);
+		Text* text_pm = graphyte.CreateText("PERFORMANCE METRICS\n__________________", 24);
+		Debug_Block.Add_Stacked_Element(text_pm);
 
 		Text* text_FPS_Display = graphyte.CreateText("TESTING TEXT DEBUG", 10);
 		Debug_Block.Add_Stacked_Element(text_FPS_Display);
@@ -224,9 +224,13 @@ int main(int argc, char* args[])
 		Text* text_Vertex_Count_Display = graphyte.CreateText("Vertices", 10);
 		Debug_Block.Add_Stacked_Element(text_Vertex_Count_Display);
 
+		Text* text_sp = graphyte.CreateText("SIMULATION PARAMETERS\n__________________", 24);
+		Debug_Block.Add_Stacked_Element(text_sp);
+
 		//Testing input fields I guess
 		TextField* tf = new TextField({ 10,10,0 }, graphyte);
 		text_fields.push_back(tf);
+		Debug_Block.Add_Stacked_Element(tf);
 
 		//Mainloop time 
 		while (!quit)    
@@ -366,9 +370,7 @@ int main(int argc, char* args[])
 				debug_fps = MAX_FPS;
 			}
 			text_FPS_Display->Set_Text("FPS: " + std::to_string(debug_fps));
-
 			text_Vertex_Count_Display->Set_Text("Vertex Count: " + std::to_string(debug_no_pixels));
-	
 		}	
 
 	}

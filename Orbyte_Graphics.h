@@ -215,7 +215,7 @@ public:
 */
 class Text
 {
-private:
+protected:
 	GTexture texture = NULL;
 
 public:
@@ -268,7 +268,7 @@ public:
 		return 0;
 	}
 
-	void Set_Position(vector3 pos)
+	virtual void Set_Position(vector3 pos)
 	{
 		//Sets the position of the text with centering
 		pos_x = pos.x - texture.getWidth() / 2;
@@ -276,7 +276,7 @@ public:
 		visible = pos.z >= 0;
 	}
 
-	void Set_Position_TL(vector3 pos)
+	virtual void Set_Position_TL(vector3 pos)
 	{
 		//In some cases it is more helpful to set the position of the text with the top left anchor point, what SDL uses as the pivot for textures.
 		pos_x = pos.x;
@@ -486,14 +486,14 @@ private:
 	vector3 position;
 	int width;
 	int height;
-	int left_wall;
+	int left_wall_offset;
 public:
 	Button(vector3 pos, vector3 dimensions)
 	{
 		position = pos;
 		width = dimensions.x;
 		height = dimensions.y;
-		left_wall = position.x - width / 2;
+		left_wall_offset = width / 2;
 	}
 
 	void SetDimensions(vector3 dimensions)
@@ -510,10 +510,10 @@ public:
 	bool Clicked(int x, int y)
 	{
 		// (0<AM.AB<AB.AB) ^ (0<AM.AD<AD.AD) Where M is a point we're checking
-		vector3 A = { left_wall, position.y + height / 2, 0 };
-		vector3 B = { left_wall + width, position.y + height / 2, 0 };
-		vector3 D = { left_wall, position.y - height / 2, 0 };
-		vector3 C = { left_wall + width, position.y - height / 2, 0 }; //All the vertices
+		vector3 A = { position.x - left_wall_offset, position.y + height / 2, 0 };
+		vector3 B = { position.x - left_wall_offset + width, position.y + height / 2, 0 };
+		vector3 D = { position.x - left_wall_offset, position.y - height / 2, 0 };
+		vector3 C = { position.x - left_wall_offset + width, position.y - height / 2, 0 }; //All the vertices
 		std::cout << "\n Dimensions" << width << "|"<< height;
 		vector3 M = { x, y, 0 };
 
@@ -528,7 +528,7 @@ public:
 	}
 };
 
-class TextField : private Text
+class TextField : public Text
 {
 private:
 	SDL_Color text_color = { 255, 255, 255, 0xFF };
@@ -555,16 +555,32 @@ private:
 public:
 	TextField(vector3 position, Graphyte& g) : Text(*g.GetTextParams("Enter Some Text: ", 16, text_color))
 	{
-		Set_Position({ position.x, position.y, 10 });
 		vector3 dimensions = { Get_Texture().getWidth(), Get_Texture().getHeight(), 0 };
-		g.AddTextToRenderQueue(this); //Beautiful
 		button = new Button(position, dimensions);
+		Set_Position({ position.x, position.y, 10 });
+		g.AddTextToRenderQueue(this); //Beautiful
 	}
 
-	void SetPosition(vector3 position)
+	void Set_Position(vector3 position) override
 	{
-		Set_Position(position);
-		button->SetPosition(position);
+		//Sets the position of the text with centering
+		pos_x = position.x - texture.getWidth() / 2;
+		pos_y = position.y + texture.getHeight() / 2;
+		visible = position.z >= 0;
+
+		button->SetPosition(position); //There's a bug here
+	}
+
+	void Set_Position_TL(vector3 pos) override
+	{
+		//In some cases it is more helpful to set the position of the text with the top left anchor point, what SDL uses as the pivot for textures.
+		pos_x = pos.x;
+		pos_y = pos.y;
+		visible = pos.z >= 0;
+		
+		button->SetPosition({ pos.x + texture.getWidth() / 2 , pos.y - texture.getHeight() / 2, 0 });
+
+		std::cout << vector3{ pos.x + texture.getWidth() / 2, pos.y - texture.getHeight() / 2, 0 }.Debug();
 	}
 
 	void Backspace()
