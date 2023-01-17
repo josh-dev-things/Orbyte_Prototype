@@ -225,7 +225,7 @@ int main(int argc, char* args[])
 		Debug_Block.Add_Stacked_Element(text_Vertex_Count_Display);
 
 		//Testing input fields I guess
-		TextField* tf = new TextField({ 0,0,0 }, graphyte);
+		TextField* tf = new TextField({ 10,10,0 }, graphyte);
 		text_fields.push_back(tf);
 
 		//Mainloop time 
@@ -326,7 +326,7 @@ int main(int argc, char* args[])
 						int mX = 0;
 						int mY = 0;
 						SDL_GetMouseState(&mX, &mY);
-						click(mX - SCREEN_WIDTH / 2, mY - SCREEN_HEIGHT / 2);
+						click(mX - SCREEN_WIDTH / 2, -mY + SCREEN_HEIGHT / 2);
 					}
 					break;
 					

@@ -421,6 +421,7 @@ class Graphyte
 		}
 		texts.clear();
 		points.clear();
+		SDL_StopTextInput();
 	}
 };
 
@@ -457,12 +458,14 @@ private:
 	vector3 position;
 	int width;
 	int height;
+	int left_wall;
 public:
 	Button(vector3 pos, vector3 dimensions)
 	{
 		position = pos;
 		width = dimensions.x;
 		height = dimensions.y;
+		left_wall = position.x - width / 2;
 	}
 
 	void SetDimensions(vector3 dimensions)
@@ -474,11 +477,11 @@ public:
 	bool Clicked(int x, int y)
 	{
 		// (0<AM.AB<AB.AB) ^ (0<AM.AD<AD.AD) Where M is a point we're checking
-		vector3 A = { position.x - width / 2, position.y + height / 2, 0 };
-		vector3 B = { position.x + width / 2, position.y + height / 2, 0 };
-		vector3 D = { position.x - width / 2, position.y - height / 2, 0 };
-		vector3 C = { position.x + width / 2, position.y - height / 2, 0 }; //All the vertices
-		std::cout << "\n VERTECIES: " << A.Debug() << " | " << B.Debug() << " | " << C.Debug() << " | " << D.Debug();
+		vector3 A = { left_wall, position.y + height / 2, 0 };
+		vector3 B = { left_wall + width, position.y + height / 2, 0 };
+		vector3 D = { left_wall, position.y - height / 2, 0 };
+		vector3 C = { left_wall + width, position.y - height / 2, 0 }; //All the vertices
+		std::cout << "\n Dimensions" << width << "|"<< height;
 		vector3 M = { x, y, 0 };
 
 		vector3 AM = M - A;
@@ -566,6 +569,7 @@ public:
 		SDL_StopTextInput();
 		enabled = false;
 		update_button_dimensions(); // We do this so that the button resizes after this new text commit.
+		std::cout << "Disabled text";
 	}
 
 	~TextField()
