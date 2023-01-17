@@ -53,13 +53,13 @@ public:
 		std::cout << "Copy constructor";
 	}
 
-	GTexture(GTexture&& source) : mTexture{ source.mTexture }, font{ source.font }, renderer{ source.renderer }, mWidth{ source.mWidth }, mHeight{source.mHeight}
+	/*GTexture(GTexture&& source) : mTexture{ source.mTexture }, font{ source.font }, renderer{ source.renderer }, mWidth{ source.mWidth }, mHeight{source.mHeight}
 	{
 		std::cout << "Move constructor apparently";
 		source.mTexture = nullptr;
 		source.font = nullptr;
 		source.renderer = nullptr;
-	}
+	}*/
 
 	//Deallocates memory
 	~GTexture()
@@ -114,6 +114,10 @@ public:
 		////Get rid of preexisting texture
 		reset_texture();
 
+		if (textureText == "")
+		{
+			textureText = " ";
+		}
 		//Render text surface
 		SDL_Surface* textSurface = TTF_RenderUTF8_Solid_Wrapped(font, textureText.c_str(), textColor, 320);
 		if (textSurface == NULL)
@@ -213,7 +217,6 @@ class Text
 {
 private:
 	GTexture texture = NULL;
-	bool underline = false;
 
 public:
 	int pos_x; //Position along x axis in screenspace
@@ -233,6 +236,19 @@ public:
 		}
 		pos_x = position[0];
 		pos_y = position[1];
+	}
+
+	Text(Text& T) //Copy constructor to save the day???
+	{
+		texture = T.texture; //How am I reading from a private attribute lol
+		text = T.text;
+		if (!texture.loadFromRenderedText(text, {255, 255, 255}))
+		{
+			printf("Failed to render text texture!\n");
+		}
+		pos_x = T.pos_x;
+		pos_y = T.pos_y;
+
 	}
 
 	int Set_Text(std::string str, SDL_Color color = {255,255,255})
@@ -351,6 +367,18 @@ class Graphyte
 		std::cout << "Created new text: " << newText->text << "\n";
 		texts.push_back(newText);
 		return newText;
+	}
+
+	Text* GetTextParams(std::string str, int font_size, SDL_Color color = { 255, 255, 255 }) // There is a nuance between these two methods. See textfield
+	{
+		Text* newText = new Text(str, font_size, { 0, 0 }, *Renderer, *Font, color);
+		std::cout << "Created new text: " << newText->text << "\n";
+		return newText;
+	}
+
+	void AddTextToRenderQueue(Text* newText)
+	{
+		texts.push_back(newText);
 	}
 
 	vector3 Get_Screen_Dimensions()
@@ -474,6 +502,11 @@ public:
 		height = dimensions.y;
 	}
 
+	void SetPosition(vector3 pos)
+	{
+		position = pos;
+	}
+
 	bool Clicked(int x, int y)
 	{
 		// (0<AM.AB<AB.AB) ^ (0<AM.AD<AD.AD) Where M is a point we're checking
@@ -495,12 +528,11 @@ public:
 	}
 };
 
-class TextField
+class TextField : private Text
 {
 private:
 	SDL_Color text_color = { 255, 255, 255, 0xFF };
 	std::string input_text = "Enter Some Text: ";
-	Text* text = NULL;
 	bool enabled = false;
 	Button* button = NULL;
 
@@ -508,25 +540,31 @@ private:
 	{
 		if (input_text != "")
 		{
-			text->Set_Text(input_text, text_color);
+			Set_Text(input_text, text_color);
 		}
 		else {
-			text->Set_Text(input_text, text_color);
+			Set_Text(input_text, text_color);
 		}
 	}
 
 	void update_button_dimensions()
 	{
-		vector3 dimensions = { text->Get_Texture().getWidth(), text->Get_Texture().getHeight(), 0 };
+		vector3 dimensions = { Get_Texture().getWidth(), Get_Texture().getHeight(), 0 };
 		button->SetDimensions(dimensions);
 	}
 public:
-	TextField(vector3 position, Graphyte& g)
+	TextField(vector3 position, Graphyte& g) : Text(*g.GetTextParams("Enter Some Text: ", 16, text_color))
 	{
-		text = g.CreateText(input_text, 16, text_color);
-		text->Set_Position({ position.x, position.y, 10 });
-		vector3 dimensions = { text->Get_Texture().getWidth(), text->Get_Texture().getHeight(), 0 };
+		Set_Position({ position.x, position.y, 10 });
+		vector3 dimensions = { Get_Texture().getWidth(), Get_Texture().getHeight(), 0 };
+		g.AddTextToRenderQueue(this); //Beautiful
 		button = new Button(position, dimensions);
+	}
+
+	void SetPosition(vector3 position)
+	{
+		Set_Position(position);
+		button->SetPosition(position);
 	}
 
 	void Backspace()
@@ -574,8 +612,7 @@ public:
 
 	~TextField()
 	{
-		text->free();
-		text = NULL;
+		free();
 		Disable();
 		//Should be safely destroyed now.
 	}
