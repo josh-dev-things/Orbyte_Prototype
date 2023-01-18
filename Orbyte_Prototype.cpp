@@ -213,24 +213,26 @@ int main(int argc, char* args[])
 		orbiting_bodies.emplace_back(venus);
 
 		//DEBUG
-		GUI_Block Debug_Block(vector3{ -SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 0});
+		GUI_Block Simulation_Parameters(vector3{ -SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 0});
 
-		Text* text_pm = graphyte.CreateText("PERFORMANCE METRICS\n__________________", 24);
-		Debug_Block.Add_Stacked_Element(text_pm);
+		Text* text_pm = graphyte.CreateText("__________________\nPERFORMANCE METRICS\n__________________", 24);
+		Simulation_Parameters.Add_Stacked_Element(text_pm);
 
 		Text* text_FPS_Display = graphyte.CreateText("TESTING TEXT DEBUG", 10);
-		Debug_Block.Add_Stacked_Element(text_FPS_Display);
+		Simulation_Parameters.Add_Stacked_Element(text_FPS_Display);
 
 		Text* text_Vertex_Count_Display = graphyte.CreateText("Vertices", 10);
-		Debug_Block.Add_Stacked_Element(text_Vertex_Count_Display);
+		Simulation_Parameters.Add_Stacked_Element(text_Vertex_Count_Display);
 
-		Text* text_sp = graphyte.CreateText("SIMULATION PARAMETERS\n__________________", 24);
-		Debug_Block.Add_Stacked_Element(text_sp);
+		Text* text_sp = graphyte.CreateText("__________________\nSIMULATION PARAMETERS\n__________________", 24);
+		Simulation_Parameters.Add_Stacked_Element(text_sp);
 
 		//Testing input fields I guess
+		Simulation_Parameters.Add_Stacked_Element(graphyte.CreateText("Text Field: ", 10));
+
 		TextField* tf = new TextField({ 10,10,0 }, graphyte);
 		text_fields.push_back(tf);
-		Debug_Block.Add_Stacked_Element(tf);
+		Simulation_Parameters.Add_Inline_Element(tf);
 
 		//Mainloop time 
 		while (!quit)    

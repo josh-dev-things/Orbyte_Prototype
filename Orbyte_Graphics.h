@@ -528,11 +528,33 @@ public:
 	}
 };
 
+class FieldValue
+{
+protected:
+	virtual bool Validate(std::string content);
+public:
+	virtual void ReadField(std::string content);
+};
+
+class DoubleFieldValue : public FieldValue
+{
+private:
+	bool Validate(std::string content) override
+	{
+
+	}
+};
+
+class StringFieldValue : public FieldValue
+{
+
+};
+
 class TextField : public Text
 {
 private:
 	SDL_Color text_color = { 255, 255, 255, 0xFF };
-	std::string input_text = "Enter Some Text: ";
+	std::string input_text = " ";
 	bool enabled = false;
 	Button* button = NULL;
 
@@ -553,9 +575,10 @@ private:
 		button->SetDimensions(dimensions);
 	}
 public:
-	TextField(vector3 position, Graphyte& g) : Text(*g.GetTextParams("Enter Some Text: ", 16, text_color))
+	TextField(vector3 position, Graphyte& g, std::string default_text = "This Is An Input Field") : Text(*g.GetTextParams(default_text, 16, text_color))
 	{
 		vector3 dimensions = { Get_Texture().getWidth(), Get_Texture().getHeight(), 0 };
+		input_text = default_text;
 		button = new Button(position, dimensions);
 		Set_Position({ position.x, position.y, 10 });
 		g.AddTextToRenderQueue(this); //Beautiful
@@ -667,13 +690,26 @@ struct GUI_Block //"Blocks" are collections of text elements to help with positi
 			new_pos.y  = above_this->Get_Position().y - (above_this->Get_Texture().getHeight());
 		}
 
-		std::cout<< position.Debug() << "=>" << new_pos.Debug() << " WIDTH IS: " << text->Get_Texture().getWidth() / 2 << "\n";
+		//std::cout<< position.Debug() << "=>" << new_pos.Debug() << " WIDTH IS: " << text->Get_Texture().getWidth() / 2 << "\n";
 
 		text->Set_Position_TL(new_pos);
 		elements.push_back(text);
 	}
 
-	//void Move();//TODO
+	void Add_Inline_Element(Text* text)
+	{
+		vector3 new_pos = position;
+		if (elements.size() > 0)
+		{
+			Text* left = elements.back();
+			new_pos.y = left->Get_Position().y;
+			new_pos.x = left->Get_Position().x + left->Get_Texture().getWidth();
+		}
+		text->Set_Position_TL(new_pos);
+		elements.push_back(text);
+	}
+
+	
 };
 
 #endif /*ORBYTE_GRAPHICS_H*/
