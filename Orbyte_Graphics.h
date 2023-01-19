@@ -540,7 +540,7 @@ protected:
 public:
 	virtual void ReadField(std::string content) 
 	{
-		this->ReadField(content);
+		//Maybe just copy over all the code from DFV? Not entirely sure what you'll do here :/ Good luck!
 	}
 };
 
