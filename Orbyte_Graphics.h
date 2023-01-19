@@ -538,7 +538,7 @@ public:
 
 class DoubleFieldValue : public FieldValue
 {
-private:
+public:
 	double* value = NULL; // This is the pointer to the variable the input field is associated with. E.g. time step or object mass
 	bool Validate(std::string content) override
 	{
@@ -580,7 +580,7 @@ public:
 
 class StringFieldValue : public FieldValue
 {
-
+	// TODO: Implement lol.
 };
 
 class TextField : public Text
@@ -590,6 +590,7 @@ private:
 	std::string input_text = " ";
 	bool enabled = false;
 	Button* button = NULL;
+	FieldValue fvalue;
 
 	void Update_Text()
 	{
@@ -607,11 +608,17 @@ private:
 		vector3 dimensions = { Get_Texture().getWidth(), Get_Texture().getHeight(), 0 };
 		button->SetDimensions(dimensions);
 	}
+
+	void write_value()
+	{
+		fvalue.ReadField(text);
+	}
 public:
-	TextField(vector3 position, Graphyte& g, std::string default_text = "This Is An Input Field") : Text(*g.GetTextParams(default_text, 16, text_color))
+	TextField(vector3 position, FieldValue writeto, Graphyte& g, std::string default_text = "This Is An Input Field") : Text(*g.GetTextParams(default_text, 16, text_color))
 	{
 		vector3 dimensions = { Get_Texture().getWidth(), Get_Texture().getHeight(), 0 };
 		input_text = default_text;
+		fvalue = writeto;
 		button = new Button(position, dimensions);
 		Set_Position({ position.x, position.y, 10 });
 		g.AddTextToRenderQueue(this); //Beautiful
@@ -668,6 +675,13 @@ public:
 		return false;
 	}
 
+	void Commit()
+	{
+		write_value();
+		update_button_dimensions();
+		// We do this so that the button resizes after this new text commit.
+	}
+
 	void Enable()
 	{
 		SDL_StartTextInput();
@@ -678,7 +692,7 @@ public:
 	{
 		SDL_StopTextInput();
 		enabled = false;
-		update_button_dimensions(); // We do this so that the button resizes after this new text commit.
+		Commit();
 		std::cout << "Disabled text";
 	}
 

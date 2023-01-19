@@ -26,7 +26,7 @@ const int SCREEN_HEIGHT = 800;
 const int SCREEN_FPS = 60;
 const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
 const int MAX_FPS = 120;
-float time_scale = 1;
+double time_scale = 1;
 bool LMB_Down = false;
 
 //Globally used font
@@ -161,6 +161,14 @@ void close()
 	SDL_Quit();
 }
 
+void commit_to_text_field()
+{
+	if (active_text_field != NULL)
+	{
+		active_text_field->Commit();
+	}
+}
+
 void click(int mX, int mY)
 {
 	std::cout << "\n" << mX << " " << mY << "\n";
@@ -229,8 +237,8 @@ int main(int argc, char* args[])
 
 		//Testing input fields I guess
 		Simulation_Parameters.Add_Stacked_Element(graphyte.CreateText("Text Field: ", 10));
-
-		TextField* tf = new TextField({ 10,10,0 }, graphyte);
+		DoubleFieldValue TimeScaleFV(&time_scale);
+		TextField* tf = new TextField({ 10,10,0 }, TimeScaleFV, graphyte, std::to_string(time_scale));
 		text_fields.push_back(tf);
 		Simulation_Parameters.Add_Inline_Element(tf);
 
