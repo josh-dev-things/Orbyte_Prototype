@@ -530,21 +530,31 @@ public:
 
 class FieldValue
 {
+private:
+
 protected:
-	virtual bool Validate(std::string content);
+	virtual bool ValidateValue(std::string content)
+	{
+		return false;
+	}
 public:
-	virtual void ReadField(std::string content);
+	virtual void ReadField(std::string content) 
+	{
+		this->ReadField(content);
+	}
 };
 
 class DoubleFieldValue : public FieldValue
 {
-public:
+private:
 	double* value = NULL; // This is the pointer to the variable the input field is associated with. E.g. time step or object mass
-	bool Validate(std::string content) override
+	bool ValidateValue(std::string content) override
 	{
 		try
 		{
+			std::cout << "Trying to validate a double field";
 			double test_validity = atof(content.c_str());
+			std::cout << content << "=>" << test_validity;
 			if (test_validity == NULL || test_validity == 0)
 			{
 				throw(content);
@@ -567,8 +577,10 @@ public:
 
 	void ReadField(std::string content) override
 	{
-		if (Validate(content))
+		std::cout << "AAAAAAAAAAAA";
+		if (ValidateValue(content))
 		{
+			std::cout << "\n Valid field content";
 			if (value != NULL)
 			{
 				double new_value = atof(content.c_str());
@@ -677,6 +689,7 @@ public:
 
 	void Commit()
 	{
+		std::cout << "\n Committing to text field value! \n";
 		write_value();
 		update_button_dimensions();
 		// We do this so that the button resizes after this new text commit.
