@@ -539,9 +539,42 @@ public:
 class DoubleFieldValue : public FieldValue
 {
 private:
+	double* value = NULL; // This is the pointer to the variable the input field is associated with. E.g. time step or object mass
 	bool Validate(std::string content) override
 	{
+		try
+		{
+			double test_validity = atof(content.c_str());
+			if (test_validity == NULL || test_validity == 0)
+			{
+				throw(content);
+			}
+			else {
+				return true;
+			}
+		}
+		catch (std::string bad)
+		{
+			std::cout << "\n Bad input recieved: " << bad;
+			return false;
+		}
+	}
+public:
+	DoubleFieldValue(double* write_to)
+	{
+		value = write_to;
+	}
 
+	void ReadField(std::string content) override
+	{
+		if (Validate(content))
+		{
+			if (value != NULL)
+			{
+				double new_value = atof(content.c_str());
+				*value = new_value; // Writing to original value held in pointer. This may be broken future josh.
+			}
+		}
 	}
 };
 
