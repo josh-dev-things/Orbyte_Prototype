@@ -538,10 +538,7 @@ protected:
 		return false;
 	}
 public:
-	virtual void ReadField(std::string content) 
-	{
-		//Maybe just copy over all the code from DFV? Not entirely sure what you'll do here :/ Good luck!
-	}
+	virtual void ReadField(std::string content) = 0;
 };
 
 class DoubleFieldValue : public FieldValue
@@ -602,7 +599,7 @@ private:
 	std::string input_text = " ";
 	bool enabled = false;
 	Button* button = NULL;
-	FieldValue fvalue;
+	FieldValue &fvalue;
 
 	void Update_Text()
 	{
