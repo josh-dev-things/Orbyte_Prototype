@@ -236,11 +236,14 @@ int main(int argc, char* args[])
 		Simulation_Parameters.Add_Stacked_Element(text_sp);
 
 		//Testing input fields I guess
-		Simulation_Parameters.Add_Stacked_Element(graphyte.CreateText("Time Scale: ", 10));
+		Simulation_Parameters.Add_Stacked_Element(graphyte.CreateText("Time Scale [0.1 | 1 | 86400]: ", 10));
 		DoubleFieldValue TimeScaleFV(&time_scale);
 		TextField* tf = new TextField({ 10,10,0 }, TimeScaleFV, graphyte, std::to_string(time_scale));
 		text_fields.push_back(tf);
 		Simulation_Parameters.Add_Inline_Element(tf);
+
+		//Testing buttons I guess
+		//TODO: Instantiate button with: AN ICON :D This is going to be hell, good luck :)
 
 		//Mainloop time 
 		while (!quit)    
