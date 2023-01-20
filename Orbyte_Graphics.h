@@ -530,13 +530,6 @@ public:
 
 class FieldValue
 {
-private:
-
-protected:
-	virtual bool ValidateValue(std::string content)
-	{
-		return false;
-	}
 public:
 	virtual void ReadField(std::string content) = 0;
 };
@@ -545,7 +538,7 @@ class DoubleFieldValue : public FieldValue
 {
 private:
 	double* value = NULL; // This is the pointer to the variable the input field is associated with. E.g. time step or object mass
-	bool ValidateValue(std::string content) override
+	bool ValidateValue(std::string content)
 	{
 		try
 		{
@@ -574,7 +567,6 @@ public:
 
 	void ReadField(std::string content) override
 	{
-		std::cout << "AAAAAAAAAAAA";
 		if (ValidateValue(content))
 		{
 			std::cout << "\n Valid field content";
@@ -582,6 +574,7 @@ public:
 			{
 				double new_value = atof(content.c_str());
 				*value = new_value; // Writing to original value held in pointer. This may be broken future josh.
+				std::cout << "\n Successfully wrote to value from input field!  \n"<< new_value;
 			}
 		}
 	}
@@ -623,11 +616,11 @@ private:
 		fvalue.ReadField(text);
 	}
 public:
-	TextField(vector3 position, FieldValue writeto, Graphyte& g, std::string default_text = "This Is An Input Field") : Text(*g.GetTextParams(default_text, 16, text_color))
+	TextField(vector3 position, FieldValue& writeto, Graphyte& g, std::string default_text = "This Is An Input Field") : 
+		Text(*g.GetTextParams(default_text, 16, text_color)), fvalue(writeto)
 	{
 		vector3 dimensions = { Get_Texture().getWidth(), Get_Texture().getHeight(), 0 };
 		input_text = default_text;
-		fvalue = writeto;
 		button = new Button(position, dimensions);
 		Set_Position({ position.x, position.y, 10 });
 		g.AddTextToRenderQueue(this); //Beautiful
