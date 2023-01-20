@@ -487,8 +487,12 @@ private:
 	int width;
 	int height;
 	int left_wall_offset;
+	std::function<void()>& on_click;
+	std::function<void()>& off_click;
+	
 public:
-	Button(vector3 pos, vector3 dimensions)
+	Button(vector3 pos, vector3 dimensions, std::function<void()>& on_click_method, std::function<void()>& off_click_method)
+	: on_click(on_click_method), off_click(off_click_method)
 	{
 		position = pos;
 		width = dimensions.x;
@@ -547,7 +551,7 @@ private:
 			std::cout << content << "=>" << test_validity;
 			if (test_validity == NULL || test_validity == 0)
 			{
-				throw(content);
+				throw(content); // Knew I was tired when I found the "throw" and "catch" system the funniest thing ever invented
 			}
 			else {
 				return true;
@@ -555,7 +559,7 @@ private:
 		}
 		catch (std::string bad)
 		{
-			std::cout << "\n Bad input recieved: " << bad;
+			std::cout << "\n Bad input recieved: " << bad; // Its bad
 			return false;
 		}
 	}

@@ -178,7 +178,7 @@ void click(int mX, int mY)
 	}
 	active_text_field = NULL;
 
-	for (TextField* tf : text_fields)
+	for (TextField* tf : text_fields) // TODO: I dont want to iterate through text fields, I want to iterate through all buttons. Figure out how to do this.
 	{
 		if (tf->CheckForClick(mX, mY))
 		{
