@@ -487,12 +487,9 @@ private:
 	int width;
 	int height;
 	int left_wall_offset;
-	std::function<void()>& on_click;
-	std::function<void()>& off_click;
 	
 public:
-	Button(vector3 pos, vector3 dimensions, std::function<void()>& on_click_method, std::function<void()>& off_click_method)
-	: on_click(on_click_method), off_click(off_click_method)
+	Button(vector3 pos, vector3 dimensions)
 	{
 		position = pos;
 		width = dimensions.x;
@@ -529,6 +526,17 @@ public:
 		bool in_area = 0 <= AB*AM && AB*AM <= AB*AB && 0 <= BC*BM && BC*BM <= BC*BC;
 		std::cout << "\n RESULT: " << in_area;
 		return in_area;
+	}
+};
+
+class FunctionButton : Button
+{
+private:
+	std::function<void()>& function;
+	FunctionButton(std::function<void()>& f, vector3 pos, vector3 dimensions) : Button(pos, dimensions),
+		function(f)
+	{
+		//TODO Implement... This is the solution to a generalised button class.
 	}
 };
 
