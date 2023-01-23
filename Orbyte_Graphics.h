@@ -325,6 +325,16 @@ public:
 	}
 };
 
+class Icon
+{
+private:
+	GTexture texture = NULL;
+public:
+	int pos_x; //Position along x axis in screenspace
+	int pos_y; //Position along y axis in screenspace
+	std::string path_to_image;
+	bool visible = true;
+};
 /*
 	Handles all graphics for the application. This includes all pixel writes to the screen; loading and writing to textures; rendering
 */
@@ -536,7 +546,18 @@ private:
 	FunctionButton(std::function<void()>& f, vector3 pos, vector3 dimensions) : Button(pos, dimensions),
 		function(f)
 	{
-		//TODO Implement... This is the solution to a generalised button class.
+		std::cout << "\n Instantiated a function button \n";
+	}
+public:
+	bool CheckForClick(int x, int y)
+	{
+		if (Clicked(x, y))
+		{
+			//Button has been clicked => 
+			function();
+			return true;
+		}
+		return false;
 	}
 };
 
