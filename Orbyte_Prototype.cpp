@@ -229,6 +229,7 @@ int main(int argc, char* args[])
 		Text* text_FPS_Display = graphyte.CreateText("TESTING TEXT DEBUG", 10);
 		Simulation_Parameters.Add_Stacked_Element(text_FPS_Display);
 
+
 		Text* text_Vertex_Count_Display = graphyte.CreateText("Vertices", 10);
 		Simulation_Parameters.Add_Stacked_Element(text_Vertex_Count_Display);
 
@@ -243,6 +244,8 @@ int main(int argc, char* args[])
 		Simulation_Parameters.Add_Inline_Element(tf);
 
 		//Testing buttons I guess
+		std::string path_to_icon = "icons/add.bmp";
+		graphyte.CreateIcon(path_to_icon);
 		//TODO: Instantiate button with: AN ICON :D This is going to be hell, good luck :)
 
 		//Mainloop time 

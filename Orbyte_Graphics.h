@@ -325,6 +325,9 @@ public:
 	}
 };
 
+/*
+	Icon class. This includes an image that can be used for buttons.
+*/
 class Icon
 {
 private:
@@ -334,7 +337,49 @@ public:
 	int pos_y; //Position along y axis in screenspace
 	std::string path_to_image;
 	bool visible = true;
+
+	Icon(std::string path, std::vector<int> position, SDL_Renderer& _renderer)
+		: texture(GTexture(&_renderer, NULL))
+	{
+		//Constructor for the text class.
+		path_to_image = path;
+
+		if (!texture.loadFromFile(path))
+		{
+			printf("Failed to render icon texture!\n");
+			free();
+		}
+		pos_x = position[0];
+		pos_y = position[1];
+	}
+
+	int Render(const vector3 screen_dimensions)
+	{
+		int s_x = screen_dimensions.x;
+		int s_y = screen_dimensions.y;
+
+		if (pos_x < s_x && pos_y < s_y && visible)
+		{
+			//t->Debug();
+			//x + SCREEN_WIDTH / 2, -y + SCREEN_HEIGHT / 2
+			//std::cout << "Trying to render @: " << pos_x << "," << pos_y<<"\n";
+			texture.render(pos_x + (s_x) / 2, -pos_y + (s_y) / 2);
+		}
+		return 0;
+	}
+
+	vector3 GetDimensions()
+	{
+		return vector3{ (double)texture.getWidth(), (double)texture.getHeight(), 0 };
+	}
+
+	void free()
+	{
+		texture.free();
+
+	}
 };
+
 /*
 	Handles all graphics for the application. This includes all pixel writes to the screen; loading and writing to textures; rendering
 */
@@ -350,6 +395,7 @@ class Graphyte
 	TTF_Font* Font = NULL; //True Type Font. Needs to be loaded at init.
 
 	std::vector<Text*> texts; //Vector of text elements to be drawn to the screen.
+	std::vector<Icon*> icons; //Vectorr of icon elements to be drawn to the screen.
 	std::vector<SDL_Point> points; //Vector of points to be drawn to the screen. Iterate through & draw each point to screen as a pixel.
 
 	public:  //Public attributes & Methods
@@ -379,6 +425,14 @@ class Graphyte
 		return newText;
 	}
 
+	Icon* CreateIcon(std::string path)
+	{
+		Icon* newIcon = new Icon(path, {0, 0}, *Renderer);
+		std::cout << "\nCreated new Icon: " << path << "\n";
+		AddIconToRenderQueue(newIcon);
+		return newIcon;
+	}
+
 	Text* GetTextParams(std::string str, int font_size, SDL_Color color = { 255, 255, 255 }) // There is a nuance between these two methods. See textfield
 	{
 		Text* newText = new Text(str, font_size, { 0, 0 }, *Renderer, *Font, color);
@@ -389,6 +443,11 @@ class Graphyte
 	void AddTextToRenderQueue(Text* newText)
 	{
 		texts.push_back(newText);
+	}
+
+	void AddIconToRenderQueue(Icon* icon)
+	{
+		icons.push_back(icon);
 	}
 
 	vector3 Get_Screen_Dimensions()
@@ -445,6 +504,12 @@ class Graphyte
 		for (Text* t : texts)
 		{
 			t->Render({ SCREEN_WIDTH, SCREEN_HEIGHT, 0 });
+		}
+
+		for (Icon* i : icons)
+		{
+			i->Render({ SCREEN_WIDTH, SCREEN_HEIGHT, 0 });
+			
 		}
 
 		SDL_RenderPresent(Renderer);
@@ -543,10 +608,12 @@ class FunctionButton : Button
 {
 private:
 	std::function<void()>& function;
-	FunctionButton(std::function<void()>& f, vector3 pos, vector3 dimensions) : Button(pos, dimensions),
-		function(f)
+	Icon& icon;
+	FunctionButton(std::function<void()>& f, vector3 pos, vector3 dimensions, Icon& _icon) : Button(pos, dimensions),
+		function(f), icon(_icon)
 	{
 		std::cout << "\n Instantiated a function button \n";
+		SetDimensions(icon.GetDimensions());
 	}
 public:
 	bool CheckForClick(int x, int y)
