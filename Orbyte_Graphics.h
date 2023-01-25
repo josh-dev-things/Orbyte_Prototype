@@ -178,7 +178,7 @@ public:
 	}
 
 	//Renders texture at given point
-	void render(int x, int y, SDL_Rect* clip = NULL, double angle = 0.0, SDL_Point* center = NULL, SDL_RendererFlip flip = SDL_FLIP_NONE)
+	void render(int x, int y, int override_width = NULL, int override_height = NULL, SDL_Rect* clip = NULL, double angle = 0.0, SDL_Point* center = NULL, SDL_RendererFlip flip = SDL_FLIP_NONE)
 	{
 		//Set rendering space and render to screen
 		SDL_Rect renderQuad = { x, y, mWidth, mHeight };
@@ -191,6 +191,16 @@ public:
 
 			SDL_QueryTexture(mTexture, NULL, NULL, &dst.w, &dst.h);
 			//printf("Problems accessing text: %s\n", SDL_GetError());
+
+			if (override_width)
+			{
+				dst.w = override_width;
+			}
+
+			if (override_height)
+			{
+				dst.h = override_height;
+			}
 		}
 		if (SDL_RenderCopy(renderer, mTexture, NULL, &renderQuad) == -1) {
 			//mTexture seems to be a problem => https://stackoverflow.com/questions/25738096/c-sdl2-error-when-trying-to-render-sdl-texture-invalid-texture FIXED
@@ -337,8 +347,9 @@ public:
 	int pos_y; //Position along y axis in screenspace
 	std::string path_to_image;
 	bool visible = true;
+	std::vector<int> dimensions;
 
-	Icon(std::string path, std::vector<int> position, SDL_Renderer& _renderer)
+	Icon(std::string path, std::vector<int> position, std::vector<int> _dimensions, SDL_Renderer& _renderer)
 		: texture(GTexture(&_renderer, NULL))
 	{
 		//Constructor for the text class.
@@ -351,6 +362,7 @@ public:
 		}
 		pos_x = position[0];
 		pos_y = position[1];
+		dimensions = _dimensions;
 	}
 
 	int Render(const vector3 screen_dimensions)
@@ -363,14 +375,26 @@ public:
 			//t->Debug();
 			//x + SCREEN_WIDTH / 2, -y + SCREEN_HEIGHT / 2
 			//std::cout << "Trying to render @: " << pos_x << "," << pos_y<<"\n";
-			texture.render(pos_x + (s_x) / 2, -pos_y + (s_y) / 2);
+			texture.render(pos_x + (s_x) / 2, -pos_y + (s_y) / 2, dimensions[0], dimensions[1]);
 		}
 		return 0;
 	}
 
+	void SetPosition(vector3 new_position)
+	{
+		vector3 my_dimensions = GetDimensions();
+		pos_x = new_position.x - (my_dimensions.x / 2);
+		pos_y = new_position.y + (my_dimensions.y / 2);
+	}
+
+	void SetDimensions(std::vector<int> new_dimensions)
+	{
+		dimensions = new_dimensions;
+	}
+
 	vector3 GetDimensions()
 	{
-		return vector3{ (double)texture.getWidth(), (double)texture.getHeight(), 0 };
+		return { (double)dimensions[0], (double)dimensions[1], 0 };
 	}
 
 	void free()
@@ -425,9 +449,9 @@ class Graphyte
 		return newText;
 	}
 
-	Icon* CreateIcon(std::string path)
+	Icon* CreateIcon(std::string path, std::vector<int> dimensions)
 	{
-		Icon* newIcon = new Icon(path, {0, 0}, *Renderer);
+		Icon* newIcon = new Icon(path, {0, 0}, dimensions, *Renderer);
 		std::cout << "\nCreated new Icon: " << path << "\n";
 		AddIconToRenderQueue(newIcon);
 		return newIcon;
@@ -613,7 +637,9 @@ private:
 		function(f), icon(_icon)
 	{
 		std::cout << "\n Instantiated a function button \n";
-		SetDimensions(icon.GetDimensions());
+		icon.SetPosition(pos);
+		icon.SetDimensions({ dimensions.x, dimensions.y });
+
 	}
 public:
 	bool CheckForClick(int x, int y)
