@@ -192,14 +192,15 @@ public:
 			SDL_QueryTexture(mTexture, NULL, NULL, &dst.w, &dst.h);
 			//printf("Problems accessing text: %s\n", SDL_GetError());
 
-			if (override_width)
+			if (override_width != NULL)
 			{
-				dst.w = override_width;
+				renderQuad.w = override_width;
+				//std::cout << "Overrided width of an icon: " << override_width;
 			}
 
-			if (override_height)
+			if (override_height != NULL)
 			{
-				dst.h = override_height;
+				renderQuad.h = override_height;
 			}
 		}
 		if (SDL_RenderCopy(renderer, mTexture, NULL, &renderQuad) == -1) {
@@ -633,15 +634,16 @@ class FunctionButton : Button
 private:
 	std::function<void()>& function;
 	Icon& icon;
-	FunctionButton(std::function<void()>& f, vector3 pos, vector3 dimensions, Icon& _icon) : Button(pos, dimensions),
+public:
+	FunctionButton(std::function<void()> f, vector3 pos, vector3 dimensions, Icon _icon) : Button(pos, dimensions),
 		function(f), icon(_icon)
 	{
 		std::cout << "\n Instantiated a function button \n";
 		icon.SetPosition(pos);
-		icon.SetDimensions({ dimensions.x, dimensions.y });
+		icon.SetDimensions({ (int)dimensions.x, (int)dimensions.y });
 
 	}
-public:
+
 	bool CheckForClick(int x, int y)
 	{
 		if (Clicked(x, y))

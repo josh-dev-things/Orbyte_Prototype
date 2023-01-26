@@ -197,6 +197,11 @@ Uint32 Update_Clock() //https://lazyfoo.net/tutorials/SDL/25_capping_frame_rate/
 	return delta; //Put this in a seperate time class. Time.deltaTime etc.
 }
 
+void test_method()
+{
+	std::cout << "\nTHIS IS A MESSAGE FROM A TEST METHOD\n";
+}
+
 int main(int argc, char* args[])
 {
 	//Start up SDL and create window
@@ -245,7 +250,9 @@ int main(int argc, char* args[])
 
 		//Testing buttons I guess
 		std::string path_to_icon = "icons/add.bmp";
-		graphyte.CreateIcon(path_to_icon);
+		std::function<void()> fucking_hell = test_method;
+		Icon* test_icon = graphyte.CreateIcon(path_to_icon, {25, 25}); // Not a big fan of this. Look at how you handle textures in text fields & replicate pls
+		FunctionButton test_functionbutton(fucking_hell, {0, 0, 0}, {25, 25, 0}, *test_icon);
 		//TODO: Instantiate button with: AN ICON :D This is going to be hell, good luck :)
 
 		//Mainloop time 
