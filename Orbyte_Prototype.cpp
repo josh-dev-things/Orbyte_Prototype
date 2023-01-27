@@ -45,6 +45,7 @@ SDL_Renderer* gRenderer = NULL;
 Graphyte graphyte;
 TextField* active_text_field = NULL; //This pointer will be used to edit text fields
 std::vector<TextField*> text_fields;
+std::vector<FunctionButton*> function_buttons; //It is possible to handle the input methods in a tidier way, but alas this is all I have time for.
 
 
 //Runtime variables
@@ -187,6 +188,11 @@ void click(int mX, int mY)
 			return;
 		}
 	}
+
+	for (FunctionButton* fb : function_buttons)
+	{
+		fb->CheckForClick(mX, mY);
+	}
 }
 
 Uint32 Update_Clock() //https://lazyfoo.net/tutorials/SDL/25_capping_frame_rate/index.php
@@ -250,9 +256,8 @@ int main(int argc, char* args[])
 
 		//Testing buttons I guess
 		std::string path_to_icon = "icons/add.bmp";
-		std::function<void()> fucking_hell = test_method;
-		Icon* test_icon = graphyte.CreateIcon(path_to_icon, {25, 25}); // Not a big fan of this. Look at how you handle textures in text fields & replicate pls
-		FunctionButton test_functionbutton(fucking_hell, {0, 0, 0}, {25, 25, 0}, *test_icon);
+		FunctionButton test_functionbutton(test_method, {100, 100, 0}, {25, 25, 0}, graphyte, path_to_icon);
+		function_buttons.push_back(&test_functionbutton);
 		//TODO: Instantiate button with: AN ICON :D This is going to be hell, good luck :)
 
 		//Mainloop time 

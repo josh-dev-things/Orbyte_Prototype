@@ -377,6 +377,7 @@ public:
 			//x + SCREEN_WIDTH / 2, -y + SCREEN_HEIGHT / 2
 			//std::cout << "Trying to render @: " << pos_x << "," << pos_y<<"\n";
 			texture.render(pos_x + (s_x) / 2, -pos_y + (s_y) / 2, dimensions[0], dimensions[1]);
+			//std::cout << "\nTrying to draw icon @ " << pos_x << " " << pos_y;
 		}
 		return 0;
 	}
@@ -386,6 +387,7 @@ public:
 		vector3 my_dimensions = GetDimensions();
 		pos_x = new_position.x - (my_dimensions.x / 2);
 		pos_y = new_position.y + (my_dimensions.y / 2);
+		//This works.
 	}
 
 	void SetDimensions(std::vector<int> new_dimensions)
@@ -632,16 +634,14 @@ public:
 class FunctionButton : Button
 {
 private:
-	std::function<void()>& function;
-	Icon& icon;
+	std::function<void()> function;
+	Icon* icon;
 public:
-	FunctionButton(std::function<void()> f, vector3 pos, vector3 dimensions, Icon _icon) : Button(pos, dimensions),
-		function(f), icon(_icon)
+	FunctionButton(std::function<void()> f, vector3 pos, std::vector<int> dimensions, Graphyte& g, std::string path_to_icon) : Button(pos, {(double)dimensions[0], (double)dimensions[1], 0}),
+		function(f), icon(g.CreateIcon(path_to_icon, dimensions))
 	{
-		std::cout << "\n Instantiated a function button \n";
-		icon.SetPosition(pos);
-		icon.SetDimensions({ (int)dimensions.x, (int)dimensions.y });
-
+		std::cout << "\n Instantiated a function button. Method present?: " << (bool)f << "\n";
+		icon->SetPosition(pos);
 	}
 
 	bool CheckForClick(int x, int y)
@@ -761,7 +761,7 @@ public:
 		pos_y = position.y + texture.getHeight() / 2;
 		visible = position.z >= 0;
 
-		button->SetPosition(position); //There's a bug here
+		button->SetPosition(position); //There's a bug here [Edit: I dont know when I wrote this so am not sure if its fixed tbh]
 	}
 
 	void Set_Position_TL(vector3 pos) override
