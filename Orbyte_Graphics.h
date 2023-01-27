@@ -295,6 +295,11 @@ public:
 		visible = pos.z >= 0;
 	}
 
+	void Set_Visibility(bool is_visible)
+	{
+		visible = is_visible;
+	}
+
 	GTexture& Get_Texture()
 	{
 		return texture;
@@ -856,6 +861,22 @@ struct GUI_Block //"Blocks" are collections of text elements to help with positi
 	{
 		elements.push_back(text);
 		text->Set_Position_TL(position + relative_position);
+	}
+
+	void Hide()
+	{
+		for (Text* t : elements)
+		{
+			t->Set_Visibility(false);
+		}
+	}
+
+	void Show()
+	{
+		for (Text* t : elements)
+		{
+			t->Set_Visibility(true);
+		}
 	}
 
 	void Add_Stacked_Element(Text* text) //This method adds the text to the bottom of the block.

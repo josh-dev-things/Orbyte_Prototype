@@ -335,6 +335,8 @@ public:
 		std::cout << "Instantiated Orbiting Body with initial position: " << start_pos.Debug() << " and velocity: " << velocity.Debug() << "\n";
 		
 		vertices = Generate_Vertices(scale);
+
+		// TODO: Generate Orbit-Body specific GUI Blocks that can be toggled visibility. This'll be a challenge, good luck!
 	}
 
 	OrbitBodyData GetOrbitBodyData() //To be used when saving to a .orbyte file

@@ -223,13 +223,13 @@ int main(int argc, char* args[])
 		std::vector<Body> orbiting_bodies;
 		
 		Body earth = Body("Earth", {0, 1.49E11, 0}, 6.37E6, { 30000, 0, 0 }, Sun, graphyte, false); //152000000000 metres. That number is too large so we have a problem
-		Body mercury = Body("Mercury", { 0, 5.06E10, 0 }, 2.44E6, { 47000, 0, 0 }, Sun, graphyte, false);
-		Body venus = Body("Venus", { 0, 1E11, 0 }, 6E6, { 35000, 0, 0 }, Sun, graphyte, false);
+		/*Body mercury = Body("Mercury", { 0, 5.06E10, 0 }, 2.44E6, { 47000, 0, 0 }, Sun, graphyte, false);
+		Body venus = Body("Venus", { 0, 1E11, 0 }, 6E6, { 35000, 0, 0 }, Sun, graphyte, false);*/
 
 
 		orbiting_bodies.emplace_back(earth); 
-		orbiting_bodies.emplace_back(mercury);
-		orbiting_bodies.emplace_back(venus);
+		/*orbiting_bodies.emplace_back(mercury);
+		orbiting_bodies.emplace_back(venus);*/
 
 		//DEBUG
 		GUI_Block Simulation_Parameters(vector3{ -SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 0});
@@ -259,6 +259,9 @@ int main(int argc, char* args[])
 		FunctionButton test_functionbutton(test_method, {100, 100, 0}, {25, 25, 0}, graphyte, path_to_icon);
 		function_buttons.push_back(&test_functionbutton);
 		//TODO: Instantiate button with: AN ICON :D This is going to be hell, good luck :)
+
+		//Testing GUI Block visibility
+		//Simulation_Parameters.Hide();
 
 		//Mainloop time 
 		while (!quit)    
