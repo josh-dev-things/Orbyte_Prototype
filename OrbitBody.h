@@ -156,12 +156,28 @@ protected:
 	vector3 acceleration{ 0, 0, 0 };
 	double mu = 0;
 
-	//Label
-	Text* label = NULL;
+	//Labels
+	Text* name_label = NULL;
+	Text* inspector_name = NULL;
+	Text* inspector_radius = NULL;
+	Text* inspector_velocity = NULL;
+	Text* inspector_acceleration = NULL;
+
 
 	//GUI
 	GUI_Block* gui = NULL;
 	
+	void update_inspector()
+	{
+		if (gui->is_visible)
+		{
+			if (inspector_name != NULL){ inspector_name->Set_Text(name);}//The set text method checks if we are making a redundant set => more performant
+			if (inspector_radius != NULL) { inspector_name->Set_Text("Radius: " + std::to_string(Magnitude(position))); }
+			if (inspector_velocity != NULL) { inspector_name->Set_Text("Velocity: " + velocity.Debug()); }
+			if (inspector_acceleration != NULL) { inspector_name->Set_Text("Acceleration: " + acceleration.Debug()); }
+		}
+	}
+
 	std::vector<vector3> two_body_ode(float t, vector3 _r, vector3 _v)
 	{
 		vector3 r = _r; //r.z is wrong
@@ -319,9 +335,9 @@ public:
 		position = _center;
 		radius = Magnitude(position);
 
-		label = g.CreateText(_name, 16);
-		label->pos_x = 100;
-		label->pos_y = 100;
+		name_label = g.CreateText(_name, 16);
+		name_label->pos_x = 100;
+		name_label->pos_y = 100;
 
 		mu = central_body.mu;
 		name = _name;
@@ -341,6 +357,17 @@ public:
 
 		// TODO: Generate Orbit-Body specific GUI Blocks that can be toggled visibility. This'll be a challenge, good luck!
 		gui = new GUI_Block(); // I suspect this is about to become null once the constructor finishes, but who know!
+		vector3 screen_dimensions = g.Get_Screen_Dimensions();
+		gui->position = {(screen_dimensions.x / 2) - 200, -(screen_dimensions.y / 2) + 100, 0 };
+		inspector_name = g.CreateText(name + ": ", 12);
+		gui->Add_Stacked_Element(inspector_name);
+		inspector_radius = g.CreateText(std::to_string(Magnitude(position)), 12);
+		gui->Add_Stacked_Element(inspector_radius);
+		inspector_velocity = g.CreateText(" ", 12);
+		gui->Add_Stacked_Element(inspector_velocity);
+		inspector_acceleration = g.CreateText(" ", 12);
+		gui->Add_Stacked_Element(inspector_acceleration);
+
 	}
 
 	OrbitBodyData GetOrbitBodyData() //To be used when saving to a .orbyte file
@@ -395,6 +422,7 @@ public:
 		acceleration = sim_step[2];
 
 		Update_Satellites(delta, time_scale);
+		update_inspector();
 		return 0;
 	}
 
@@ -459,13 +487,13 @@ public:
 		vector3 end1 = position + vector3{scale, -scale, 0};
 		start = c.WorldSpaceToScreenSpace(start, screen_dimensions.x, screen_dimensions.y);
 		end1 = c.WorldSpaceToScreenSpace(end1, screen_dimensions.x, screen_dimensions.y);
-		vector3 end2 = end1 + vector3{ (double)label->Get_Texture().getWidth(), 0, 0 };
+		vector3 end2 = end1 + vector3{ (double)name_label->Get_Texture().getWidth(), 0, 0 };
 		vector3 label_pos = end1 + ((end2 - end1) * 0.5);
-		label_pos.y += (double)label->Get_Texture().getHeight() / 2;
+		label_pos.y += (double)name_label->Get_Texture().getHeight() / 2;
 		//Move & Draw Label: Done in the draw method because we need access to the camera and creating a new method makes no sense.
 		g.line(start.x, start.y, end1.x, end1.y);
 		g.line(end1.x, end1.y, end2.x, end2.y);
-		label->Set_Position(label_pos);
+		name_label->Set_Position(label_pos);
 		
 		
 		Draw_Arrows(g, c, start, screen_dimensions);

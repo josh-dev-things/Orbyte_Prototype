@@ -264,6 +264,11 @@ public:
 
 	int Set_Text(std::string str, SDL_Color color = {255,255,255})
 	{
+		if (str == text)
+		{
+			return 0;
+		}
+
 		if (str == "") //Just a tiny bit of redundancy to be safe.
 		{
 			str = " ";
@@ -846,6 +851,7 @@ struct GUI_Block //"Blocks" are collections of text elements to help with positi
 	//This struct is going to facilitate pretty much all application GUI. Lol.
 	std::vector<Text*> elements;
 	vector3 position;
+	bool is_visible = true;
 
 	GUI_Block(vector3 _position = {0, 0, 0})
 	{
@@ -869,6 +875,7 @@ struct GUI_Block //"Blocks" are collections of text elements to help with positi
 		{
 			t->Set_Visibility(false);
 		}
+		is_visible = false;
 	}
 
 	void Show()
@@ -877,6 +884,7 @@ struct GUI_Block //"Blocks" are collections of text elements to help with positi
 		{
 			t->Set_Visibility(true);
 		}
+		is_visible = true;
 	}
 
 	void Add_Stacked_Element(Text* text) //This method adds the text to the bottom of the block.
