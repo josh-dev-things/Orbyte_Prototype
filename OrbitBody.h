@@ -158,6 +158,9 @@ protected:
 
 	//Label
 	Text* label = NULL;
+
+	//GUI
+	GUI_Block* gui = NULL;
 	
 	std::vector<vector3> two_body_ode(float t, vector3 _r, vector3 _v)
 	{
@@ -337,6 +340,7 @@ public:
 		vertices = Generate_Vertices(scale);
 
 		// TODO: Generate Orbit-Body specific GUI Blocks that can be toggled visibility. This'll be a challenge, good luck!
+		gui = new GUI_Block(); // I suspect this is about to become null once the constructor finishes, but who know!
 	}
 
 	OrbitBodyData GetOrbitBodyData() //To be used when saving to a .orbyte file
