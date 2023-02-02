@@ -266,6 +266,7 @@ public:
 	{
 		if (str == text)
 		{
+			//std::cout << "Redundant text assignment";
 			return 0;
 		}
 

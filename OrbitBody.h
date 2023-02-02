@@ -162,6 +162,7 @@ protected:
 	Text* inspector_radius = NULL;
 	Text* inspector_velocity = NULL;
 	Text* inspector_acceleration = NULL;
+	Text* inspector_period = NULL;
 
 
 	//GUI
@@ -172,9 +173,10 @@ protected:
 		if (gui->is_visible)
 		{
 			if (inspector_name != NULL){ inspector_name->Set_Text(name);}//The set text method checks if we are making a redundant set => more performant
-			if (inspector_radius != NULL) { inspector_name->Set_Text("Radius: " + std::to_string(Magnitude(position))); }
-			if (inspector_velocity != NULL) { inspector_name->Set_Text("Velocity: " + velocity.Debug()); }
-			if (inspector_acceleration != NULL) { inspector_name->Set_Text("Acceleration: " + acceleration.Debug()); }
+			if (inspector_radius != NULL) { inspector_radius->Set_Text("Radius: " + std::to_string(Magnitude(position))); }
+			if (inspector_velocity != NULL) { inspector_velocity->Set_Text("Velocity: " + velocity.Debug()); }
+			if (inspector_acceleration != NULL) { inspector_acceleration->Set_Text("Acceleration: " + acceleration.Debug()); }
+			if (inspector_period != NULL) { inspector_period->Set_Text("Orbit Period: " + std::to_string(Calculate_Period())); }
 		}
 	}
 
@@ -361,12 +363,16 @@ public:
 		gui->position = {(screen_dimensions.x / 2) - 200, -(screen_dimensions.y / 2) + 100, 0 };
 		inspector_name = g.CreateText(name + ": ", 12);
 		gui->Add_Stacked_Element(inspector_name);
+		std::cout << inspector_name;
 		inspector_radius = g.CreateText(std::to_string(Magnitude(position)), 12);
 		gui->Add_Stacked_Element(inspector_radius);
-		inspector_velocity = g.CreateText(" ", 12);
+		inspector_velocity = g.CreateText("velocity should be here", 12);
 		gui->Add_Stacked_Element(inspector_velocity);
-		inspector_acceleration = g.CreateText(" ", 12);
+		inspector_acceleration = g.CreateText("acceleration should be here", 12);
 		gui->Add_Stacked_Element(inspector_acceleration);
+		inspector_period = g.CreateText("period should be here", 12);
+		gui->Add_Stacked_Element(inspector_period);
+		gui->Show();
 
 	}
 
