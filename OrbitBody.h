@@ -164,9 +164,11 @@ protected:
 	Text* inspector_acceleration = NULL;
 	Text* inspector_period = NULL;
 
-
 	//GUI
 	GUI_Block* gui = NULL;
+
+	//BUTTON
+	FunctionButton* f_button = NULL;
 	
 	void update_inspector()
 	{
@@ -176,7 +178,7 @@ protected:
 			if (inspector_radius != NULL) { inspector_radius->Set_Text("Radius: " + std::to_string(Magnitude(position))); }
 			if (inspector_velocity != NULL) { inspector_velocity->Set_Text("Velocity: " + velocity.Debug()); }
 			if (inspector_acceleration != NULL) { inspector_acceleration->Set_Text("Acceleration: " + acceleration.Debug()); }
-			if (inspector_period != NULL) { inspector_period->Set_Text("Orbit Period: " + std::to_string(Calculate_Period())); }
+			if (inspector_period != NULL) { inspector_period->Set_Text("Orbit Period: " + std::to_string(Calculate_Period() / (60 * 60 * 24)) + " days"); }
 		}
 	}
 
@@ -360,7 +362,7 @@ public:
 		// TODO: Generate Orbit-Body specific GUI Blocks that can be toggled visibility. This'll be a challenge, good luck!
 		gui = new GUI_Block(); // I suspect this is about to become null once the constructor finishes, but who know!
 		vector3 screen_dimensions = g.Get_Screen_Dimensions();
-		gui->position = {(screen_dimensions.x / 2) - 200, -(screen_dimensions.y / 2) + 100, 0 };
+		gui->position = {(screen_dimensions.x / 2) - 300, -(screen_dimensions.y / 2) + 100, 0 };
 		inspector_name = g.CreateText(name + ": ", 12);
 		gui->Add_Stacked_Element(inspector_name);
 		std::cout << inspector_name;
@@ -372,8 +374,20 @@ public:
 		gui->Add_Stacked_Element(inspector_acceleration);
 		inspector_period = g.CreateText("period should be here", 12);
 		gui->Add_Stacked_Element(inspector_period);
-		gui->Show();
+		gui->Hide(); // Hide the orbit body info until the button is clicked!
 
+		//Create the button
+		f_button = new FunctionButton(ShowBodyInspector, name_label->Get_Position(), { name_label->Get_Texture().getWidth(), name_label->Get_Texture().getWidth(), 0 }, g, NULL)
+	}
+
+	void ShowBodyInspector()
+	{
+		gui->Show();
+	}
+
+	void HideBodyInspector()
+	{
+		gui->Hide();
 	}
 
 	OrbitBodyData GetOrbitBodyData() //To be used when saving to a .orbyte file
@@ -544,7 +558,7 @@ public:
 		double T = 2 * 3.14159265359 * sqrt((pow(radius, 3) / mu)); //THIS DOES NOT GIVE A GOOD VALUE :(
 		double length_of_orbit = 2 * 3.14159265359 * radius; //YEP
 		double t = length_of_orbit / Magnitude(velocity); //THIS GIVES CORRECT VALUE
-		std::cout << name <<" Orbit Characteristics: \n" << T << " seconds | Calculated orbit period\n" << length_of_orbit << " metres\n" << t << " other t value\n" << mu << "\n";
+		//std::cout << name <<" Orbit Characteristics: \n" << T << " seconds | Calculated orbit period\n" << length_of_orbit << " metres\n" << t << " other t value\n" << mu << "\n";
 		return T;
 	}
 };

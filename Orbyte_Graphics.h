@@ -316,6 +316,11 @@ public:
 		return vector3{ (double)pos_x, (double)pos_y, 0 };
 	}
 
+	vector3 Get_Dimensions()
+	{
+		return vector3{ (double)texture.getWidth(), (double)texture.getHeight(), 0 };
+	}
+
 	int Render(const vector3 screen_dimensions)
 	{
 		int s_x = screen_dimensions.x;
