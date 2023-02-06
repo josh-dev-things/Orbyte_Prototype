@@ -10,6 +10,7 @@
 #include <numeric>
 #include <iostream>
 #include <functional>
+#include <regex>
 
 /*
 	A "Texture" class is a way of encapsulating the rendering of more complex graphics. Images, fonts etc. would be loaded to a texture.
@@ -423,12 +424,16 @@ public:
 	}
 };
 
+class TextField; //A Forward Declaration so nothing collapses
+
+class FunctionButton; //A Forward Declaration so nothing collapses
+
 /*
 	Handles all graphics for the application. This includes all pixel writes to the screen; loading and writing to textures; rendering
 */
 class Graphyte
 {
-	private: //Private attributes & Methods
+private: //Private attributes & Methods
 
 	const float km_per_pixel = 750; //The number of kilometres per pixel on screen.
 	double SCREEN_WIDTH = 0; //What it says on the tin.
@@ -441,7 +446,10 @@ class Graphyte
 	std::vector<Icon*> icons; //Vectorr of icon elements to be drawn to the screen.
 	std::vector<SDL_Point> points; //Vector of points to be drawn to the screen. Iterate through & draw each point to screen as a pixel.
 
-	public:  //Public attributes & Methods
+public:  //Public attributes & Methods
+	TextField* active_text_field = NULL; //This pointer will be used to edit text fields
+	std::vector<TextField*> text_fields;
+	std::vector<FunctionButton*> function_buttons; //It is possible to handle the input methods in a tidier way, but alas this is all I have time for.
 
 	bool Init(SDL_Renderer& _renderer, TTF_Font& _font, vector3 _screen_dimensions)
 	{
@@ -605,6 +613,21 @@ private:
 	int width;
 	int height;
 	int left_wall_offset;
+	std::function<void()> function = NULL;
+
+protected:
+	void CallFunction()
+	{
+		if (function != NULL)
+		{
+			function();
+		}
+	}
+
+	void AttachFunction(std::function<void()> f)
+	{
+		function = f;
+	}
 	
 public:
 	Button(vector3 pos, vector3 dimensions)
@@ -647,20 +670,23 @@ public:
 	}
 };
 
-class FunctionButton : Button
+class FunctionButton : public Button
 {
 private:
-	std::function<void()> function;
-	Icon* icon;
+	Icon* icon = NULL;
 public:
 	/// <summary>
 	/// Constructor
 	/// </summary>
-	FunctionButton(std::function<void()> f, vector3 pos, std::vector<int> dimensions, Graphyte& g, std::string path_to_icon) : Button(pos, {(double)dimensions[0], (double)dimensions[1], 0}),
-		function(f), icon(g.CreateIcon(path_to_icon, dimensions))
+	FunctionButton(std::function<void()> f, vector3 pos, vector3 dimensions, Graphyte& g, std::string path_to_icon) : Button(pos, dimensions)
 	{
 		std::cout << "\n Instantiated a function button. Method present?: " << (bool)f << "\n";
-		icon->SetPosition(pos);
+		if (path_to_icon != "")
+		{
+			icon = g.CreateIcon(path_to_icon, {(int)dimensions.x, (int)dimensions.y, 0});
+			icon->SetPosition(pos);
+		}
+		AttachFunction(f);
 	}
 
 	bool CheckForClick(int x, int y)
@@ -668,7 +694,7 @@ public:
 		if (Clicked(x, y))
 		{
 			//Button has been clicked => 
-			function();
+			CallFunction();
 			return true;
 		}
 		return false;

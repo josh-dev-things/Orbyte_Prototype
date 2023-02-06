@@ -43,9 +43,9 @@ SDL_Renderer* gRenderer = NULL;
 
 //Graphyte
 Graphyte graphyte;
-TextField* active_text_field = NULL; //This pointer will be used to edit text fields
-std::vector<TextField*> text_fields;
-std::vector<FunctionButton*> function_buttons; //It is possible to handle the input methods in a tidier way, but alas this is all I have time for.
+//TextField* active_text_field = NULL; //This pointer will be used to edit text fields
+//std::vector<TextField*> text_fields;
+//std::vector<FunctionButton*> function_buttons; //It is possible to handle the input methods in a tidier way, but alas this is all I have time for.
 
 
 //Runtime variables
@@ -164,32 +164,32 @@ void close()
 
 void commit_to_text_field()
 {
-	if (active_text_field != NULL)
+	if (graphyte.active_text_field != NULL)
 	{
-		active_text_field->Commit();
+		graphyte.active_text_field->Commit();
 	}
 }
 
 void click(int mX, int mY)
 {
 	std::cout << "\n" << mX << " " << mY << "\n";
-	if (active_text_field != NULL)
+	if (graphyte.active_text_field != NULL)
 	{
-		active_text_field->Disable();
+		graphyte.active_text_field->Disable();
 	}
-	active_text_field = NULL;
+	graphyte.active_text_field = NULL;
 
-	for (TextField* tf : text_fields) // TODO: I dont want to iterate through text fields, I want to iterate through all buttons. Figure out how to do this.
+	for (TextField* tf : graphyte.text_fields) // TODO: I dont want to iterate through text fields, I want to iterate through all buttons. Figure out how to do this.
 	{
 		if (tf->CheckForClick(mX, mY))
 		{
-			active_text_field = tf;
+			graphyte.active_text_field = tf;
 			printf("\n YOU CLICKED A THING \n");
 			return;
 		}
 	}
 
-	for (FunctionButton* fb : function_buttons)
+	for (FunctionButton* fb : graphyte.function_buttons)
 	{
 		fb->CheckForClick(mX, mY);
 	}
@@ -251,13 +251,13 @@ int main(int argc, char* args[])
 		Simulation_Parameters.Add_Stacked_Element(graphyte.CreateText("Time Scale [0.1 | 1 | 86400]: ", 10));
 		DoubleFieldValue TimeScaleFV(&time_scale);
 		TextField* tf = new TextField({ 10,10,0 }, TimeScaleFV, graphyte, std::to_string(time_scale));
-		text_fields.push_back(tf);
+		graphyte.text_fields.push_back(tf);
 		Simulation_Parameters.Add_Inline_Element(tf);
 
 		//Testing buttons I guess
 		std::string path_to_icon = "icons/add.bmp";
 		FunctionButton test_functionbutton(test_method, {100, 100, 0}, {25, 25, 0}, graphyte, path_to_icon);
-		function_buttons.push_back(&test_functionbutton);
+		graphyte.function_buttons.push_back(&test_functionbutton);
 		//TODO: Instantiate button with: AN ICON :D This is going to be hell, good luck :)
 
 		//Testing GUI Block visibility
@@ -301,9 +301,9 @@ int main(int argc, char* args[])
 
 				case SDL_TEXTINPUT:
 					printf("User is typing: %s\n", sdl_event.text.text);
-					if (active_text_field != NULL)
+					if (graphyte.active_text_field != NULL)
 					{
-						active_text_field -> Add_Character(sdl_event.text.text);
+						graphyte.active_text_field -> Add_Character(sdl_event.text.text);
 					}
 					break;
 
@@ -312,9 +312,9 @@ int main(int argc, char* args[])
 					{
 						case SDLK_BACKSPACE:
 							printf("User Pressed the Backspace\n");
-							if (active_text_field != NULL)
+							if (graphyte.active_text_field != NULL)
 							{
-								active_text_field->Backspace();
+								graphyte.active_text_field->Backspace();
 							}
 							break;
 

@@ -377,12 +377,13 @@ public:
 		gui->Hide(); // Hide the orbit body info until the button is clicked!
 
 		//Create the button
-		f_button = new FunctionButton([this]() { this->ShowBodyInspector(); }, name_label->Get_Position(), {0, 0, 0}, g, name); //TODO: Fix this please
-		
+		f_button = new FunctionButton([this]() { this->ShowBodyInspector(); }, name_label->Get_Position(), name_label->Get_Dimensions(), g, ""); //TODO: Fix this please
+		g.function_buttons.push_back(f_button); //No idea how this has access to function_buttons but so it does...
 	}
 
 	void ShowBodyInspector()
 	{
+		std::cout << "SHOWING INSPECTOR STUFF";
 		gui->Show();
 	}
 
@@ -515,7 +516,10 @@ public:
 		g.line(start.x, start.y, end1.x, end1.y);
 		g.line(end1.x, end1.y, end2.x, end2.y);
 		name_label->Set_Position(label_pos);
-		
+		if (f_button != NULL)
+		{
+			f_button->SetPosition(label_pos);
+		}
 		
 		Draw_Arrows(g, c, start, screen_dimensions);
 
