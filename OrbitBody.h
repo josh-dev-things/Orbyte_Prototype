@@ -377,7 +377,9 @@ public:
 		gui->Hide(); // Hide the orbit body info until the button is clicked!
 
 		//Create the button
-		f_button = new FunctionButton(ShowBodyInspector, name_label->Get_Position(), { name_label->Get_Texture().getWidth(), name_label->Get_Texture().getWidth(), 0 }, g, NULL)
+		{
+			f_button = new FunctionButton(ShowBodyInspector, name_label->Get_Position(), {0, 0, 0}, g, name); //TODO: Fix this please
+		}
 	}
 
 	void ShowBodyInspector()

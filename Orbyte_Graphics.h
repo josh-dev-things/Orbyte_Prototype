@@ -653,6 +653,9 @@ private:
 	std::function<void()> function;
 	Icon* icon;
 public:
+	/// <summary>
+	/// Constructor
+	/// </summary>
 	FunctionButton(std::function<void()> f, vector3 pos, std::vector<int> dimensions, Graphyte& g, std::string path_to_icon) : Button(pos, {(double)dimensions[0], (double)dimensions[1], 0}),
 		function(f), icon(g.CreateIcon(path_to_icon, dimensions))
 	{
