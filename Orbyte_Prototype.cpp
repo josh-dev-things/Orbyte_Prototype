@@ -43,10 +43,9 @@ SDL_Renderer* gRenderer = NULL;
 
 //Graphyte
 Graphyte graphyte;
-//TextField* active_text_field = NULL; //This pointer will be used to edit text fields
-//std::vector<TextField*> text_fields;
-//std::vector<FunctionButton*> function_buttons; //It is possible to handle the input methods in a tidier way, but alas this is all I have time for.
 
+//Orbit Bodies
+std::vector<Body> orbiting_bodies;
 
 //Runtime variables
 bool quit = false;
@@ -170,8 +169,17 @@ void commit_to_text_field()
 	}
 }
 
+void close_planet_inspectors() //This is a janky implementation, but its all I have time for.
+{
+	for (Body& b : orbiting_bodies)
+	{
+		b.HideBodyInspector();
+	}
+}
+
 void click(int mX, int mY)
 {
+	close_planet_inspectors();
 	std::cout << "\n" << mX << " " << mY << "\n";
 	if (graphyte.active_text_field != NULL)
 	{
@@ -220,7 +228,6 @@ int main(int argc, char* args[])
 		
 		//Experimenting with orbit body
 		CentralBody Sun = CentralBody();
-		std::vector<Body> orbiting_bodies;
 		
 		// Name, Pos, Radius, Velocity
 		Body mercury = Body("Mercury", { 0, 5.8E10, 0 }, 2.44E6, { 47000, 0, 0 }, Sun, graphyte, false);
