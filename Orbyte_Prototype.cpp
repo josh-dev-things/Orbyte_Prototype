@@ -3,8 +3,6 @@
 // https://lazyfoo.net/tutorials/SDL/01_hello_SDL/index2.php
 // https://lazyfoo.net/tutorials/SDL/index.php
 
-//TODO: SWITCH EVERYTHING TO USING DOUBLES INSTEAD OF FLOATS >:(
-
 
 #include <iostream>
 #include <string>
@@ -25,9 +23,8 @@ const int SCREEN_WIDTH = 1200;
 const int SCREEN_HEIGHT = 800;
 const int SCREEN_FPS = 60;
 const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
-const int MAX_FPS = 120;
+const int MAX_FPS = 500;
 double time_scale = 1;
-bool LMB_Down = false;
 
 //Globally used font
 TTF_Font* gFont = NULL;
@@ -53,7 +50,7 @@ SDL_Event sdl_event;
 
 //Current time start time
 Uint32 startTime = 0;
-Uint32 deltaTime = 0;
+Uint32 deltaTime = 0; // delta time in milliseconds
 
 ////https://lazyfoo.net/tutorials/SDL/16_true_type_fonts/index.php <-- USE THIS FOR GUI
 
@@ -410,15 +407,12 @@ int main(int argc, char* args[])
 				if (delay > 0)
 				{
 					SDL_Delay(delay);
+					deltaTime += delay;
 				}
 			}
 
 			/*DEBUG*/
 			float debug_fps = (float)1000 / ((float)deltaTime + 1);
-			if (debug_fps > MAX_FPS)
-			{
-				debug_fps = MAX_FPS;
-			}
 			text_FPS_Display->Set_Text("FPS: " + std::to_string(debug_fps));
 			text_Vertex_Count_Display->Set_Text("Vertex Count: " + std::to_string(debug_no_pixels));
 		}	
