@@ -547,7 +547,7 @@ public:  //Public attributes & Methods
 		for (auto& point : points)
 		{
 			SDL_SetRenderDrawColor(Renderer, 255, ((float)point.x / (float)SCREEN_WIDTH) * 255, ((float)point.y / (float)SCREEN_HEIGHT) * 255, 255);
-			SDL_RenderDrawPoint(Renderer, point.x, point.y); //DRAW TO TEXTURE INSTEAD???
+			SDL_RenderDrawPoint(Renderer, point.x, point.y);
 			count++;
 		}
 
