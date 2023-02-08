@@ -18,7 +18,7 @@
 class CentralBody
 {
 	/*
-		Why does this class not inherit from Orbit Body? Because this is designed to be static. Any similarity between class attributes and methods
+		Why does this class not inherit from Body? Because this is designed to be static. Any similarity between class attributes and methods
 		is due to how graphics have been implemented and consistency with naming conventions, not a design oversight.
 	*/
 private:
@@ -126,8 +126,6 @@ public:
 	{
 		return edges;
 	}
-
-
 };
 
 class Satellite; //A Forward Declaration so nothing collapses
@@ -203,19 +201,15 @@ protected:
 	}
 
 	//rk4_step function https://www.youtube.com/watch?v=TzX6bg3Kc0E&t=241s
-	std::vector<vector3> rk4_step(float _time, vector3 _position, vector3 _velocity, float _dt = 1) //SHITS THE BED WHEN Y = 0
+	std::vector<vector3> rk4_step(float _time, vector3 _position, vector3 _velocity, float _dt = 1)
 	{
 		//structure of the vectors: [pos, velocity]
 		std::vector<vector3> rk1 = two_body_ode(_time, _position, _velocity);
-		//std::cout << (rk1[0]).x << "\n";
 		std::vector<vector3> rk2 = two_body_ode(_time + (0.5 * _dt), _position + (rk1[0] * 0.5f * _dt), _velocity + (rk1[1] * 0.5f * _dt));
-		//std::cout << (_position + (rk1[0] * 0.5f * _dt)).x << "\n";
-		//std::cout << "rk3 parameter for r: " << ((rk1[1])).z << "\n";
-		std::vector<vector3> rk3 = two_body_ode(_time + (0.5 * _dt), _position + (rk2[0] * 0.5f * _dt), _velocity + (rk2[1] * 0.5f * _dt)); //Breaks here
-		std::vector<vector3> rk4 = two_body_ode(_time + _dt, _position + (rk3[0] * _dt), _velocity + (rk3[1] * _dt)); //BUG
-		//printf("RK4 complete\n");
+		std::vector<vector3> rk3 = two_body_ode(_time + (0.5 * _dt), _position + (rk2[0] * 0.5f * _dt), _velocity + (rk2[1] * 0.5f * _dt));
+		std::vector<vector3> rk4 = two_body_ode(_time + _dt, _position + (rk3[0] * _dt), _velocity + (rk3[1] * _dt));
+		
 		vector3 result_pos = _position + (rk1[0] + (rk2[0] * 2.0f) + (rk3[0] * 2.0f) + rk4[0]) * (_dt / 6.0f);
-		//std::cout << (_velocity + (rk2[1] * 0.5f * _dt)).x << "\n"; //RK4 STEP IS BROKEN! BUG IS HERE! | RK3 VELOCITY -> output is bad see 2bodyODE function
 		vector3 result_vel = _velocity + (rk1[1] + rk2[1] * 2 + rk3[1] * 2 + rk4[1]) * (_dt / 6);
 		return { result_pos, result_vel, rk1[1]};
 	}
@@ -420,13 +414,12 @@ public:
 	{
 		if (time_scale == 0)
 		{
-			std::cout << "Brother what";
 			return 0;
 		}
 
 		time_since_start += delta * time_scale;
 		rotate(0.0005f, 0.0005f, 0.0005f);
-		vector3 this_pos = position; //god_pos is normally origin, but not for a satellite.
+		vector3 this_pos = position;
 		float t = (delta / 1000);
 		std::vector<vector3> sim_step = rk4_step(t * time_scale, this_pos, velocity, t * time_scale);
 		this_pos = sim_step[0];
