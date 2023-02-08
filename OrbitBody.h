@@ -89,7 +89,7 @@ public:
 		vector3 screen_dimensions = g.Get_Screen_Dimensions(); //Vector3 containing Screen Dimensions, we ignore z
 		std::vector<vector3> verts = Get_Vertices(); //Why are we using an accessor inside the class? Because its tidy and we need to get all the vertices in a new structure so that we can write the screen space positions by reference.
 
-		for (auto& p : verts)
+		for (vector3& p : verts)
 		{
 			p = c.WorldSpaceToScreenSpace(p, screen_dimensions.x, screen_dimensions.y);
 
@@ -103,6 +103,7 @@ public:
 		{
 			if (verts[edg.a].z > 0 && verts[edg.b].z > 0)
 			{
+				//std::cout << "Debugging C_Body rendering: " << verts[edg.a].Debug() << "\n";
 				g.line(verts[edg.a].x,
 					verts[edg.a].y,
 					verts[edg.b].x,
@@ -484,6 +485,7 @@ public:
 			if (t_p.z > 0)
 			{
 				g.pixel(t_p.x, t_p.y);
+				//std::cout << t_p.y << "\n"; //testing a hunch
 			}
 		}
 
@@ -491,6 +493,7 @@ public:
 		{
 			if (verts[edg.a].z > 0 && verts[edg.b].z > 0)
 			{
+				//std::cout << verts[edg.a].Debug() << "\n";
 				g.line(verts[edg.a].x,
 					verts[edg.a].y,
 					verts[edg.b].x,

@@ -18,6 +18,7 @@
 #include <SDL_image.h>
 #include "Orbyte_Data.h"
 #include "Orbyte_Graphics.h"
+#include "utils.h"
 
 const int SCREEN_WIDTH = 1200;
 const int SCREEN_HEIGHT = 800;
@@ -238,13 +239,13 @@ int main(int argc, char* args[])
 
 
 		orbiting_bodies.emplace_back(mercury);
-		orbiting_bodies.emplace_back(venus);
+		/*orbiting_bodies.emplace_back(venus);
 		orbiting_bodies.emplace_back(earth);
 		orbiting_bodies.emplace_back(mars);
 		orbiting_bodies.emplace_back(jupiter);
 		orbiting_bodies.emplace_back(saturn);
 		orbiting_bodies.emplace_back(uranus);
-		orbiting_bodies.emplace_back(neptune);
+		orbiting_bodies.emplace_back(neptune); */
 		
 
 		//DEBUG

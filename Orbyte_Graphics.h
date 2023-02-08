@@ -503,21 +503,20 @@ public:  //Public attributes & Methods
 		return points.size();
 	}
 
-	void pixel(float x, float y)
+	void pixel(int x, int y)
 	{
-		if (x < SCREEN_WIDTH && y < SCREEN_HEIGHT)
+		if (std::abs(x) < (float)(SCREEN_WIDTH / 2) && std::abs(y) < (float)(SCREEN_HEIGHT / 2)) //abs value for negative values... that took so long to find.
 		{
 			SDL_Point _point = { x + SCREEN_WIDTH / 2, -y + SCREEN_HEIGHT / 2 };
-
 			points.emplace_back(_point);
 		}
 	}
 
 	void line(float x1, float y1, float x2, float y2)
 	{
-		float dx = (x2 - x1);
-		float dy = (y2 - y1);
-		float length = std::sqrt(dx * dx + dy * dy);
+		int dx = (x2 - x1);
+		int dy = (y2 - y1);
+		int length = std::sqrt(dx * dx + dy * dy);
 		float angle = std::atan2(dy, dx);
 		//std::cout << "Drawing line with points: " << length << "\n";
 		for (int i = 0; i < length; i++)

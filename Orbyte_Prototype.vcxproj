@@ -143,6 +143,7 @@
     <ClInclude Include="Orbyte_Data.h" />
     <ClInclude Include="Orbyte_Graphics.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="utils.h" />
     <ClInclude Include="vec3.h" />
   </ItemGroup>
   <ItemGroup>
