@@ -418,6 +418,12 @@ public:
 
 	int Update_Body(float delta, float time_scale)
 	{
+		if (time_scale == 0)
+		{
+			std::cout << "Brother what";
+			return 0;
+		}
+
 		time_since_start += delta * time_scale;
 		rotate(0.0005f, 0.0005f, 0.0005f);
 		vector3 this_pos = position; //god_pos is normally origin, but not for a satellite.

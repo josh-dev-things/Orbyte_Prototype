@@ -272,7 +272,7 @@ int main(int argc, char* args[])
 
 		//Testing buttons I guess
 		std::string path_to_icon = "icons/add.bmp";
-		FunctionButton test_functionbutton(test_method, {100, 100, 0}, {25, 25, 0}, graphyte, path_to_icon);
+		FunctionButton test_functionbutton(test_method, {(SCREEN_WIDTH / 2) - 25, (SCREEN_HEIGHT / 2) - 25, 0}, {25, 25, 0}, graphyte, path_to_icon);
 		graphyte.function_buttons.push_back(&test_functionbutton);
 		//TODO: Instantiate button with: AN ICON :D This is going to be hell, good luck :)
 

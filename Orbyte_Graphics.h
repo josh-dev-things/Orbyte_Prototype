@@ -718,7 +718,7 @@ private:
 			std::cout << "Trying to validate a double field";
 			double test_validity = atof(content.c_str());
 			std::cout << content << "=>" << test_validity;
-			if (test_validity == NULL || test_validity == 0)
+			if (test_validity == NULL) // Will not allow zero!
 			{
 				throw(content); // Knew I was tired when I found the "throw" and "catch" system the funniest thing ever invented
 			}
