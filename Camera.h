@@ -77,7 +77,7 @@ private: vector3 camera_rotation;
 
 	vector3 WorldSpaceToScreenSpace(vector3 world_pos, float screen_height, float screen_width)
 	{
-		//manipulate world_pos here such that it is rotated around centre of universe I guess
+		//manipulate world_pos here such that it is rotated around centre of universe
 		vector3 rotated_world_pos = rotate(camera_rotation, world_pos, { 0, 0, 0 });
 
 		vector3 pos = rotated_world_pos - position;
@@ -85,7 +85,7 @@ private: vector3 camera_rotation;
 		if (pos.z < clipping_z)
 		{
 			//DONT DRAW IT
-			//printf("Culled a stupid vertex hopefully \n");
+			//printf("Culled a vertex hopefully \n");
 			return { 0, 0, -1 };
 		}
 		else {

@@ -182,8 +182,8 @@ protected:
 
 	std::vector<vector3> two_body_ode(float t, vector3 _r, vector3 _v)
 	{
-		vector3 r = _r; //r.z is wrong
-		vector3 v = _v;
+		vector3 r = _r; //displacement
+		vector3 v = _v; //velocity
 		//std::cout << "R.z" << r.z << "\n";
 		vector3 nr = Normalize(r);
 		//std::cout << "NR.z" << nr.z << "\n";
@@ -275,7 +275,7 @@ protected:
 			{3,4},
 			{3,5}
 		};
-		edges = _edges; //I want to put this in its own method, however that's unnecessary as this is static soooo...
+		edges = _edges;
 
 		return _vertices;
 	}
@@ -293,15 +293,13 @@ protected:
 		}
 	}
 
-	void rotate(float rot_x = 1, float rot_y = 1, float rot_z = 1) //Something is broken. STILL BROKEN
+	void rotate(float rot_x = 1, float rot_y = 1, float rot_z = 1)
 	{
 		for (auto& p : vertices)
 		{
 			vector3 point = p;
 			//centroid adjustments
 			point = point - position;
-
-			//float start_magnitude = Magnitude(point);
 
 			//Rotate point
 			float rad = 0;

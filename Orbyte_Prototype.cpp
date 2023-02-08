@@ -200,12 +200,12 @@ void click(int mX, int mY)
 	}
 }
 
-Uint32 Update_Clock() //https://lazyfoo.net/tutorials/SDL/25_capping_frame_rate/index.php
+Uint32 Update_Clock()
 {
 	Uint32 current_time = SDL_GetTicks(); //milliseconds
 	Uint32 delta = current_time - startTime;
 	startTime = current_time;
-	return delta; //Put this in a seperate time class. Time.deltaTime etc.
+	return delta;
 }
 
 void test_method()

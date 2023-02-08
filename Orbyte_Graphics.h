@@ -10,7 +10,7 @@
 #include <numeric>
 #include <iostream>
 #include <functional>
-#include <regex>
+#include <regex> //Regular Expressions!
 
 /*
 	A "Texture" class is a way of encapsulating the rendering of more complex graphics. Images, fonts etc. would be loaded to a texture.
@@ -53,14 +53,6 @@ public:
 	{
 		std::cout << "Copy constructor";
 	}
-
-	/*GTexture(GTexture&& source) : mTexture{ source.mTexture }, font{ source.font }, renderer{ source.renderer }, mWidth{ source.mWidth }, mHeight{source.mHeight}
-	{
-		std::cout << "Move constructor apparently";
-		source.mTexture = nullptr;
-		source.font = nullptr;
-		source.renderer = nullptr;
-	}*/
 
 	//Deallocates memory
 	~GTexture()
@@ -681,7 +673,7 @@ public:
 	FunctionButton(std::function<void()> f, vector3 pos, vector3 dimensions, Graphyte& g, std::string path_to_icon) : Button(pos, dimensions)
 	{
 		std::cout << "\n Instantiated a function button. Method present?: " << (bool)f << "\n";
-		if (path_to_icon != "")
+		if (path_to_icon != "") //Never accessed by user therefor no need for complex regular expressions or validation.
 		{
 			icon = g.CreateIcon(path_to_icon, {(int)dimensions.x, (int)dimensions.y, 0});
 			icon->SetPosition(pos);
@@ -715,15 +707,21 @@ private:
 	{
 		try
 		{
-			std::cout << "Trying to validate a double field";
-			double test_validity = atof(content.c_str());
-			std::cout << content << "=>" << test_validity;
-			if (test_validity == NULL) // Will not allow zero!
+			std::regex dbl_regex("(-+)?([0-9]*\.[0-9]+|[0-9]+)");
+			if (std::regex_match(content, dbl_regex))
 			{
-				throw(content); // Knew I was tired when I found the "throw" and "catch" system the funniest thing ever invented
+				double test_validity = atof(content.c_str());
+				std::cout << content << "=>" << test_validity;
+				if (test_validity == NULL) // Will not allow zero!
+				{
+					throw(content); // Knew I was tired when I found the "throw" and "catch" system the funniest thing ever invented
+				}
+				else {
+					return true;
+				}
 			}
 			else {
-				return true;
+				throw(content);
 			}
 		}
 		catch (std::string bad)
@@ -746,7 +744,7 @@ public:
 			if (value != NULL)
 			{
 				double new_value = atof(content.c_str());
-				*value = new_value; // Writing to original value held in pointer. This may be broken future josh.
+				*value = new_value;
 				std::cout << "\n Successfully wrote to value from input field!  \n"<< new_value;
 			}
 		}
@@ -790,7 +788,7 @@ private:
 	}
 public:
 	TextField(vector3 position, FieldValue& writeto, Graphyte& g, std::string default_text = "This Is An Input Field") : 
-		Text(*g.GetTextParams(default_text, 16, text_color)), fvalue(writeto)
+		 Text(*g.GetTextParams(default_text, 16, text_color)), fvalue(writeto)
 	{
 		vector3 dimensions = { Get_Texture().getWidth(), Get_Texture().getHeight(), 0 };
 		input_text = default_text;
@@ -799,27 +797,27 @@ public:
 		g.AddTextToRenderQueue(this); //Beautiful
 	}
 
-	void Set_Position(vector3 position) override
-	{
-		//Sets the position of the text with centering
-		pos_x = position.x - texture.getWidth() / 2;
-		pos_y = position.y + texture.getHeight() / 2;
-		visible = position.z >= 0;
+	//void Set_Position(vector3 position) override
+	//{
+	//	//Sets the position of the text with centering
+	//	pos_x = position.x - texture.getWidth() / 2;
+	//	pos_y = position.y + texture.getHeight() / 2;
+	//	visible = position.z >= 0;
 
-		button->SetPosition(position); //There's a bug here [Edit: I dont know when I wrote this so am not sure if its fixed tbh]
-	}
+	//	button->SetPosition(position); //There's a bug here [Edit: I dont know when I wrote this so am not sure if its fixed tbh]
+	//}
 
-	void Set_Position_TL(vector3 pos) override
-	{
-		//In some cases it is more helpful to set the position of the text with the top left anchor point, what SDL uses as the pivot for textures.
-		pos_x = pos.x;
-		pos_y = pos.y;
-		visible = pos.z >= 0;
-		
-		button->SetPosition({ pos.x + texture.getWidth() / 2 , pos.y - texture.getHeight() / 2, 0 });
+	//void Set_Position_TL(vector3 pos) override
+	//{
+	//	//In some cases it is more helpful to set the position of the text with the top left anchor point, what SDL uses as the pivot for textures.
+	//	pos_x = pos.x;
+	//	pos_y = pos.y;
+	//	visible = pos.z >= 0;
+	//	
+	//	button->SetPosition({ pos.x + texture.getWidth() / 2 , pos.y - texture.getHeight() / 2, 0 });
 
-		std::cout << vector3{ pos.x + texture.getWidth() / 2, pos.y - texture.getHeight() / 2, 0 }.Debug();
-	}
+	//	std::cout << vector3{ pos.x + texture.getWidth() / 2, pos.y - texture.getHeight() / 2, 0 }.Debug();
+	//}
 
 	void Backspace()
 	{
