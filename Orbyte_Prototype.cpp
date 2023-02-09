@@ -246,6 +246,10 @@ int main(int argc, char* args[])
 		orbiting_bodies.emplace_back(saturn);
 		orbiting_bodies.emplace_back(uranus);
 		orbiting_bodies.emplace_back(neptune); */
+
+		//Testing orbyte data
+		OrbitBodyCollection obc;
+		obc.AddBodyData(mercury.GetOrbitBodyData());
 		
 
 		//DEBUG

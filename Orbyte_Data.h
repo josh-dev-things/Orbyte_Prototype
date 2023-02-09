@@ -50,7 +50,8 @@ public:
 
 		std::string hash = bitwise_string_xor(name, reverse);
 		int total = 0;
-		for (int i; i < hash.length(); i++)
+
+		for (int i = 0; i < hash.length(); i++)
 		{
 			total += int(hash.at(i));
 		}
@@ -60,6 +61,7 @@ public:
 	void AddBodyData(OrbitBodyData new_data)
 	{
 		data[Hash(new_data.name)] = new_data;
+		std::cout << "\n TESTING HASH: " <<  Hash(new_data.name) << "\n";
 	}
 
 
