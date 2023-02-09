@@ -40,9 +40,10 @@ struct OrbitBodyData
 
 struct OrbitBodyCollection //A Hash table of orbit objects
 {
-	std::vector<OrbitBodyData> data = std::vector<OrbitBodyData>(101); //101 has been chosen as it is prime and not too close to a power of two
+private:
 
-public:
+	std::vector<OrbitBodyData> data = std::vector<OrbitBodyData>(101); //101 has been chosen as it is prime and not too close to a power of two => Maximum of 101 bodies in storage!
+
 	int Hash(std::string name)
 	{
 		std::string reverse = name;
@@ -58,13 +59,41 @@ public:
 		return (total % data.size());
 	}
 
+	void TryWrite(OrbitBodyData d, int index)
+	{
+		if (data[index].name == "")
+		{
+			data[index] = d;
+			return;
+		}
+		else
+		{
+			TryWrite(d, (index + 1) % data.size()); //Some recursion for collision avoidance with open addressing 
+		}
+	}
+
+	OrbitBodyData TryRead(std::string name, int index)
+	{
+		if (data[index].name == name)
+		{
+			return data[index];
+		}
+		else {
+			return TryRead(name, (index + 1) % data.size()); //Careful with memory usage here!
+		}
+	}
+
+public:
 	void AddBodyData(OrbitBodyData new_data)
 	{
 		data[Hash(new_data.name)] = new_data;
-		std::cout << "\n TESTING HASH: " <<  Hash(new_data.name) << "\n";
+		std::cout << "\n Adding body data with hash: " << Hash(new_data.name) << "\n" << "Testing fetch [If blank, problem!]: " << GetBodyData(new_data.name).name << "\n";
 	}
 
-
+	OrbitBodyData GetBodyData(std::string name)
+	{
+		return TryRead(name, Hash(name));
+	}
 };
 
 struct SimulationData
