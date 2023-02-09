@@ -6,6 +6,7 @@
 #include<fstream>
 #include "vec3.h"
 #include <bitset>
+#include "utils.h"
 
 struct OrbitBodyData
 {
@@ -34,6 +35,33 @@ struct OrbitBodyData
 		// 8 x name.length + 3x32 + 32 + 3x32 + 1 = number of bits in file
 		bytes_for_name = (uint8_t)name.length();
 	}
+
+};
+
+struct OrbitBodyCollection //A Hash table of orbit objects
+{
+	std::vector<OrbitBodyData> data = std::vector<OrbitBodyData>(101); //101 has been chosen as it is prime and not too close to a power of two
+
+public:
+	int Hash(std::string name)
+	{
+		std::string reverse = name;
+		reverse_string(reverse, reverse.length() - 1, 0);
+
+		std::string hash = bitwise_string_xor(name, reverse);
+		int total = 0;
+		for (int i; i < hash.length(); i++)
+		{
+			total += int(hash.at(i));
+		}
+		return (total % data.size());
+	}
+
+	void AddBodyData(OrbitBodyData new_data)
+	{
+		data[Hash(new_data.name)] = new_data;
+	}
+
 
 };
 
