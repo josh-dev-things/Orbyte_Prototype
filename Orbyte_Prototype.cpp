@@ -229,13 +229,13 @@ int main(int argc, char* args[])
 		
 		// Name, Pos, Radius, Velocity
 		Body mercury = Body("Mercury", { 0, 5.8E10, 0 }, 2.44E6, { 47000, 0, 0 }, Sun, graphyte, false);
-		Body venus = Body("Venus", { 0, 1E11, 0 }, 6E6, { 35000, 0, 0 }, Sun, graphyte, false);
-		Body earth = Body("Earth", {0, 1.49E11, 0}, 6.37E6, { 30000, 0, 0 }, Sun, graphyte, false); //152000000000 metres. That number is too large so we have a problem
-		Body mars = Body("Mars", { 0, 2.4E11, 0 }, 3.4E6, { 24000, 0, 0 }, Sun, graphyte, false);
-		Body jupiter = Body("Jupiter", { 0, 7.4E11, 0 }, 7E7, { 13000, 0, 0 }, Sun, graphyte, false);
-		Body saturn = Body("Saturn", { 0, 1.4E12, 0 }, 5.8E7, { 9680, 0, 0 }, Sun, graphyte, false);
-		Body uranus = Body("Uranus", { 0, 2.8E12, 0 }, 2.5E7, { 6800, 0, 0 }, Sun, graphyte, false);
-		Body neptune = Body("Neptune", { 0, 4.47E12, 0 }, 2.5E7, { 5430, 0, 0 }, Sun, graphyte, false);
+		//Body venus = Body("Venus", { 0, 1E11, 0 }, 6E6, { 35000, 0, 0 }, Sun, graphyte, false);
+		//Body earth = Body("Earth", {0, 1.49E11, 0}, 6.37E6, { 30000, 0, 0 }, Sun, graphyte, false); //152000000000 metres. That number is too large so we have a problem
+		//Body mars = Body("Mars", { 0, 2.4E11, 0 }, 3.4E6, { 24000, 0, 0 }, Sun, graphyte, false);
+		//Body jupiter = Body("Jupiter", { 0, 7.4E11, 0 }, 7E7, { 13000, 0, 0 }, Sun, graphyte, false);
+		//Body saturn = Body("Saturn", { 0, 1.4E12, 0 }, 5.8E7, { 9680, 0, 0 }, Sun, graphyte, false);
+		//Body uranus = Body("Uranus", { 0, 2.8E12, 0 }, 2.5E7, { 6800, 0, 0 }, Sun, graphyte, false);
+		//Body neptune = Body("Neptune", { 0, 4.47E12, 0 }, 2.5E7, { 5430, 0, 0 }, Sun, graphyte, false);
 
 
 		orbiting_bodies.emplace_back(mercury);
