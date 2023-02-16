@@ -53,8 +53,6 @@ SDL_Event sdl_event;
 Uint32 startTime = 0;
 Uint32 deltaTime = 0; // delta time in milliseconds
 
-////https://lazyfoo.net/tutorials/SDL/16_true_type_fonts/index.php <-- USE THIS FOR GUI
-
 bool loadMedia()
 {
 	//success flag
@@ -70,7 +68,6 @@ bool loadMedia()
 
 	return success;
 }
-
 
 //Initialize SDL and window
 bool init()
@@ -210,9 +207,16 @@ Uint32 Update_Clock()
 	return delta;
 }
 
-void test_method()
+void toggle_pause()
 {
-	std::cout << "\nTHIS IS A MESSAGE FROM A TEST METHOD\n";
+	if (time_scale == 0)
+	{
+		time_scale = 1;
+	}
+	else {
+		time_scale = 0;
+	}
+	return;
 }
 
 int main(int argc, char* args[])
@@ -253,7 +257,9 @@ int main(int argc, char* args[])
 		obc.AddBodyData(mercury.GetOrbitBodyData());
 		
 
-		//DEBUG
+		/*
+			SIMULATION PARAMETERS GUI INITIALIZATION
+		*/
 		GUI_Block Simulation_Parameters(vector3{ -SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 0});
 
 		Text* text_pm = graphyte.CreateText("__________________\nPERFORMANCE METRICS\n__________________", 24);
@@ -276,15 +282,17 @@ int main(int argc, char* args[])
 		graphyte.text_fields.push_back(tf);
 		Simulation_Parameters.Add_Inline_Element(tf);
 
-		//Testing buttons I guess
-		std::string path_to_icon = "icons/add.png";
-		FunctionButton test_functionbutton(test_method, {(SCREEN_WIDTH / 2) - 25, (SCREEN_HEIGHT / 2) - 25, 0}, {25, 25, 0}, graphyte, path_to_icon);
-		graphyte.function_buttons.push_back(&test_functionbutton);
-		//TODO: Instantiate button with: AN ICON :D This is going to be hell, good luck :)
+		/*
+			INSPECTOR PARAMETERS GUI INITIALIZATION
+		*/
 
-		//Testing GUI Block visibility
-		//Simulation_Parameters.Hide();
+		//Create Buttons
+		FunctionButton Pause(toggle_pause, { (SCREEN_WIDTH / 2) - 25, (SCREEN_HEIGHT / 2) - 25, 0 }, { 25, 25, 0 }, graphyte, "icons/stop.png");
+		graphyte.function_buttons.push_back(&Pause);
 
+		FunctionButton Add(toggle_pause, { (SCREEN_WIDTH / 2) - 25, (SCREEN_HEIGHT / 2) - 60, 0 }, { 25, 25, 0 }, graphyte, "icons/add.png");
+		graphyte.function_buttons.push_back(&Add); 
+		 
 		//Mainloop time 
 		while (!quit)    
 		{ 

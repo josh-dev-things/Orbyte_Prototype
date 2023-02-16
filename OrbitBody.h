@@ -152,7 +152,7 @@ protected:
 	double radius;
 	vector3 velocity{ 0,0,0 };
 	vector3 acceleration{ 0, 0, 0 };
-	double mu = 0;
+	double mu = 0; 
 
 	//Labels
 	Text* name_label = NULL;
