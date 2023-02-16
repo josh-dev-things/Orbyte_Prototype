@@ -153,14 +153,20 @@ protected:
 	vector3 velocity{ 0,0,0 };
 	vector3 acceleration{ 0, 0, 0 };
 	double mu = 0; 
+	double mass = 0;
 
 	//Labels
 	Text* name_label = NULL;
 	Text* inspector_name = NULL;
+	Text* inspector_mass = NULL; 
 	Text* inspector_radius = NULL;
 	Text* inspector_velocity = NULL;
 	Text* inspector_acceleration = NULL;
 	Text* inspector_period = NULL;
+
+	//Field Values
+	DoubleFieldValue ScaleFV;
+	DoubleFieldValue MassFV;
 
 	//GUI
 	GUI_Block* gui = NULL;
@@ -173,7 +179,8 @@ protected:
 		if (gui->is_visible)
 		{
 			if (inspector_name != NULL){ inspector_name->Set_Text(name);}//The set text method checks if we are making a redundant set => more performant
-			if (inspector_radius != NULL) { inspector_radius->Set_Text("Radius: " + std::to_string(Magnitude(position))); }
+			if (inspector_mass != NULL) { inspector_mass->Set_Text("Mass: " + std::to_string(mass) + "kg"); }
+			if (inspector_radius != NULL) { inspector_radius->Set_Text("Radius: " + std::to_string(Magnitude(position) / 1000) + "km"); }
 			if (inspector_velocity != NULL) { inspector_velocity->Set_Text("Velocity: " + velocity.Debug()); }
 			if (inspector_acceleration != NULL) { inspector_acceleration->Set_Text("Acceleration: " + acceleration.Debug()); }
 			if (inspector_period != NULL) { inspector_period->Set_Text("Orbit Period: " + std::to_string(Calculate_Period() / (60 * 60 * 24)) + " days"); }
@@ -325,7 +332,6 @@ protected:
 		}
 	}
 
-	DoubleFieldValue ScaleFV;
 	void CreateInspector(Graphyte& g)
 	{
 		// TODO: Generate Orbit-Body specific GUI Blocks that can be toggled visibility. This'll be a challenge, good luck!
@@ -335,6 +341,8 @@ protected:
 		inspector_name = g.CreateText(name + ": ", 12);
 		gui->Add_Stacked_Element(inspector_name);
 		std::cout << inspector_name;
+		inspector_mass = g.CreateText(std::to_string(mass), 12);
+		gui->Add_Stacked_Element(inspector_mass);
 		inspector_radius = g.CreateText(std::to_string(Magnitude(position)), 12);
 		gui->Add_Stacked_Element(inspector_radius);
 		inspector_velocity = g.CreateText("velocity should be here", 12);
@@ -345,11 +353,15 @@ protected:
 		gui->Add_Stacked_Element(inspector_period);
 
 		//Input fields
-		gui->Add_Stacked_Element(g.CreateText("PARAMETERS_____", 12));
+		gui->Add_Stacked_Element(g.CreateText("EDIT PARAMETERS_____", 12));
 
 		gui->Add_Stacked_Element(g.CreateText("Scale: ", 10));
 		TextField* tf = new TextField({ 10,10,0 }, ScaleFV, g, std::to_string(scale));
-		//ScaleFV.ReadField("19000"); // a test
+		g.text_fields.push_back(tf);
+		gui->Add_Inline_Element(tf);
+
+		gui->Add_Stacked_Element(g.CreateText("Mass: ", 10));
+		tf = new TextField({ 10,10,0 }, MassFV, g, std::to_string(mass));
 		g.text_fields.push_back(tf);
 		gui->Add_Inline_Element(tf);
 
@@ -364,8 +376,8 @@ public:
 	std::string name;
 	double scale;
 
-	Body(std::string _name, vector3 _center, double _scale, vector3 _velocity, CentralBody c_body, Graphyte& g, bool override_velocity = true):
-		central_body{c_body}, ScaleFV(&scale, [this]() { this->RegenerateVertices(); })
+	Body(std::string _name, vector3 _center, double _mass, double _scale, vector3 _velocity, CentralBody c_body, Graphyte& g, bool override_velocity = true):
+		central_body{c_body}, ScaleFV(&scale, [this]() { this->RegenerateVertices(); }), MassFV(&mass)
 	{
 		position = _center;
 		radius = Magnitude(position);
@@ -384,6 +396,7 @@ public:
 		start_vel = velocity;
 
 		scale = _scale;
+		mass = _mass;
 
 		start_pos = position;
 		std::cout << "Instantiated Orbiting Body with initial position: " << start_pos.Debug() << " and velocity: " << velocity.Debug() << "\n";
@@ -438,19 +451,16 @@ public:
 
 	int Draw_Satellites(Graphyte& g, Camera& c);
 
-	int Update_Body(float delta, float time_scale)
+	int Update_Body(vector3 com, float delta, float time_scale)
 	{
 		if (time_scale == 0)
 		{
 			return 0;
-		}
-
-		std::cout << "\n Scale: " << scale;
-		std::cout << "\n Me (UPDATE): " << this;
+		} 
 
 		time_since_start += delta * time_scale;
 		//rotate(0.0005f, 0.0005f, 0.0005f);
-		vector3 this_pos = position;
+		vector3 this_pos = position - com;
 		float t = (delta / 1000);
 		std::vector<vector3> sim_step = rk4_step(t * time_scale, this_pos, velocity, t * time_scale);
 		this_pos = sim_step[0];
@@ -585,6 +595,11 @@ public:
 		return position;
 	}
 
+	double Get_Mass()
+	{
+		return mass;
+	}
+
 	/// <summary>
 	/// The amount of time in seconds for the body to complete 1 orbit
 	/// </summary>
@@ -678,8 +693,8 @@ public:
 	/// <param name="_scale"></param>
 	/// <param name="_velocity"></param>
 	/// <param name="override_velocity"></param>
-	Satellite(std::string _name, Body _parentBody, vector3 center, float _scale, vector3 _velocity, Graphyte& g, bool override_velocity = true): 
-		Body(_name, center + _parentBody.Get_Position(), _scale, _velocity, CentralBody(), g, override_velocity), parentBody(_parentBody)
+	Satellite(std::string _name, Body _parentBody, vector3 center, double _mass, double _scale, vector3 _velocity, Graphyte& g, bool override_velocity = true): 
+		Body(_name, center + _parentBody.Get_Position(), _mass, _scale, _velocity, CentralBody(), g, override_velocity), parentBody(_parentBody)
 	{
 		//Now do some satellite thingies I guess
 
@@ -698,7 +713,7 @@ int Body::Update_Satellites(float delta, float time_scale)
 	//Now update Satellites
 	for (auto& sat : satellites)
 	{
-		sat.Update_Body(delta, time_scale);
+		sat.Update_Body( position,delta, time_scale);
 	}
 	return 0;
 }

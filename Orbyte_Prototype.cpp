@@ -219,6 +219,24 @@ void toggle_pause()
 	return;
 }
 
+vector3 calculate_centre_of_mass(CentralBody cb)
+{
+	//A Level Further Maths: Mechanics
+	double total_mass = cb.mass;
+	vector3 com = cb.position;
+
+	for (auto& b : orbiting_bodies)
+	{
+		double mass = b->Get_Mass();
+
+		com = com + b->Get_Position() * mass;
+		total_mass += mass;
+	}
+
+	com = com * (1 / total_mass);
+	return com;
+}
+
 int main(int argc, char* args[])
 {
 	//Start up SDL and create window
@@ -232,8 +250,8 @@ int main(int argc, char* args[])
 		//Experimenting with orbit body
 		CentralBody Sun = CentralBody();
 		
-		// Name, Pos, Radius, Velocity
-		Body mercury = Body("Mercury", { 0, 5.8E10, 0 }, 2.44E6, { 47000, 0, 0 }, Sun, graphyte, false);
+		// Name, Pos, mass, Radius, Velocity
+		Body mercury = Body("Mercury", { 0, 5.8E10, 0 }, 3.285E23, 2.44E6, { 47000, 0, 0 }, Sun, graphyte, false);
 		//Body venus = Body("Venus", { 0, 1E11, 0 }, 6E6, { 35000, 0, 0 }, Sun, graphyte, false);
 		//Body earth = Body("Earth", {0, 1.49E11, 0}, 6.37E6, { 30000, 0, 0 }, Sun, graphyte, false); //152000000000 metres. That number is too large so we have a problem
 		//Body mars = Body("Mars", { 0, 2.4E11, 0 }, 3.4E6, { 24000, 0, 0 }, Sun, graphyte, false);
@@ -301,10 +319,14 @@ int main(int argc, char* args[])
 			//render sun
 			Sun.Draw(graphyte, gCamera);
 
+			vector3 com = calculate_centre_of_mass(Sun);
+			std::cout << "\n" << com.Debug();
+			vector3 debug_com = gCamera.WorldSpaceToScreenSpace(com, SCREEN_HEIGHT, SCREEN_WIDTH);
+			graphyte.pixel(debug_com.x, debug_com.y);
 			for (auto& b : orbiting_bodies)
 			{
 
-				b->Update_Body(deltaTime, time_scale); // Update body
+				b->Update_Body(com, deltaTime, time_scale); // Update body
 				//std::cout<<b.Get_Position().Debug()<<"\n"; 
 				//b.Calculate_Period();
 				b->Draw(graphyte, gCamera);
@@ -363,6 +385,10 @@ int main(int argc, char* args[])
 								time_scale = 0.1;
 								printf("SET TIME SCALE TO 0.1 \n");
 							}
+							break;
+
+						case SDLK_RETURN:
+							commit_to_text_field(); 
 							break;
 
 						case SDLK_UP:
