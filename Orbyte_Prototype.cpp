@@ -43,7 +43,7 @@ SDL_Renderer* gRenderer = NULL;
 Graphyte graphyte;
 
 //Orbit Bodies
-std::vector<Body> orbiting_bodies;
+std::vector<Body*> orbiting_bodies;
 
 //Runtime variables
 bool quit = false;
@@ -169,15 +169,14 @@ void commit_to_text_field()
 
 void close_planet_inspectors() //This is a janky implementation, but its all I have time for.
 {
-	for (Body& b : orbiting_bodies)
+	for (Body* b : orbiting_bodies)
 	{
-		b.HideBodyInspector();
+		b->HideBodyInspector();
 	}
 }
 
 void click(int mX, int mY)
 {
-	close_planet_inspectors();
 	std::cout << "\nChecking for clickable @: " << mX << ", " << mY << "\n";
 	if (graphyte.active_text_field != NULL)
 	{
@@ -194,6 +193,8 @@ void click(int mX, int mY)
 			return;
 		}
 	}
+
+	close_planet_inspectors();
 
 	for (FunctionButton* fb : graphyte.function_buttons)
 	{
@@ -238,7 +239,7 @@ int main(int argc, char* args[])
 		//Body neptune = Body("Neptune", { 0, 4.47E12, 0 }, 2.5E7, { 5430, 0, 0 }, Sun, graphyte, false);
 
 
-		orbiting_bodies.emplace_back(mercury);
+		orbiting_bodies.emplace_back(&mercury);
 		/*orbiting_bodies.emplace_back(venus);
 		orbiting_bodies.emplace_back(earth);
 		orbiting_bodies.emplace_back(mars);
@@ -295,10 +296,10 @@ int main(int argc, char* args[])
 			for (auto& b : orbiting_bodies)
 			{
 
-				b.Update_Body(deltaTime, time_scale); // Update body
+				b->Update_Body(deltaTime, time_scale); // Update body
 				//std::cout<<b.Get_Position().Debug()<<"\n"; 
 				//b.Calculate_Period();
-				b.Draw(graphyte, gCamera);
+				b->Draw(graphyte, gCamera);
 			}
 
 			double debug_no_pixels = graphyte.Get_Number_Of_Points();

@@ -141,7 +141,6 @@ protected:
 	std::vector<edge> edges;
 	vector3 last_trail_point;
 	std::vector<vector3> trail_points;
-	double scale;
 	CentralBody central_body;
 
 	vector3 start_pos;
@@ -278,6 +277,8 @@ protected:
 		};
 		edges = _edges;
 
+		printf("\n Generated vertices");
+
 		return _vertices;
 	}
 
@@ -324,6 +325,7 @@ protected:
 		}
 	}
 
+	DoubleFieldValue ScaleFV;
 	void CreateInspector(Graphyte& g)
 	{
 		// TODO: Generate Orbit-Body specific GUI Blocks that can be toggled visibility. This'll be a challenge, good luck!
@@ -346,8 +348,8 @@ protected:
 		gui->Add_Stacked_Element(g.CreateText("PARAMETERS_____", 12));
 
 		gui->Add_Stacked_Element(g.CreateText("Scale: ", 10));
-		DoubleFieldValue ScaleFV(&scale);
 		TextField* tf = new TextField({ 10,10,0 }, ScaleFV, g, std::to_string(scale));
+		//ScaleFV.ReadField("19000"); // a test
 		g.text_fields.push_back(tf);
 		gui->Add_Inline_Element(tf);
 
@@ -360,8 +362,10 @@ protected:
 
 public: 
 	std::string name;
+	double scale;
+
 	Body(std::string _name, vector3 _center, double _scale, vector3 _velocity, CentralBody c_body, Graphyte& g, bool override_velocity = true):
-		central_body{c_body}
+		central_body{c_body}, ScaleFV(&scale, [this]() { this->RegenerateVertices(); })
 	{
 		position = _center;
 		radius = Magnitude(position);
@@ -389,8 +393,18 @@ public:
 		CreateInspector(g);
 	}
 
+	void RegenerateVertices()
+	{
+		std::cout << "\n Recalculating vertex positions w/ scale: " << scale;
+		std::cout << "\n Me: (regen) " <<this;
+		this->vertices.clear();
+		this->vertices = this->Generate_Vertices(scale);
+		std::cout << "\n" << Magnitude(vertices[0] - position);
+	}
+
 	void ShowBodyInspector()
 	{
+		std::cout << "\n Me: (show) " << this;
 		std::cout << "SHOWING INSPECTOR STUFF";
 		gui->Show();
 	}
@@ -431,8 +445,11 @@ public:
 			return 0;
 		}
 
+		std::cout << "\n Scale: " << scale;
+		std::cout << "\n Me (UPDATE): " << this;
+
 		time_since_start += delta * time_scale;
-		rotate(0.0005f, 0.0005f, 0.0005f);
+		//rotate(0.0005f, 0.0005f, 0.0005f);
 		vector3 this_pos = position;
 		float t = (delta / 1000);
 		std::vector<vector3> sim_step = rk4_step(t * time_scale, this_pos, velocity, t * time_scale);
@@ -482,8 +499,7 @@ public:
 	int Draw(Graphyte& g, Camera& c)
 	{
 		vector3 screen_dimensions = g.Get_Screen_Dimensions(); //Vector3 containing Screen Dimensions, we ignore z
-		std::vector<vector3> verts = Get_Vertices(); //Why are we using an accessor inside the class? Because its tidy and we need to get all the vertices in a new structure so that we can write the screen space positions by reference.
-
+		std::vector<vector3> verts = this->vertices; //Why are we using an accessor inside the class? Because its tidy and we need to get all the vertices in a new structure so that we can write the screen space positions by reference.
 		for (auto& p : verts)
 		{
 			p = c.WorldSpaceToScreenSpace(p, screen_dimensions.x, screen_dimensions.y);

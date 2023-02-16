@@ -702,6 +702,7 @@ class DoubleFieldValue : public FieldValue
 {
 private:
 	double* value = NULL; // This is the pointer to the variable the input field is associated with. E.g. time step or object mass
+	std::function<void()> read_f = NULL;
 	bool ValidateValue(std::string content)
 	{
 		try
@@ -730,9 +731,13 @@ private:
 		}
 	}
 public:
-	DoubleFieldValue(double* write_to)
+	DoubleFieldValue(double* write_to, std::function<void()> f = NULL)
 	{
 		value = write_to;
+		if (f)
+		{
+			read_f = f;
+		}
 	}
 
 	void ReadField(std::string content) override
@@ -745,6 +750,11 @@ public:
 				double new_value = atof(content.c_str());
 				*value = new_value;
 				std::cout << "\n Successfully wrote to value from input field!  \n"<< new_value;
+
+				if (read_f != NULL)
+				{
+					read_f();
+				}
 			}
 		}
 	}
@@ -783,7 +793,7 @@ private:
 
 	void write_value()
 	{
-		fvalue.ReadField(text);
+		fvalue.ReadField(text); //ACCESS VIOLATION!
 	}
 public:
 	TextField(vector3 position, FieldValue& writeto, Graphyte& g, std::string default_text = "This Is An Input Field") : 
@@ -796,7 +806,7 @@ public:
 		g.AddTextToRenderQueue(this); //Beautiful
 	}
 
-	void Set_Position(vector3 position) override
+	void Set_Position(vector3 position) override //THIS IS AN OVERRIDE SO THAT BUTTON POS CAN BE SET AS WELL
 	{
 		//Sets the position of the text with centering
 		pos_x = position.x - texture.getWidth() / 2;
