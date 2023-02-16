@@ -178,7 +178,7 @@ void close_planet_inspectors() //This is a janky implementation, but its all I h
 void click(int mX, int mY)
 {
 	close_planet_inspectors();
-	std::cout << "\n" << mX << " " << mY << "\n";
+	std::cout << "\nChecking for clickable @: " << mX << ", " << mY << "\n";
 	if (graphyte.active_text_field != NULL)
 	{
 		graphyte.active_text_field->Disable();
@@ -276,7 +276,7 @@ int main(int argc, char* args[])
 		Simulation_Parameters.Add_Inline_Element(tf);
 
 		//Testing buttons I guess
-		std::string path_to_icon = "icons/add.bmp";
+		std::string path_to_icon = "icons/add.png";
 		FunctionButton test_functionbutton(test_method, {(SCREEN_WIDTH / 2) - 25, (SCREEN_HEIGHT / 2) - 25, 0}, {25, 25, 0}, graphyte, path_to_icon);
 		graphyte.function_buttons.push_back(&test_functionbutton);
 		//TODO: Instantiate button with: AN ICON :D This is going to be hell, good luck :)

@@ -324,6 +324,40 @@ protected:
 		}
 	}
 
+	void CreateInspector(Graphyte& g)
+	{
+		// TODO: Generate Orbit-Body specific GUI Blocks that can be toggled visibility. This'll be a challenge, good luck!
+		gui = new GUI_Block(); // I suspect this is about to become null once the constructor finishes, but who know!
+		vector3 screen_dimensions = g.Get_Screen_Dimensions();
+		gui->position = { (screen_dimensions.x / 2) - 300, -(screen_dimensions.y / 2) + 200, 0 };
+		inspector_name = g.CreateText(name + ": ", 12);
+		gui->Add_Stacked_Element(inspector_name);
+		std::cout << inspector_name;
+		inspector_radius = g.CreateText(std::to_string(Magnitude(position)), 12);
+		gui->Add_Stacked_Element(inspector_radius);
+		inspector_velocity = g.CreateText("velocity should be here", 12);
+		gui->Add_Stacked_Element(inspector_velocity);
+		inspector_acceleration = g.CreateText("acceleration should be here", 12);
+		gui->Add_Stacked_Element(inspector_acceleration);
+		inspector_period = g.CreateText("period should be here", 12);
+		gui->Add_Stacked_Element(inspector_period);
+
+		//Input fields
+		gui->Add_Stacked_Element(g.CreateText("PARAMETERS_____", 12));
+
+		gui->Add_Stacked_Element(g.CreateText("Scale: ", 10));
+		DoubleFieldValue ScaleFV(&scale);
+		TextField* tf = new TextField({ 10,10,0 }, ScaleFV, g, std::to_string(scale));
+		g.text_fields.push_back(tf);
+		gui->Add_Inline_Element(tf);
+
+		gui->Hide(); // Hide the orbit body info until the button is clicked!
+
+		//Create the button
+		f_button = new FunctionButton([this]() { this->ShowBodyInspector(); }, name_label->Get_Position(), name_label->Get_Dimensions(), g, ""); //TODO: Fix this please
+		g.function_buttons.push_back(f_button); //No idea how this has access to function_buttons but so it does...
+	}
+
 public: 
 	std::string name;
 	Body(std::string _name, vector3 _center, double _scale, vector3 _velocity, CentralBody c_body, Graphyte& g, bool override_velocity = true):
@@ -352,26 +386,7 @@ public:
 		
 		vertices = Generate_Vertices(scale);
 
-		// TODO: Generate Orbit-Body specific GUI Blocks that can be toggled visibility. This'll be a challenge, good luck!
-		gui = new GUI_Block(); // I suspect this is about to become null once the constructor finishes, but who know!
-		vector3 screen_dimensions = g.Get_Screen_Dimensions();
-		gui->position = {(screen_dimensions.x / 2) - 300, -(screen_dimensions.y / 2) + 100, 0 };
-		inspector_name = g.CreateText(name + ": ", 12);
-		gui->Add_Stacked_Element(inspector_name);
-		std::cout << inspector_name;
-		inspector_radius = g.CreateText(std::to_string(Magnitude(position)), 12);
-		gui->Add_Stacked_Element(inspector_radius);
-		inspector_velocity = g.CreateText("velocity should be here", 12);
-		gui->Add_Stacked_Element(inspector_velocity);
-		inspector_acceleration = g.CreateText("acceleration should be here", 12);
-		gui->Add_Stacked_Element(inspector_acceleration);
-		inspector_period = g.CreateText("period should be here", 12);
-		gui->Add_Stacked_Element(inspector_period);
-		gui->Hide(); // Hide the orbit body info until the button is clicked!
-
-		//Create the button
-		f_button = new FunctionButton([this]() { this->ShowBodyInspector(); }, name_label->Get_Position(), name_label->Get_Dimensions(), g, ""); //TODO: Fix this please
-		g.function_buttons.push_back(f_button); //No idea how this has access to function_buttons but so it does...
+		CreateInspector(g);
 	}
 
 	void ShowBodyInspector()

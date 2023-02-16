@@ -796,27 +796,27 @@ public:
 		g.AddTextToRenderQueue(this); //Beautiful
 	}
 
-	//void Set_Position(vector3 position) override
-	//{
-	//	//Sets the position of the text with centering
-	//	pos_x = position.x - texture.getWidth() / 2;
-	//	pos_y = position.y + texture.getHeight() / 2;
-	//	visible = position.z >= 0;
+	void Set_Position(vector3 position) override
+	{
+		//Sets the position of the text with centering
+		pos_x = position.x - texture.getWidth() / 2;
+		pos_y = position.y + texture.getHeight() / 2;
+		visible = position.z >= 0;
 
-	//	button->SetPosition(position); //There's a bug here [Edit: I dont know when I wrote this so am not sure if its fixed tbh]
-	//}
+		button->SetPosition(position); //There's a bug here [Edit: I dont know when I wrote this so am not sure if its fixed tbh]
+	}
 
-	//void Set_Position_TL(vector3 pos) override
-	//{
-	//	//In some cases it is more helpful to set the position of the text with the top left anchor point, what SDL uses as the pivot for textures.
-	//	pos_x = pos.x;
-	//	pos_y = pos.y;
-	//	visible = pos.z >= 0;
-	//	
-	//	button->SetPosition({ pos.x + texture.getWidth() / 2 , pos.y - texture.getHeight() / 2, 0 });
+	void Set_Position_TL(vector3 pos) override
+	{
+		//In some cases it is more helpful to set the position of the text with the top left anchor point, what SDL uses as the pivot for textures.
+		pos_x = pos.x;
+		pos_y = pos.y;
+		visible = pos.z >= 0;
+		
+		button->SetPosition({ pos.x + texture.getWidth() / 2 , pos.y - texture.getHeight() / 2, 0 });
 
-	//	std::cout << vector3{ pos.x + texture.getWidth() / 2, pos.y - texture.getHeight() / 2, 0 }.Debug();
-	//}
+		std::cout << vector3{ pos.x + texture.getWidth() / 2, pos.y - texture.getHeight() / 2, 0 }.Debug();
+	}
 
 	void Backspace()
 	{
