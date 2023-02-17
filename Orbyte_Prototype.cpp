@@ -320,7 +320,7 @@ int main(int argc, char* args[])
 			Sun.Draw(graphyte, gCamera);
 
 			vector3 com = calculate_centre_of_mass(Sun);
-			std::cout << "\n" << com.Debug();
+			//std::cout << "\n" << com.Debug();
 			vector3 debug_com = gCamera.WorldSpaceToScreenSpace(com, SCREEN_HEIGHT, SCREEN_WIDTH);
 			graphyte.pixel(debug_com.x, debug_com.y);
 			for (auto& b : orbiting_bodies)

@@ -151,6 +151,7 @@ protected:
 	vector3 position{ 0, 0, 0 };
 	double radius;
 	vector3 velocity{ 0,0,0 };
+	double angular_velocity = 0;
 	vector3 acceleration{ 0, 0, 0 };
 	double mu = 0; 
 	double mass = 0;
@@ -161,6 +162,7 @@ protected:
 	Text* inspector_mass = NULL; 
 	Text* inspector_radius = NULL;
 	Text* inspector_velocity = NULL;
+	Text* inspector_angular_velocity = NULL;
 	Text* inspector_acceleration = NULL;
 	Text* inspector_period = NULL;
 
@@ -179,11 +181,12 @@ protected:
 		if (gui->is_visible)
 		{
 			if (inspector_name != NULL){ inspector_name->Set_Text(name);}//The set text method checks if we are making a redundant set => more performant
-			if (inspector_mass != NULL) { inspector_mass->Set_Text("Mass: " + std::to_string(mass) + "kg"); }
-			if (inspector_radius != NULL) { inspector_radius->Set_Text("Radius: " + std::to_string(Magnitude(position) / 1000) + "km"); }
-			if (inspector_velocity != NULL) { inspector_velocity->Set_Text("Velocity: " + velocity.Debug()); }
-			if (inspector_acceleration != NULL) { inspector_acceleration->Set_Text("Acceleration: " + acceleration.Debug()); }
-			if (inspector_period != NULL) { inspector_period->Set_Text("Orbit Period: " + std::to_string(Calculate_Period() / (60 * 60 * 24)) + " days"); }
+			if (inspector_mass != NULL) { inspector_mass->Set_Text("| Mass: " + std::to_string(mass) + "kg"); }
+			if (inspector_radius != NULL) { inspector_radius->Set_Text("| Radius: " + std::to_string(Magnitude(position) / 1000) + "km"); }
+			if (inspector_velocity != NULL) { inspector_velocity->Set_Text("| Velocity: " + velocity.Debug()); }
+			if (inspector_angular_velocity != NULL) { inspector_angular_velocity->Set_Text("| Angular Velocity: " + std::to_string(angular_velocity * 60 * 60 * 24) + "rad/day"); }
+			if (inspector_acceleration != NULL) { inspector_acceleration->Set_Text("| Acceleration: " + acceleration.Debug()); }
+			if (inspector_period != NULL) { inspector_period->Set_Text("| Orbit Period: " + std::to_string(Calculate_Period() / (60 * 60 * 24)) + " days"); }
 		}
 	}
 
@@ -289,7 +292,7 @@ protected:
 		return _vertices;
 	}
 
-	void MoveToPos(vector3 new_pos)
+	vector3 MoveToPos(vector3 new_pos)
 	{
 		vector3 old_pos = position;
 		position = new_pos;
@@ -300,6 +303,8 @@ protected:
 		{
 			p = p + delta;
 		}
+
+		return delta;
 	}
 
 	void rotate(float rot_x = 1, float rot_y = 1, float rot_z = 1)
@@ -347,6 +352,8 @@ protected:
 		gui->Add_Stacked_Element(inspector_radius);
 		inspector_velocity = g.CreateText("velocity should be here", 12);
 		gui->Add_Stacked_Element(inspector_velocity);
+		inspector_angular_velocity = g.CreateText("angular velocity should be here", 12);
+		gui->Add_Stacked_Element(inspector_angular_velocity);
 		inspector_acceleration = g.CreateText("acceleration should be here", 12);
 		gui->Add_Stacked_Element(inspector_acceleration);
 		inspector_period = g.CreateText("period should be here", 12);
@@ -355,12 +362,12 @@ protected:
 		//Input fields
 		gui->Add_Stacked_Element(g.CreateText("EDIT PARAMETERS_____", 12));
 
-		gui->Add_Stacked_Element(g.CreateText("Scale: ", 10));
+		gui->Add_Stacked_Element(g.CreateText("| Scale: ", 10));
 		TextField* tf = new TextField({ 10,10,0 }, ScaleFV, g, std::to_string(scale));
 		g.text_fields.push_back(tf);
 		gui->Add_Inline_Element(tf);
 
-		gui->Add_Stacked_Element(g.CreateText("Mass: ", 10));
+		gui->Add_Stacked_Element(g.CreateText("| Mass: ", 10));
 		tf = new TextField({ 10,10,0 }, MassFV, g, std::to_string(mass));
 		g.text_fields.push_back(tf);
 		gui->Add_Inline_Element(tf);
@@ -458,14 +465,15 @@ public:
 			return 0;
 		} 
 
-		time_since_start += delta * time_scale;
 		//rotate(0.0005f, 0.0005f, 0.0005f);
 		vector3 this_pos = position - com;
-		float t = (delta / 1000);
+		float t = (delta / 1000); //time in seconds
 		std::vector<vector3> sim_step = rk4_step(t * time_scale, this_pos, velocity, t * time_scale);
 		this_pos = sim_step[0];
 		//if (position.z > 0) { std::cout << position.Debug() << "\n"; std::cout << velocity.Debug() << "\n"; }
 		MoveToPos(this_pos);
+		angular_velocity = Magnitude(velocity) / Magnitude(position);
+		time_since_start += t * time_scale;
 
 
 		if (Magnitude(this_pos - last_trail_point) > (0.5 * radius) / 24)
