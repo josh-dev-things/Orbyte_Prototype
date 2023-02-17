@@ -191,12 +191,14 @@ void click(int mX, int mY)
 		}
 	}
 
-	close_planet_inspectors();
-
 	for (FunctionButton* fb : graphyte.function_buttons)
 	{
-		fb->CheckForClick(mX, mY);
+		if (fb->CheckForClick(mX, mY))
+		{
+			return;
+		}
 	}
+	close_planet_inspectors();
 }
 
 Uint32 Update_Clock()
@@ -217,6 +219,22 @@ void toggle_pause()
 		time_scale = 0;
 	}
 	return;
+}
+
+void clean_orbit_queue()
+{
+	int length = orbiting_bodies.size();
+	for (int i = 0; i < length; i += 0) //This is an odd loop
+	{
+		if (orbiting_bodies[i]->to_delete)
+		{
+			orbiting_bodies.erase(orbiting_bodies.begin() + i);
+			length -= 1;
+		}
+		else {
+			i++;
+		}
+	}
 }
 
 vector3 calculate_centre_of_mass(CentralBody cb)
@@ -318,7 +336,7 @@ int main(int argc, char* args[])
 
 			//render sun
 			Sun.Draw(graphyte, gCamera);
-
+			clean_orbit_queue();
 			vector3 com = calculate_centre_of_mass(Sun);
 			//std::cout << "\n" << com.Debug();
 			vector3 debug_com = gCamera.WorldSpaceToScreenSpace(com, SCREEN_HEIGHT, SCREEN_WIDTH);

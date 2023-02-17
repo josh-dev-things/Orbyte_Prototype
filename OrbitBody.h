@@ -166,6 +166,10 @@ protected:
 	Text* inspector_acceleration = NULL;
 	Text* inspector_period = NULL;
 
+	//Inspector Function Buttons
+	FunctionButton* inspector_reset = NULL;
+	FunctionButton* inspector_delete = NULL;
+
 	//Field Values
 	DoubleFieldValue ScaleFV;
 	DoubleFieldValue MassFV;
@@ -378,7 +382,10 @@ protected:
 		g.text_fields.push_back(tf);
 		gui->Add_Inline_Element(tf);
 
-		gui->Hide(); // Hide the orbit body info until the button is clicked!
+		inspector_delete = new FunctionButton([this]() { this->Delete(); }, { (screen_dimensions.x / 2) - 270, -(screen_dimensions.y / 2) + 30, 0 }, {25, 25, 0}, g, "icons/delete.png");
+		g.function_buttons.emplace_back(inspector_delete);
+
+		HideBodyInspector();
 
 		//Create the button
 		f_button = new FunctionButton([this]() { this->ShowBodyInspector(); }, name_label->Get_Position(), name_label->Get_Dimensions(), g, ""); //TODO: Fix this please
@@ -388,6 +395,7 @@ protected:
 public: 
 	std::string name;
 	double scale;
+	bool to_delete = false; //Used in mainloop to schedule objects for deletion next update. => deconstructor (see free())
 
 	Body(std::string _name, vector3 _center, double _mass, double _scale, vector3 _velocity, CentralBody c_body, Graphyte& g, bool override_velocity = true):
 		central_body{c_body}, ScaleFV(&scale, [this]() { this->RegenerateVertices(); }), MassFV(&mass), NameFV(&name, [this]() { this->Rename(); })
@@ -419,6 +427,24 @@ public:
 		CreateInspector(g);
 	}
 
+	~Body()
+	{
+		free();
+	}
+
+	void free() //I *WANT* to improve this, but the NEA deadline is looming so this is how it stays for now.
+	{
+		
+		satellites.clear();
+		vertices.clear();
+		trail_points.clear();
+		edges.clear();
+
+		gui = nullptr;
+		f_button->SetEnabled(false);
+		f_button = nullptr;
+	}
+
 	void RegenerateVertices()
 	{
 		std::cout << "\n Recalculating vertex positions w/ scale: " << scale;
@@ -430,20 +456,20 @@ public:
 
 	void Rename()
 	{
-		std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+		std::cout << "\nRenamed an orbiting body.";
 		name_label->Set_Text(name);
 		return;
 	}
 
 	void ShowBodyInspector()
 	{
-		std::cout << "\n Me: (show) " << this;
-		std::cout << "SHOWING INSPECTOR STUFF";
+		inspector_delete->SetEnabled(true);
 		gui->Show();
 	}
 
 	void HideBodyInspector()
 	{
+		inspector_delete->SetEnabled(false);
 		gui->Hide();
 	}
 
@@ -461,8 +487,15 @@ public:
 	void Reset()
 	{
 		position = start_pos;
-
 		velocity = start_vel;
+	}
+
+	void Delete()
+	{
+		std::cout << "\n|||DELETED ORBIT BODY: " << name << "|||";
+		HideBodyInspector();
+		name_label->Set_Visibility(false);
+		to_delete = true;
 	}
 
 	int Add_Satellite(const Satellite& sat); //This is defined after Satellite is defined.

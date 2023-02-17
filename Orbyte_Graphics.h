@@ -488,6 +488,18 @@ public:  //Public attributes & Methods
 		texts.push_back(newText);
 	}
 
+	void RemoveTextFromRenderQueue(Text* text)
+	{
+		for (int i = 0; i < texts.size(); i++)
+		{
+			if (texts[i] == text)
+			{
+				texts.erase(texts.begin() + i);
+				return;
+			}
+		}
+	}
+
 	void AddIconToRenderQueue(Icon* icon)
 	{
 		icons.push_back(icon);
@@ -607,6 +619,7 @@ private:
 	std::function<void()> function = NULL;
 
 protected:
+	bool enabled = true;
 	void CallFunction()
 	{
 		if (function != NULL)
@@ -640,14 +653,25 @@ public:
 		position = pos;
 	}
 
+	virtual void SetEnabled(bool _enabled)
+	{
+		std::cout << "BUTTON CHANGED: " << _enabled;
+		enabled = _enabled;
+	}
+
 	bool Clicked(int x, int y)
 	{
+		if (!enabled)
+		{
+			return false;
+		}
+
 		// (0<AM.AB<AB.AB) ^ (0<AM.AD<AD.AD) Where M is a point we're checking
 		vector3 A = { position.x - left_wall_offset, position.y + height / 2, 0 };
 		vector3 B = { position.x - left_wall_offset + width, position.y + height / 2, 0 };
 		vector3 D = { position.x - left_wall_offset, position.y - height / 2, 0 };
 		vector3 C = { position.x - left_wall_offset + width, position.y - height / 2, 0 }; //All the vertices
-		std::cout << "\n Dimensions" << width << "|"<< height;
+		//std::cout << "\n Dimensions" << width << "|"<< height;
 		vector3 M = { x, y, 0 };
 
 		vector3 AM = M - A;
@@ -656,7 +680,7 @@ public:
 		vector3 BM = M - A;
 
 		bool in_area = 0 <= AB*AM && AB*AM <= AB*AB && 0 <= BC*BM && BC*BM <= BC*BC;
-		std::cout << "\n RESULT: " << in_area;
+		//std::cout << "\n RESULT: " << in_area;
 		return in_area;
 	}
 };
@@ -680,6 +704,11 @@ public:
 		AttachFunction(f);
 	}
 
+	~FunctionButton()
+	{
+		free();
+	}
+
 	bool CheckForClick(int x, int y)
 	{
 		if (Clicked(x, y))
@@ -689,6 +718,21 @@ public:
 			return true;
 		}
 		return false;
+	}
+
+	void SetEnabled(bool _enabled) override
+	{
+		Button::SetEnabled(_enabled);
+		if (icon)
+		{
+			icon->visible = _enabled;
+		}
+	}
+
+	void free()
+	{
+		icon->free();
+		AttachFunction(NULL);
 	}
 };
 
@@ -1006,6 +1050,10 @@ struct GUI_Block //"Blocks" are collections of text elements to help with positi
 		elements.push_back(text);
 	}
 
+	void clear()
+	{
+		elements.clear();
+	}	
 	
 };
 
