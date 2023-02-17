@@ -169,6 +169,7 @@ protected:
 	//Field Values
 	DoubleFieldValue ScaleFV;
 	DoubleFieldValue MassFV;
+	StringFieldValue NameFV;
 
 	//GUI
 	GUI_Block* gui = NULL;
@@ -362,8 +363,13 @@ protected:
 		//Input fields
 		gui->Add_Stacked_Element(g.CreateText("EDIT PARAMETERS_____", 12));
 
+		gui->Add_Stacked_Element(g.CreateText("| Name: ", 10));
+		TextField* tf = new TextField({ 10,10,0 }, NameFV, g, name);
+		g.text_fields.push_back(tf);
+		gui->Add_Inline_Element(tf);
+
 		gui->Add_Stacked_Element(g.CreateText("| Scale: ", 10));
-		TextField* tf = new TextField({ 10,10,0 }, ScaleFV, g, std::to_string(scale));
+		tf = new TextField({ 10,10,0 }, ScaleFV, g, std::to_string(scale));
 		g.text_fields.push_back(tf);
 		gui->Add_Inline_Element(tf);
 
@@ -384,7 +390,7 @@ public:
 	double scale;
 
 	Body(std::string _name, vector3 _center, double _mass, double _scale, vector3 _velocity, CentralBody c_body, Graphyte& g, bool override_velocity = true):
-		central_body{c_body}, ScaleFV(&scale, [this]() { this->RegenerateVertices(); }), MassFV(&mass)
+		central_body{c_body}, ScaleFV(&scale, [this]() { this->RegenerateVertices(); }), MassFV(&mass), NameFV(&name, [this]() { this->Rename(); })
 	{
 		position = _center;
 		radius = Magnitude(position);
@@ -420,6 +426,13 @@ public:
 		this->vertices.clear();
 		this->vertices = this->Generate_Vertices(scale);
 		std::cout << "\n" << Magnitude(vertices[0] - position);
+	}
+
+	void Rename()
+	{
+		std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+		name_label->Set_Text(name);
+		return;
 	}
 
 	void ShowBodyInspector()

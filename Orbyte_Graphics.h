@@ -762,7 +762,55 @@ public:
 
 class StringFieldValue : public FieldValue
 {
-	// TODO: Implement lol.
+private:
+	std::string* value = NULL; // This is the pointer to the variable the input field is associated with. E.g. object name
+	std::function<void()> read_f = NULL;
+	bool ValidateValue(std::string content)
+	{
+		try
+		{
+			std::regex dbl_regex("(([A-Z]|[a-z])|[ ])+");
+			if (std::regex_match(content, dbl_regex))
+			{
+				return true;
+			}
+			else {
+				throw(content);
+			}
+		}
+		catch (std::string bad)
+		{
+			std::cout << "\n Bad input recieved: " << bad; // Its bad
+			return false;
+		}
+	}
+public:
+	StringFieldValue(std::string* write_to, std::function<void()> f = NULL)
+	{
+		value = write_to;
+		if (f)
+		{
+			read_f = f;
+		}
+	}
+
+	void ReadField(std::string content) override
+	{
+		if (ValidateValue(content))
+		{
+			std::cout << "\n Valid field content";
+			if (value != NULL)
+			{
+				*value = content;
+				std::cout << "\n Successfully wrote to value from input field!  \n" << content;
+
+				if (read_f != NULL)
+				{
+					read_f();
+				}
+			}
+		}
+	}
 };
 
 class TextField : public Text
