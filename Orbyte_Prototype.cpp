@@ -45,6 +45,9 @@ Graphyte graphyte;
 //Orbit Bodies
 std::vector<Body*> orbiting_bodies;
 
+//CB
+CentralBody Sun;
+
 //Runtime variables
 bool quit = false;
 SDL_Event sdl_event;
@@ -221,6 +224,11 @@ void toggle_pause()
 	return;
 }
 
+void add_orbit_body()
+{
+	orbiting_bodies.push_back(new Body("New", { 0, 5.8E10, 0 }, 3.285E23, 2.44E6, { 47000, 0, 0 }, Sun, graphyte, false));
+}
+
 void clean_orbit_queue()
 {
 	int length = orbiting_bodies.size();
@@ -263,11 +271,7 @@ int main(int argc, char* args[])
 		printf("Failed to initialize!\n");
 	}
 	else
-	{
-		
-		//Experimenting with orbit body
-		CentralBody Sun = CentralBody();
-		
+	{	
 		// Name, Pos, mass, Radius, Velocity
 		Body mercury = Body("Mercury", { 0, 5.8E10, 0 }, 3.285E23, 2.44E6, { 47000, 0, 0 }, Sun, graphyte, false);
 		//Body venus = Body("Venus", { 0, 1E11, 0 }, 6E6, { 35000, 0, 0 }, Sun, graphyte, false);
@@ -326,7 +330,7 @@ int main(int argc, char* args[])
 		FunctionButton Pause(toggle_pause, { (SCREEN_WIDTH / 2) - 25, (SCREEN_HEIGHT / 2) - 25, 0 }, { 25, 25, 0 }, graphyte, "icons/stop.png");
 		graphyte.function_buttons.push_back(&Pause);
 
-		FunctionButton Add(toggle_pause, { (SCREEN_WIDTH / 2) - 25, (SCREEN_HEIGHT / 2) - 60, 0 }, { 25, 25, 0 }, graphyte, "icons/add.png");
+		FunctionButton Add(add_orbit_body, { (SCREEN_WIDTH / 2) - 25, (SCREEN_HEIGHT / 2) - 60, 0 }, { 25, 25, 0 }, graphyte, "icons/add.png");
 		graphyte.function_buttons.push_back(&Add); 
 		 
 		//Mainloop time 

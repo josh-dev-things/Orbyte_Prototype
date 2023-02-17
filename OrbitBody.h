@@ -347,7 +347,7 @@ protected:
 		// TODO: Generate Orbit-Body specific GUI Blocks that can be toggled visibility. This'll be a challenge, good luck!
 		gui = new GUI_Block(); // I suspect this is about to become null once the constructor finishes, but who know!
 		vector3 screen_dimensions = g.Get_Screen_Dimensions();
-		gui->position = { (screen_dimensions.x / 2) - 300, -(screen_dimensions.y / 2) + 200, 0 };
+		gui->position = { (screen_dimensions.x / 2) - 300, -(screen_dimensions.y / 2) + 300, 0 };
 		inspector_name = g.CreateText(name + ": ", 12);
 		gui->Add_Stacked_Element(inspector_name);
 		std::cout << inspector_name;
