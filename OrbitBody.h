@@ -137,6 +137,8 @@ private:
 	std::vector<Satellite> satellites;
 	Graphyte& graphyte;
 
+	void Move_Satellites(vector3 delta);
+
 protected:
 	std::vector<vector3> vertices;
 	std::vector<edge> edges;
@@ -300,7 +302,7 @@ protected:
 		return _vertices;
 	}
 
-	virtual vector3 MoveToPos(vector3 new_pos)
+	vector3 MoveToPos(vector3 new_pos)
 	{
 		vector3 old_pos = position;
 		position = new_pos;
@@ -569,7 +571,7 @@ public:
 		return 0;
 	}
 
-	int Draw_Arrows(Graphyte& g, Camera& c, vector3 start, vector3 screen_dimensions)
+	virtual int Draw_Arrows(Graphyte& g, Camera& c, vector3 start, vector3 screen_dimensions)
 	{
 		//Draw arrow for velocity
 		Arrow arrow_velocity;
@@ -681,6 +683,11 @@ public:
 		return mass;
 	}
 
+	vector3 Get_Acceleration()
+	{
+		return acceleration;
+	}
+
 	/// <summary>
 	/// The amount of time in seconds for the body to complete 1 orbit
 	/// </summary>
@@ -698,7 +705,7 @@ public:
 class Satellite : public Body
 {
 private:
-	Body parentBody;
+	Body* parentBody;
 	std::vector<vector3> Generate_Vertices(double scale) override {
 		//thing
 		std::vector<vector3> _vertices{
@@ -745,7 +752,7 @@ private:
 	};
 
 	void Project_Circular_Orbit(vector3& _velocity) override {
-		vector3 p_velocity = parentBody.Get_Tangential_Velocity();
+		vector3 p_velocity = parentBody->Get_Tangential_Velocity();
 		//We manipulate the velocity so that a perfectly circular orbit is achieved
 		if (position.x != 0)
 		{
@@ -765,20 +772,6 @@ private:
 		//Don't have to return a value because parameter is passed by reference.
 	}
 
-	vector3 MoveToPos(vector3 new_pos) override
-	{
-		vector3 old_pos = position;
-		position = new_pos;
-
-		vector3 delta = position - old_pos;
-
-		for (auto& p : vertices)
-		{
-			p = p + delta;
-		}
-
-		return delta;
-	}
 public:
 	/// <summary>
 	/// Constructor for the Satellite object. It initializes the parent class: Body, and the parentBody attribute.
@@ -789,10 +782,10 @@ public:
 	/// <param name="_scale"></param>
 	/// <param name="_velocity"></param>
 	/// <param name="override_velocity"></param>
-	Satellite(std::string _name, Body& _parentBody, vector3 center, double _mass, double _scale, vector3 _velocity, Graphyte& g, bool override_velocity = false): 
-		Body(_name, center, _mass, _scale, _velocity, 6.6743E-11 * _parentBody.Get_Mass(), g, false), parentBody(_parentBody)
+	Satellite(std::string _name, Body* _parentBody, vector3 center, double _mass, double _scale, vector3 _velocity, Graphyte& g, bool override_velocity = false): 
+		Body(_name, center + _parentBody->Get_Position(), _mass, _scale, _velocity + _parentBody->Get_Tangential_Velocity(), 6.6743E-11 * _parentBody->Get_Mass(), g, false), parentBody(_parentBody)
 	{
-		std::cout << "\n____________\nSATELLITE INSTANTIATION\n____________\n" << "parent body name: " << parentBody.name << "\nparent body location: " << parentBody.Get_Position().Debug() << "\nmy location: " << Get_Position().Debug() + "\n";
+		std::cout << "\n____________\nSATELLITE INSTANTIATION\n____________\n" << "parent body name: " << parentBody->name << "\nparent body location: " << parentBody->Get_Position().Debug() << "\nmy location: " << Get_Position().Debug() + "\n";
 		std::cout << "\nSAT POS (RELATIVE) CONSTRUCTOR:" + (position).Debug() + "\n";
 		std::cout << "SAT VEL (RELATIVE) CONSTRUCTOR:" + (velocity).Debug() + " MEANT TO BE: " + _velocity.Debug() + "\n";
 	}
@@ -806,10 +799,10 @@ public:
 
 		//rotate(0.0005f, 0.0005f, 0.0005f);
 		vector3 this_pos = position;
-		std::cout <<"\nSAT POS (RELATIVE):" +this_pos.Debug()+"\n";
+		//std::cout <<"\nSAT POS (RELATIVE):" +this_pos.Debug()+"\n";
 		float t = (delta / 1000); //time in seconds
-		std::vector<vector3> sim_step = rk4_step(t * time_scale, this_pos, velocity, t * time_scale);
-		this_pos = sim_step[0];
+		std::vector<vector3> sim_step = rk4_step(t * time_scale, this_pos - parentBody->Get_Position(), velocity - parentBody->Get_Tangential_Velocity(), t * time_scale);
+		this_pos = sim_step[0] + parentBody->Get_Position();
 		//if (position.z > 0) { std::cout << position.Debug() << "\n"; std::cout << velocity.Debug() << "\n"; }
 		MoveToPos(this_pos);
 		angular_velocity = Magnitude(velocity) / Magnitude(position);
@@ -827,11 +820,34 @@ public:
 			trail_points.erase(trail_points.begin());
 		}
 
-		velocity = sim_step[1];
-		std::cout << "SAT VEL (RELATIVE):" + (velocity - parentBody.Get_Tangential_Velocity()).Debug() + "\n";
+		velocity = sim_step[1] + parentBody->Get_Tangential_Velocity();
+		//std::cout << "SAT VEL (RELATIVE):" + (velocity - parentBody->Get_Tangential_Velocity()).Debug() + "\n";
 		acceleration = sim_step[2];
+		//std::cout << "\nSatellite Accel: " << Normalize(acceleration).Debug();
 
 		update_inspector();
+		return 0;
+	}
+
+	virtual int Draw_Arrows(Graphyte& g, Camera& c, vector3 start, vector3 screen_dimensions)
+	{
+		//Draw arrow for velocity
+		Arrow arrow_velocity;
+		double arrow_modifier = c.position.z < 0 ? c.position.z * -(1 / 1E6) : c.position.z * (1 / 1E6);
+		vector3 arrow_end = c.WorldSpaceToScreenSpace(position + (velocity * arrow_modifier), screen_dimensions.x, screen_dimensions.y);
+		vector3 dir = arrow_end - start;
+		arrow_velocity.Draw(start, Normalize(dir), Magnitude(dir), 1, g); //Draw arrow, with 1 head.
+
+		//Draw arrow for acceleration
+		Arrow arrow_acceleration;
+		arrow_end = c.WorldSpaceToScreenSpace(position + (acceleration * arrow_modifier * 5E7), screen_dimensions.x, screen_dimensions.y);
+		dir = arrow_end - start;
+		arrow_acceleration.Draw(start, Normalize(dir), Magnitude(dir), 2, g); //Draw arrow, with 2 heads.
+
+		/*Arrow parent_debug;
+		parent_debug.Draw(start, Normalize(parentBody->Get_Position() - start), Magnitude(parentBody->Get_Position() - start), 3, g);
+		std::cout << "\nTrying to figure out where the fuck this parent body is: " + parentBody->Get_Position().Debug()+"\n";*/
+
 		return 0;
 	}
 };
@@ -856,7 +872,7 @@ int Body::Add_Satellite(const Satellite& sat)
 void Body::Create_Satellite()
 {
 	// TODO: Figure this out I guess!
-	Add_Satellite(Satellite("new_sat", *this, { 0, 3.8E8, 0 }, 7.3E22, 1.7E5, { 1200, 0, 0 }, graphyte, false)); //Continue with this.
+	Add_Satellite(Satellite("new_sat", this, { 0, 3.8E8, 0 }, 7.3E22, 1.7E5, { 1200, 0, 0 }, graphyte, false)); //Continue with this.
 }
 
 int Body::Draw_Satellites(Graphyte& g, Camera& c)
