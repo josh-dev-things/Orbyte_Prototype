@@ -194,6 +194,8 @@ void click(int mX, int mY)
 		}
 	}
 
+	close_planet_inspectors();
+
 	for (FunctionButton* fb : graphyte.function_buttons)
 	{
 		if (fb->CheckForClick(mX, mY))
@@ -201,7 +203,6 @@ void click(int mX, int mY)
 			return;
 		}
 	}
-	close_planet_inspectors();
 }
 
 Uint32 Update_Clock()

@@ -173,6 +173,7 @@ protected:
 	//Field Values
 	DoubleFieldValue ScaleFV;
 	DoubleFieldValue MassFV;
+	DoubleFieldValue RadiusFV;
 	StringFieldValue NameFV;
 
 	//GUI
@@ -382,6 +383,11 @@ protected:
 		g.text_fields.push_back(tf);
 		gui->Add_Inline_Element(tf);
 
+		gui->Add_Stacked_Element(g.CreateText("| Radius: ", 10));
+		tf = new TextField({ 10,10,0 }, RadiusFV, g, std::to_string(radius));
+		g.text_fields.push_back(tf);
+		gui->Add_Inline_Element(tf);
+
 		inspector_delete = new FunctionButton([this]() { this->Delete(); }, { (screen_dimensions.x / 2) - 270, -(screen_dimensions.y / 2) + 30, 0 }, {25, 25, 0}, g, "icons/delete.png");
 		g.function_buttons.emplace_back(inspector_delete);
 
@@ -398,7 +404,7 @@ public:
 	bool to_delete = false; //Used in mainloop to schedule objects for deletion next update. => deconstructor (see free())
 
 	Body(std::string _name, vector3 _center, double _mass, double _scale, vector3 _velocity, CentralBody c_body, Graphyte& g, bool override_velocity = true):
-		central_body{c_body}, ScaleFV(&scale, [this]() { this->RegenerateVertices(); }), MassFV(&mass), NameFV(&name, [this]() { this->Rename(); })
+		central_body{c_body}, ScaleFV(&scale, [this]() { this->RegenerateVertices(); }), MassFV(&mass), NameFV(&name, [this]() { this->Rename(); }), RadiusFV(&radius, [this]() { this->Move_To_Radius(); })
 	{
 		position = _center;
 		radius = Magnitude(position);
@@ -486,6 +492,7 @@ public:
 
 	void Reset()
 	{
+		time_since_start = 0;
 		position = start_pos;
 		velocity = start_vel;
 	}
@@ -496,6 +503,11 @@ public:
 		HideBodyInspector();
 		name_label->Set_Visibility(false);
 		to_delete = true;
+	}
+
+	void Move_To_Radius()
+	{
+		MoveToPos(Normalize(position) * radius);
 	}
 
 	int Add_Satellite(const Satellite& sat); //This is defined after Satellite is defined.

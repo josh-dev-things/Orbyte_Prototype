@@ -294,7 +294,7 @@ public:
 		visible = pos.z >= 0;
 	}
 
-	void Set_Visibility(bool is_visible)
+	virtual void Set_Visibility(bool is_visible)
 	{
 		visible = is_visible;
 	}
@@ -792,12 +792,15 @@ public:
 			if (value != NULL)
 			{
 				double new_value = atof(content.c_str());
-				*value = new_value;
-				std::cout << "\n Successfully wrote to value from input field!  \n"<< new_value;
-
-				if (read_f != NULL)
+				if (new_value != *value)
 				{
-					read_f();
+					*value = new_value;
+					std::cout << "\n Successfully wrote to value from input field!  \n" << new_value;
+
+					if (read_f != NULL)
+					{
+						read_f();
+					}
 				}
 			}
 		}
@@ -918,6 +921,12 @@ public:
 		button->SetPosition({ pos.x + texture.getWidth() / 2 , pos.y - texture.getHeight() / 2, 0 });
 
 		std::cout << vector3{ pos.x + texture.getWidth() / 2, pos.y - texture.getHeight() / 2, 0 }.Debug();
+	}
+
+	void Set_Visibility(bool is_visible) override
+	{
+		Text::Set_Visibility(is_visible);
+		button->SetEnabled(is_visible);
 	}
 
 	void Backspace()
