@@ -803,7 +803,7 @@ public:
 		float t = (delta / 1000); //time in seconds
 		std::vector<vector3> sim_step = rk4_step(t * time_scale, this_pos - parentBody->Get_Position(), velocity - parentBody->Get_Tangential_Velocity(), t * time_scale);
 		this_pos = sim_step[0] + parentBody->Get_Position();
-		//if (position.z > 0) { std::cout << position.Debug() << "\n"; std::cout << velocity.Debug() << "\n"; }
+		
 		MoveToPos(this_pos);
 		angular_velocity = Magnitude(velocity) / Magnitude(position);
 		time_since_start += t * time_scale;
@@ -844,9 +844,11 @@ public:
 		dir = arrow_end - start;
 		arrow_acceleration.Draw(start, Normalize(dir), Magnitude(dir), 2, g); //Draw arrow, with 2 heads.
 
-		/*Arrow parent_debug;
-		parent_debug.Draw(start, Normalize(parentBody->Get_Position() - start), Magnitude(parentBody->Get_Position() - start), 3, g);
-		std::cout << "\nTrying to figure out where the fuck this parent body is: " + parentBody->Get_Position().Debug()+"\n";*/
+		Arrow parent_debug;
+		arrow_end = c.WorldSpaceToScreenSpace(parentBody->Get_Position(), screen_dimensions.x, screen_dimensions.y);
+		dir = arrow_end - start;
+		parent_debug.Draw(start, Normalize(dir), Magnitude(dir)*0.75, 3, g);
+		//std::cout << "\nTrying to figure out where this parent body is: " + parentBody->Get_Position().Debug()+"\n";
 
 		return 0;
 	}
