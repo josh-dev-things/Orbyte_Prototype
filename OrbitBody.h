@@ -135,13 +135,13 @@ class Body
 {
 private:
 	std::vector<Satellite> satellites;
+	Graphyte& graphyte;
 
 protected:
 	std::vector<vector3> vertices;
 	std::vector<edge> edges;
 	vector3 last_trail_point;
 	std::vector<vector3> trail_points;
-	CentralBody central_body;
 
 	vector3 start_pos;
 	vector3 start_vel;
@@ -169,6 +169,7 @@ protected:
 	//Inspector Function Buttons
 	FunctionButton* inspector_reset = NULL;
 	FunctionButton* inspector_delete = NULL;
+	FunctionButton* inspector_satellite = NULL;
 
 	//Field Values
 	DoubleFieldValue ScaleFV;
@@ -219,6 +220,7 @@ protected:
 	//rk4_step function https://www.youtube.com/watch?v=TzX6bg3Kc0E&t=241s
 	std::vector<vector3> rk4_step(float _time, vector3 _position, vector3 _velocity, float _dt = 1)
 	{
+		std::cout << "\n DEBUGGING RK4 STEP FOR: " + name + "\n" + "position: " + _position.Debug() + "\nvelocity: " + _velocity.Debug();
 		//structure of the vectors: [pos, velocity]
 		std::vector<vector3> rk1 = two_body_ode(_time, _position, _velocity);
 		std::vector<vector3> rk2 = two_body_ode(_time + (0.5 * _dt), _position + (rk1[0] * 0.5f * _dt), _velocity + (rk1[1] * 0.5f * _dt));
@@ -298,7 +300,7 @@ protected:
 		return _vertices;
 	}
 
-	vector3 MoveToPos(vector3 new_pos)
+	virtual vector3 MoveToPos(vector3 new_pos)
 	{
 		vector3 old_pos = position;
 		position = new_pos;
@@ -394,6 +396,9 @@ protected:
 		inspector_reset = new FunctionButton([this]() { this->Reset(); }, { (screen_dimensions.x / 2) - 270, -(screen_dimensions.y / 2) + 30, 0 }, { 25, 25, 0 }, g, "icons/reset.png");
 		g.function_buttons.emplace_back(inspector_reset);
 
+		inspector_satellite = new FunctionButton([this]() { this->Create_Satellite(); }, {(screen_dimensions.x / 2) - 240, -(screen_dimensions.y / 2) + 30, 0}, {25, 25, 0}, g, "icons/add.png");
+		g.function_buttons.emplace_back(inspector_satellite);
+
 		HideBodyInspector();
 
 		//Create the button
@@ -406,8 +411,8 @@ public:
 	double scale;
 	bool to_delete = false; //Used in mainloop to schedule objects for deletion next update. => deconstructor (see free())
 
-	Body(std::string _name, vector3 _center, double _mass, double _scale, vector3 _velocity, CentralBody c_body, Graphyte& g, bool override_velocity = true):
-		central_body{c_body}, ScaleFV(&scale, [this]() { this->RegenerateVertices(); }), MassFV(&mass), NameFV(&name, [this]() { this->Rename(); }), RadiusFV(&radius, [this]() { this->Move_To_Radius(); })
+	Body(std::string _name, vector3 _center, double _mass, double _scale, vector3 _velocity, double _mu, Graphyte& g, bool override_velocity = false):
+		graphyte(g), ScaleFV(&scale, [this]() { this->RegenerateVertices(); }), MassFV(&mass), NameFV(&name, [this]() { this->Rename(); }), RadiusFV(&radius, [this]() { this->Move_To_Radius(); })
 	{
 		position = _center;
 		radius = Magnitude(position);
@@ -416,7 +421,7 @@ public:
 		name_label->pos_x = 100;
 		name_label->pos_y = 100;
 
-		mu = central_body.mu;
+		mu = _mu;
 		name = _name;
 		if (override_velocity)
 		{
@@ -474,6 +479,7 @@ public:
 	{
 		inspector_delete->SetEnabled(true);
 		inspector_reset->SetEnabled(true);
+		inspector_satellite->SetEnabled(true);
 		gui->Show();
 	}
 
@@ -481,6 +487,7 @@ public:
 	{
 		inspector_delete->SetEnabled(false);
 		inspector_reset->SetEnabled(false);
+		inspector_satellite->SetEnabled(false);
 		gui->Hide();
 	}
 
@@ -518,16 +525,13 @@ public:
 
 	int Add_Satellite(const Satellite& sat);
 
-	void Create_Satellite()
-	{
-		// TODO: Figure this out I guess!
-	}
+	void Create_Satellite();
 
 	int Update_Satellites(float delta, float time_scale);
 
 	int Draw_Satellites(Graphyte& g, Camera& c);
 
-	int Update_Body(vector3 com, float delta, float time_scale)
+	virtual int Update_Body(vector3 com, float delta, float time_scale)
 	{
 		if (time_scale == 0)
 		{
@@ -755,10 +759,25 @@ private:
 		{
 			_velocity.x = sqrt(mu / position.z);
 		}
-
+		std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 		_velocity = _velocity + p_velocity; // Adding the parent velocity because we need this to orbit something moving through space, not orbiting where it thought it was.
 
 		//Don't have to return a value because parameter is passed by reference.
+	}
+
+	vector3 MoveToPos(vector3 new_pos) override
+	{
+		vector3 old_pos = position;
+		position = new_pos;
+
+		vector3 delta = position - old_pos;
+
+		for (auto& p : vertices)
+		{
+			p = p + delta;
+		}
+
+		return delta;
 	}
 public:
 	/// <summary>
@@ -770,18 +789,57 @@ public:
 	/// <param name="_scale"></param>
 	/// <param name="_velocity"></param>
 	/// <param name="override_velocity"></param>
-	Satellite(std::string _name, Body _parentBody, vector3 center, double _mass, double _scale, vector3 _velocity, Graphyte& g, bool override_velocity = true): 
-		Body(_name, center + _parentBody.Get_Position(), _mass, _scale, _velocity, CentralBody(), g, override_velocity), parentBody(_parentBody)
+	Satellite(std::string _name, Body& _parentBody, vector3 center, double _mass, double _scale, vector3 _velocity, Graphyte& g, bool override_velocity = false): 
+		Body(_name, center, _mass, _scale, _velocity, 6.6743E-11 * _parentBody.Get_Mass(), g, false), parentBody(_parentBody)
 	{
-		//Now do some satellite thingies I guess
+		std::cout << "\n____________\nSATELLITE INSTANTIATION\n____________\n" << "parent body name: " << parentBody.name << "\nparent body location: " << parentBody.Get_Position().Debug() << "\nmy location: " << Get_Position().Debug() + "\n";
+		std::cout << "\nSAT POS (RELATIVE) CONSTRUCTOR:" + (position).Debug() + "\n";
+		std::cout << "SAT VEL (RELATIVE) CONSTRUCTOR:" + (velocity).Debug() + " MEANT TO BE: " + _velocity.Debug() + "\n";
+	}
 
+	int Update_Body(vector3 com, float delta, float time_scale) override
+	{
+		if (time_scale == 0)
+		{
+			return 0;
+		}
+
+		//rotate(0.0005f, 0.0005f, 0.0005f);
+		vector3 this_pos = position;
+		std::cout <<"\nSAT POS (RELATIVE):" +this_pos.Debug()+"\n";
+		float t = (delta / 1000); //time in seconds
+		std::vector<vector3> sim_step = rk4_step(t * time_scale, this_pos, velocity, t * time_scale);
+		this_pos = sim_step[0];
+		//if (position.z > 0) { std::cout << position.Debug() << "\n"; std::cout << velocity.Debug() << "\n"; }
+		MoveToPos(this_pos);
+		angular_velocity = Magnitude(velocity) / Magnitude(position);
+		time_since_start += t * time_scale;
+
+		if (Magnitude(this_pos - last_trail_point) > (0.5 * radius) / 24)
+		{
+			trail_points.emplace_back(this_pos);
+			last_trail_point = this_pos;
+			//printf("Added Point");
+		}
+		if (trail_points.size() > 24)
+		{
+			//printf("Erased Point");
+			trail_points.erase(trail_points.begin());
+		}
+
+		velocity = sim_step[1];
+		std::cout << "SAT VEL (RELATIVE):" + (velocity - parentBody.Get_Tangential_Velocity()).Debug() + "\n";
+		acceleration = sim_step[2];
+
+		update_inspector();
+		return 0;
 	}
 };
 
 int Body::Update_Satellites(float delta, float time_scale)
 {
 	//Now update Satellites
-	for (auto& sat : satellites)
+	for (Satellite& sat : satellites)
 	{
 		sat.Update_Body( position,delta, time_scale);
 	}
@@ -795,12 +853,20 @@ int Body::Add_Satellite(const Satellite& sat)
 	return 0;
 }
 
+void Body::Create_Satellite()
+{
+	// TODO: Figure this out I guess!
+	Add_Satellite(Satellite("new_sat", *this, { 0, 3.8E8, 0 }, 7.3E22, 1.7E5, { 1200, 0, 0 }, graphyte, false)); //Continue with this.
+}
+
 int Body::Draw_Satellites(Graphyte& g, Camera& c)
 {
 	for (auto& sat : satellites)
 	{
 		sat.Draw(g, c);
+		
 	}
 	return 0;
 }
 #endif /*ORBITBODY_H*/
+ 
