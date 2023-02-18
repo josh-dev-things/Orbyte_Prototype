@@ -388,8 +388,11 @@ protected:
 		g.text_fields.push_back(tf);
 		gui->Add_Inline_Element(tf);
 
-		inspector_delete = new FunctionButton([this]() { this->Delete(); }, { (screen_dimensions.x / 2) - 270, -(screen_dimensions.y / 2) + 30, 0 }, {25, 25, 0}, g, "icons/delete.png");
+		inspector_delete = new FunctionButton([this]() { this->Delete(); }, { (screen_dimensions.x / 2) - 300, -(screen_dimensions.y / 2) + 30, 0 }, {25, 25, 0}, g, "icons/delete.png");
 		g.function_buttons.emplace_back(inspector_delete);
+
+		inspector_reset = new FunctionButton([this]() { this->Reset(); }, { (screen_dimensions.x / 2) - 270, -(screen_dimensions.y / 2) + 30, 0 }, { 25, 25, 0 }, g, "icons/reset.png");
+		g.function_buttons.emplace_back(inspector_reset);
 
 		HideBodyInspector();
 
@@ -470,12 +473,14 @@ public:
 	void ShowBodyInspector()
 	{
 		inspector_delete->SetEnabled(true);
+		inspector_reset->SetEnabled(true);
 		gui->Show();
 	}
 
 	void HideBodyInspector()
 	{
 		inspector_delete->SetEnabled(false);
+		inspector_reset->SetEnabled(false);
 		gui->Hide();
 	}
 
@@ -494,6 +499,7 @@ public:
 	{
 		time_since_start = 0;
 		position = start_pos;
+		radius = Magnitude(position);
 		velocity = start_vel;
 	}
 
@@ -510,7 +516,12 @@ public:
 		MoveToPos(Normalize(position) * radius);
 	}
 
-	int Add_Satellite(const Satellite& sat); //This is defined after Satellite is defined.
+	int Add_Satellite(const Satellite& sat);
+
+	void Create_Satellite()
+	{
+		// TODO: Figure this out I guess!
+	}
 
 	int Update_Satellites(float delta, float time_scale);
 
@@ -767,13 +778,6 @@ public:
 	}
 };
 
-int Body::Add_Satellite(const Satellite& sat)
-{
-	satellites.emplace_back(sat);
-	std::cout << name << " has a new satellite: " << sat.name << " | Total number of satellites: " << satellites.size() << "\n";
-	return 0;
-}
-
 int Body::Update_Satellites(float delta, float time_scale)
 {
 	//Now update Satellites
@@ -781,6 +785,13 @@ int Body::Update_Satellites(float delta, float time_scale)
 	{
 		sat.Update_Body( position,delta, time_scale);
 	}
+	return 0;
+}
+
+int Body::Add_Satellite(const Satellite& sat)
+{
+	satellites.emplace_back(sat);
+	std::cout << name << " has a new satellite: " << sat.name << " | Total number of satellites: " << satellites.size() << "\n";
 	return 0;
 }
 

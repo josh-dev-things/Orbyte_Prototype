@@ -16,7 +16,7 @@ private: vector3 camera_rotation;
 	public:vector3 position = {0, 0, 0};
 		  float clipping_z = 1;
 
-	Camera(vector3 _position, float _near_clipping_plane)
+	Camera(float _near_clipping_plane = 1, vector3 _position = { 0, 0, -1.5E9 })
 	{
 		position = _position;
 		std::cout << "Instantiated Camera With Position: " << position.Debug() << "\n";
