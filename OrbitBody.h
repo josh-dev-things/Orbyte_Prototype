@@ -510,6 +510,7 @@ public:
 		position = start_pos;
 		radius = Magnitude(position);
 		velocity = start_vel;
+		RegenerateVertices();
 	}
 
 	void Delete()
@@ -542,7 +543,7 @@ public:
 
 		Update_Satellites(delta, time_scale);
 
-		//rotate(0.0005f, 0.0005f, 0.0005f);
+		rotate(0.0005f, 0.0005f, 0.0005f);
 		vector3 this_pos = position;
 		float t = (delta / 1000); //time in seconds
 		std::vector<vector3> sim_step = rk4_step(time_since_start, this_pos, velocity, t * time_scale);

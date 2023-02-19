@@ -282,6 +282,11 @@ public:
 		data_controller.WriteDataToFile(sd, to_save, "solar_system.orbyte");
 	}
 
+	void open()
+	{
+		std::cout << "\nOpening File";
+	}
+
 	int run(int argc, char* args[])
 	{
 		//Start up SDL and create window
@@ -351,11 +356,14 @@ public:
 			FunctionButton Save([this]() { this->save(); }, { (SCREEN_WIDTH / 2) - 25, (SCREEN_HEIGHT / 2) - 95, 0 }, { 25, 25, 0 }, graphyte, "icons/save.png");
 			graphyte.function_buttons.push_back(&Save);
 
+			FunctionButton Open([this]() { this->open(); }, { (SCREEN_WIDTH / 2) - 25, (SCREEN_HEIGHT / 2) - 130, 0 }, { 25, 25, 0 }, graphyte, "icons/open.png");
+			graphyte.function_buttons.push_back(&Save);
+
 			//Mainloop time 
 			while (!quit)
 			{
 				//GRAPHICS 
-				gCamera.position = { earth.Get_Position().x, earth.Get_Position().y, gCamera.position.z };
+				//gCamera.position = { earth.Get_Position().x, earth.Get_Position().y, gCamera.position.z };
 				//render sun
 				Sun.Draw(graphyte, gCamera);
 				clean_orbit_queue();
