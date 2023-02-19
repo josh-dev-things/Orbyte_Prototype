@@ -341,7 +341,7 @@ public:
 			while (!quit)
 			{
 				//GRAPHICS 
-
+				gCamera.position = { earth.Get_Position().x, earth.Get_Position().y, gCamera.position.z };
 				//render sun
 				Sun.Draw(graphyte, gCamera);
 				clean_orbit_queue();

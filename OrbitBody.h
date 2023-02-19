@@ -137,8 +137,6 @@ private:
 	std::vector<Satellite> satellites;
 	Graphyte& graphyte;
 
-	void Move_Satellites(vector3 delta);
-
 protected:
 	std::vector<vector3> vertices;
 	std::vector<edge> edges;
@@ -219,7 +217,6 @@ protected:
 		return { v, a };
 	}
 
-	//rk4_step function https://www.youtube.com/watch?v=TzX6bg3Kc0E&t=241s
 	std::vector<vector3> rk4_step(float _time, vector3 _position, vector3 _velocity, float _dt = 1)
 	{
 		std::cout << "\n DEBUGGING RK4 STEP FOR: " + name + "\n" + "position: " + _position.Debug() + "\nvelocity: " + _velocity.Debug();
@@ -231,6 +228,7 @@ protected:
 		
 		vector3 result_pos = _position + (rk1[0] + (rk2[0] * 2.0f) + (rk3[0] * 2.0f) + rk4[0]) * (_dt / 6.0f);
 		vector3 result_vel = _velocity + (rk1[1] + rk2[1] * 2 + rk3[1] * 2 + rk4[1]) * (_dt / 6);
+		std::cout << "\n Result FOR: " + name + "\n" + "position: " + result_pos.Debug() + "\nvelocity: " + result_vel.Debug();
 		return { result_pos, result_vel, rk1[1]};
 	}
 
@@ -540,6 +538,8 @@ public:
 			return 0;
 		} 
 
+		Update_Satellites(delta, time_scale);
+
 		//rotate(0.0005f, 0.0005f, 0.0005f);
 		vector3 this_pos = position - com;
 		float t = (delta / 1000); //time in seconds
@@ -566,7 +566,6 @@ public:
 		velocity = sim_step[1];
 		acceleration = sim_step[2];
 
-		Update_Satellites(delta, time_scale);
 		update_inspector();
 		return 0;
 	}
@@ -801,8 +800,8 @@ public:
 		vector3 this_pos = position;
 		//std::cout <<"\nSAT POS (RELATIVE):" +this_pos.Debug()+"\n";
 		float t = (delta / 1000); //time in seconds
-		std::vector<vector3> sim_step = rk4_step(t * time_scale, this_pos - parentBody->Get_Position(), velocity - parentBody->Get_Tangential_Velocity(), t * time_scale);
-		this_pos = sim_step[0] + parentBody->Get_Position();
+		std::vector<vector3> sim_step = rk4_step(t * time_scale, this_pos - com, velocity, t * time_scale);
+		this_pos = sim_step[0] + com;
 		
 		MoveToPos(this_pos);
 		angular_velocity = Magnitude(velocity) / Magnitude(position);
@@ -820,7 +819,7 @@ public:
 			trail_points.erase(trail_points.begin());
 		}
 
-		velocity = sim_step[1] + parentBody->Get_Tangential_Velocity();
+		velocity = sim_step[1];
 		//std::cout << "SAT VEL (RELATIVE):" + (velocity - parentBody->Get_Tangential_Velocity()).Debug() + "\n";
 		acceleration = sim_step[2];
 		//std::cout << "\nSatellite Accel: " << Normalize(acceleration).Debug();
@@ -845,7 +844,8 @@ public:
 		arrow_acceleration.Draw(start, Normalize(dir), Magnitude(dir), 2, g); //Draw arrow, with 2 heads.
 
 		Arrow parent_debug;
-		arrow_end = c.WorldSpaceToScreenSpace(parentBody->Get_Position(), screen_dimensions.x, screen_dimensions.y);
+		start = c.WorldSpaceToScreenSpace(parentBody->Get_Position(), screen_dimensions.x, screen_dimensions.y);
+		arrow_end = c.WorldSpaceToScreenSpace(position, screen_dimensions.x, screen_dimensions.y);
 		dir = arrow_end - start;
 		parent_debug.Draw(start, Normalize(dir), Magnitude(dir)*0.75, 3, g);
 		//std::cout << "\nTrying to figure out where this parent body is: " + parentBody->Get_Position().Debug()+"\n";
@@ -857,9 +857,23 @@ public:
 int Body::Update_Satellites(float delta, float time_scale)
 {
 	//Now update Satellites
+
+	//First calculate COM
+	//A Level Further Maths: Mechanics
+	/*double total_mass = mass;
+	vector3 com = position;
 	for (Satellite& sat : satellites)
 	{
-		sat.Update_Body( position,delta, time_scale);
+		double _mass = sat.Get_Mass();
+
+		com = com + sat.Get_Position() * _mass;
+		total_mass += _mass;
+	}
+	com = (com * (1 / total_mass));*/
+
+	for (Satellite& sat : satellites)
+	{
+		sat.Update_Body( position, delta, time_scale);
 	}
 	return 0;
 }
@@ -874,7 +888,8 @@ int Body::Add_Satellite(const Satellite& sat)
 void Body::Create_Satellite()
 {
 	// TODO: Figure this out I guess!
-	Add_Satellite(Satellite("new_sat", this, { 0, 3.8E8, 0 }, 7.3E22, 1.7E5, { 1200, 0, 0 }, graphyte, false)); //Continue with this.
+	//Add_Satellite(Satellite("Moon", this, { 3.8E8, 0, 0 }, 7.3E22, 1.7E5, { 0, -1200, 0 }, graphyte, false)); //Continue with this.
+	Add_Satellite(Satellite("Moon", this, { 3.E8, 0, 0 }, 7.3E24, 1.7E5, { 0, -1200, 0 }, graphyte, false)); //Continue with this.
 }
 
 int Body::Draw_Satellites(Graphyte& g, Camera& c)
