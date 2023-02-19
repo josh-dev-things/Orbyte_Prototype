@@ -134,7 +134,7 @@ class Satellite; //A Forward Declaration so nothing collapses
 class Body
 {
 private:
-	std::vector<Satellite> satellites;
+	std::vector<Satellite*> satellites;
 	Graphyte& graphyte;
 
 protected:
@@ -219,7 +219,7 @@ protected:
 
 	std::vector<vector3> rk4_step(float _time, vector3 _position, vector3 _velocity, float _dt = 1)
 	{
-		std::cout << "\n DEBUGGING RK4 STEP FOR: " + name + "\n" + "position: " + _position.Debug() + "\nvelocity: " + _velocity.Debug();
+		//std::cout << "\n DEBUGGING RK4 STEP FOR: " + name + "\n" + "position: " + _position.Debug() + "\nvelocity: " + _velocity.Debug();
 		//structure of the vectors: [pos, velocity]
 		std::vector<vector3> rk1 = two_body_ode(_time, _position, _velocity);
 		std::vector<vector3> rk2 = two_body_ode(_time + (0.5 * _dt), _position + (rk1[0] * 0.5f * _dt), _velocity + (rk1[1] * 0.5f * _dt));
@@ -228,7 +228,7 @@ protected:
 		
 		vector3 result_pos = _position + (rk1[0] + (rk2[0] * 2.0f) + (rk3[0] * 2.0f) + rk4[0]) * (_dt / 6.0f);
 		vector3 result_vel = _velocity + (rk1[1] + rk2[1] * 2 + rk3[1] * 2 + rk4[1]) * (_dt / 6);
-		std::cout << "\n Result FOR: " + name + "\n" + "position: " + result_pos.Debug() + "\nvelocity: " + result_vel.Debug();
+		//std::cout << "\n Result FOR: " + name + "\n" + "position: " + result_pos.Debug() + "\nvelocity: " + result_vel.Debug();
 		return { result_pos, result_vel, rk1[1]};
 	}
 
@@ -523,7 +523,7 @@ public:
 		MoveToPos(Normalize(position) * radius);
 	}
 
-	int Add_Satellite(const Satellite& sat);
+	int Add_Satellite(Satellite* sat);
 
 	void Create_Satellite();
 
@@ -570,7 +570,7 @@ public:
 		return 0;
 	}
 
-	virtual int Draw_Arrows(Graphyte& g, Camera& c, vector3 start, vector3 screen_dimensions)
+	int Draw_Arrows(Graphyte& g, Camera& c, vector3 start, vector3 screen_dimensions)
 	{
 		//Draw arrow for velocity
 		Arrow arrow_velocity;
@@ -787,6 +787,9 @@ public:
 		std::cout << "\n____________\nSATELLITE INSTANTIATION\n____________\n" << "parent body name: " << parentBody->name << "\nparent body location: " << parentBody->Get_Position().Debug() << "\nmy location: " << Get_Position().Debug() + "\n";
 		std::cout << "\nSAT POS (RELATIVE) CONSTRUCTOR:" + (position).Debug() + "\n";
 		std::cout << "SAT VEL (RELATIVE) CONSTRUCTOR:" + (velocity).Debug() + " MEANT TO BE: " + _velocity.Debug() + "\n";
+		f_button->SetEnabled(false);
+		f_button = NULL; //GUI Disabled for satellites.
+		HideBodyInspector();
 	}
 
 	int Update_Body(vector3 com, float delta, float time_scale) override
@@ -827,31 +830,6 @@ public:
 		update_inspector();
 		return 0;
 	}
-
-	virtual int Draw_Arrows(Graphyte& g, Camera& c, vector3 start, vector3 screen_dimensions)
-	{
-		//Draw arrow for velocity
-		Arrow arrow_velocity;
-		double arrow_modifier = c.position.z < 0 ? c.position.z * -(1 / 1E6) : c.position.z * (1 / 1E6);
-		vector3 arrow_end = c.WorldSpaceToScreenSpace(position + (velocity * arrow_modifier), screen_dimensions.x, screen_dimensions.y);
-		vector3 dir = arrow_end - start;
-		arrow_velocity.Draw(start, Normalize(dir), Magnitude(dir), 1, g); //Draw arrow, with 1 head.
-
-		//Draw arrow for acceleration
-		Arrow arrow_acceleration;
-		arrow_end = c.WorldSpaceToScreenSpace(position + (acceleration * arrow_modifier * 5E7), screen_dimensions.x, screen_dimensions.y);
-		dir = arrow_end - start;
-		arrow_acceleration.Draw(start, Normalize(dir), Magnitude(dir), 2, g); //Draw arrow, with 2 heads.
-
-		Arrow parent_debug;
-		start = c.WorldSpaceToScreenSpace(parentBody->Get_Position(), screen_dimensions.x, screen_dimensions.y);
-		arrow_end = c.WorldSpaceToScreenSpace(position, screen_dimensions.x, screen_dimensions.y);
-		dir = arrow_end - start;
-		parent_debug.Draw(start, Normalize(dir), Magnitude(dir)*0.75, 3, g);
-		//std::cout << "\nTrying to figure out where this parent body is: " + parentBody->Get_Position().Debug()+"\n";
-
-		return 0;
-	}
 };
 
 int Body::Update_Satellites(float delta, float time_scale)
@@ -871,17 +849,17 @@ int Body::Update_Satellites(float delta, float time_scale)
 	}
 	com = (com * (1 / total_mass));*/
 
-	for (Satellite& sat : satellites)
+	for (Satellite* sat : satellites)
 	{
-		sat.Update_Body( position, delta, time_scale);
+		sat->Update_Body( position, delta, time_scale);
 	}
 	return 0;
 }
 
-int Body::Add_Satellite(const Satellite& sat)
+int Body::Add_Satellite(Satellite* sat)
 {
 	satellites.emplace_back(sat);
-	std::cout << name << " has a new satellite: " << sat.name << " | Total number of satellites: " << satellites.size() << "\n";
+	std::cout << name << " has a new satellite: " << sat->name << " | Total number of satellites: " << satellites.size() << "\n";
 	return 0;
 }
 
@@ -889,14 +867,14 @@ void Body::Create_Satellite()
 {
 	// TODO: Figure this out I guess!
 	//Add_Satellite(Satellite("Moon", this, { 3.8E8, 0, 0 }, 7.3E22, 1.7E5, { 0, -1200, 0 }, graphyte, false)); //Continue with this.
-	Add_Satellite(Satellite("Moon", this, { 3.8E8, 0, 0 }, 7.3E24, 1.7E5, { 0, -1200, 0 }, graphyte, false)); //Continue with this.
+	Add_Satellite(new Satellite("Moon", this, { 3.8E8, 0, 0 }, 7.3E24, 1.7E5, { 0, -1200, 0 }, graphyte, false)); //Continue with this.
 }
 
 int Body::Draw_Satellites(Graphyte& g, Camera& c)
 {
-	for (auto& sat : satellites)
+	for (Satellite* sat : satellites)
 	{
-		sat.Draw(g, c);
+		sat->Draw(g, c);
 		
 	}
 	return 0;
