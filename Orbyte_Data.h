@@ -7,26 +7,25 @@
 #include "vec3.h"
 #include <bitset>
 #include "utils.h"
+#include "OrbitBody.h"
 
 struct OrbitBodyData
 {
-	//This should not be in this header file you dipshit
-	//body(std::string _name, float center_x, float center_y, float center_z, float _scale, vector3 _velocity, vector3 _god_pos, bool override_velocity = true)
 	std::string name;
 	vector3 center;
-	float scale;
+	double mass;
+	double scale;
 	vector3 velocity;
-	bool override_velocity; //tbf if this is true it wont matter.
 
 	//Information for storage
 	uint8_t bytes_for_name; //So the first 8 bits of the file will tell us how many bytes the name contains. Name being the only var with "unlimited length"
-	OrbitBodyData(std::string _name = "", vector3 _center = { 0, 0, 0 }, float _scale = 1, vector3 _velocity = {0, 0, 0}, bool _override_velocity = false)
+	OrbitBodyData(std::string _name = "", vector3 _center = { 0, 0, 0 }, double _mass = 1, double _scale = 1, vector3 _velocity = {0, 0, 0})
 	{
 		name = _name;
 		center = _center;
 		scale = _scale;
 		velocity = _velocity;
-		override_velocity = _override_velocity;
+		mass = _mass;
 
 		//Number of chars in name = number of bytes => 8 x number of chars = number of bits for name
 		//FLOAT is 32 BITS
@@ -74,6 +73,10 @@ private:
 
 	OrbitBodyData TryRead(std::string name, int index)
 	{
+		if (data[index].name == "")
+		{
+			return data[index]; //Equivalent to NULL
+		}
 		if (data[index].name == name)
 		{
 			return data[index];
@@ -98,10 +101,16 @@ public:
 
 struct SimulationData
 {
-	std::vector<OrbitBodyData> OrbitBodies;
-	SimulationData(std::vector<OrbitBodyData> _bodies)
+	OrbitBodyCollection obc;
+	double cb_scale = 0;
+	double cb_mass = 0;
+	vector3 c_pos;
+	SimulationData(double _cb_mass, double _cb_scale, OrbitBodyCollection _obc, vector3 _c_pos)
 	{
-		OrbitBodies = _bodies;
+		obc = _obc;
+		cb_scale = _cb_scale;
+		cb_mass = _cb_mass;
+		c_pos = _c_pos;
 	}
 };
 
@@ -112,12 +121,12 @@ public:
 
 	std::string EncodeVec3(vector3 vec)
 	{
-		return EncodeFloat(vec.x) + EncodeFloat(vec.y) + EncodeFloat(vec.z);
+		return EncodeDouble(vec.x) + EncodeDouble(vec.y) + EncodeDouble(vec.z);
 	}
 
-	std::string EncodeFloat(float fl)
+	std::string EncodeDouble(double db)
 	{
-		return std::bitset<32>(fl).to_string();
+		return std::bitset<64>(db).to_string();
 	}
 
 	std::string EncodeString(std::string str)
@@ -141,18 +150,23 @@ public:
 		}
 	}
 
-	int WriteDataToFile(OrbitBodyData data)
+	int WriteDataToFile(SimulationData sd, std::vector<std::string> bodies_to_save, std::string path) //Can selectively save certain bodies
 	{
 		std::string to_write;
-		std::ofstream out("solar_system.orbyte");
+		std::ofstream out(path);
 
-		//Start writing
-		to_write += std::bitset<8>(data.bytes_for_name).to_string()
+		to_write = EncodeDouble(sd.cb_mass) + EncodeDouble(sd.cb_scale) + EncodeVec3(sd.c_pos) + std::bitset<8>((Uint8)bodies_to_save.size()).to_string();
+		//64 + 64 + (3*64) + 8
+		for (int i = 0; i < bodies_to_save.size(); i++)
+		{
+			OrbitBodyData data = sd.obc.GetBodyData(bodies_to_save[i]); //Get data via hashing algorithm
+			to_write += std::bitset<8>(data.bytes_for_name).to_string()
 			+ EncodeString(data.name)
 			+ EncodeVec3(data.center)
-			+ EncodeFloat(data.scale)
-			+ EncodeVec3(data.velocity)
-			+ EncodeBool(data.override_velocity);
+			+ EncodeDouble(data.mass)
+			+ EncodeDouble(data.scale)
+			+ EncodeVec3(data.velocity);
+		}
 
 		std::cout << "Writing data to file: " << to_write << "\n";
 
@@ -168,7 +182,7 @@ public:
 		std::string data; //should only be one line :)
 		std::getline(in, data);
 		std::cout << "Read data from file: " << data << "\n";
-		//FIRST 8 BITS ALLOCATED TO LENGTH OF NAME
+		
 		return 0;
 	}
 

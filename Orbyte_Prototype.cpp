@@ -44,6 +44,9 @@ class Simulation
 	//Graphyte
 	Graphyte graphyte;
 
+	//Data Controller
+	DataController data_controller;
+
 	//Orbit Bodies
 	std::vector<Body*> orbiting_bodies;
 
@@ -132,12 +135,6 @@ class Simulation
 			printf("Graphyte could not initialize!");
 			return false;
 		}
-
-		////TESTING DATA STORAGE
-		OrbitBodyData body_data = OrbitBodyData("name", { 1, 1, 1 }, 1, { 2, 2, 2 }, true);
-		DataController data_controller;
-		data_controller.WriteDataToFile(body_data);
-		//gScreenSurface = SDL_GetWindowSurface(gWindow);
 		return true;
 	}
 
@@ -267,6 +264,24 @@ public:
 		orbiting_bodies.push_back(new Body("New", { 0, 5.8E10, 0 }, 3.285E23, 2.44E6, { 47000, 0, 0 }, Sun.mu, graphyte, false));
 	}
 
+	void save()
+	{
+		OrbitBodyCollection obc;
+		std::vector<std::string> to_save;
+
+		for (Body* b : orbiting_bodies)
+		{
+			if (!b->to_delete)
+			{
+				to_save.push_back(b->name);
+				obc.AddBodyData(b->GetOrbitBodyData());
+			}
+		}
+
+		SimulationData sd(Sun.mass, Sun.scale, obc, gCamera.position);
+		data_controller.WriteDataToFile(sd, to_save, "solar_system.orbyte");
+	}
+
 	int run(int argc, char* args[])
 	{
 		//Start up SDL and create window
@@ -295,10 +310,6 @@ public:
 			orbiting_bodies.emplace_back(saturn);
 			orbiting_bodies.emplace_back(uranus);
 			orbiting_bodies.emplace_back(neptune); */
-
-			//Testing orbyte data
-			OrbitBodyCollection obc;
-			obc.AddBodyData(earth.GetOrbitBodyData());
 
 
 			/*
@@ -337,6 +348,9 @@ public:
 			FunctionButton Add([this]() { this->add_orbit_body(); }, { (SCREEN_WIDTH / 2) - 25, (SCREEN_HEIGHT / 2) - 60, 0 }, { 25, 25, 0 }, graphyte, "icons/add.png");
 			graphyte.function_buttons.push_back(&Add);
 
+			FunctionButton Save([this]() { this->save(); }, { (SCREEN_WIDTH / 2) - 25, (SCREEN_HEIGHT / 2) - 95, 0 }, { 25, 25, 0 }, graphyte, "icons/save.png");
+			graphyte.function_buttons.push_back(&Save);
+
 			//Mainloop time 
 			while (!quit)
 			{
@@ -351,7 +365,7 @@ public:
 				graphyte.pixel(debug_com.x, debug_com.y);*/
 				for (auto& b : orbiting_bodies)
 				{
-					b->Update_Body(Sun.position, deltaTime, time_scale); // Update body
+					b->Update_Body(deltaTime, time_scale); // Update body
 					//std::cout<<b.Get_Position().Debug()<<"\n"; 
 					//b.Calculate_Period();
 					b->Draw(graphyte, gCamera);

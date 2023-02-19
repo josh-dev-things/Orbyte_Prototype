@@ -74,6 +74,7 @@ private:
 public:
 	double mass = 1.989E30;
 	double mu = 0;
+	double scale;
 	const double Gravitational_Constant = 6.6743E-11;
 	vector3 position;
 
@@ -81,6 +82,7 @@ public:
 	{
 		mu = Gravitational_Constant * mass;
 		position = { 0, 0, 0 };
+		scale = _scale;
 		Generate_Vertices(_scale);
 	}
 
@@ -493,7 +495,7 @@ public:
 
 	OrbitBodyData GetOrbitBodyData() //To be used when saving to a .orbyte file
 	{
-		return OrbitBodyData(name, position, scale, velocity, false);
+		return OrbitBodyData(name, position, mass, scale, velocity);
 	}
 
 	std::string GetBodyData() //For debugging purposes...
@@ -531,7 +533,7 @@ public:
 
 	int Draw_Satellites(Graphyte& g, Camera& c);
 
-	virtual int Update_Body(vector3 com, float delta, float time_scale)
+	virtual int Update_Body(float delta, float time_scale)
 	{
 		if (time_scale == 0)
 		{
@@ -541,7 +543,7 @@ public:
 		Update_Satellites(delta, time_scale);
 
 		//rotate(0.0005f, 0.0005f, 0.0005f);
-		vector3 this_pos = position - com;
+		vector3 this_pos = position;
 		float t = (delta / 1000); //time in seconds
 		std::vector<vector3> sim_step = rk4_step(time_since_start, this_pos, velocity, t * time_scale);
 		this_pos = sim_step[0];
@@ -687,6 +689,11 @@ public:
 		return acceleration;
 	}
 
+	void Set_Mu(double _mu)
+	{
+		mu = _mu;
+	}
+
 	/// <summary>
 	/// The amount of time in seconds for the body to complete 1 orbit
 	/// </summary>
@@ -792,7 +799,7 @@ public:
 		HideBodyInspector();
 	}
 
-	int Update_Body(vector3 com, float delta, float time_scale) override
+	int Update_Body(float delta, float time_scale) override
 	{
 		if (time_scale == 0)
 		{
@@ -803,8 +810,9 @@ public:
 		vector3 this_pos = position;
 		//std::cout <<"\nSAT POS (RELATIVE):" +this_pos.Debug()+"\n";
 		float t = (delta / 1000); //time in seconds
-		std::vector<vector3> sim_step = rk4_step(t * time_scale, this_pos - com, velocity, t * time_scale);
-		this_pos = sim_step[0] + com;
+		Set_Mu(parentBody->Get_Mass() * 6.6743E-11);
+		std::vector<vector3> sim_step = rk4_step(t * time_scale, this_pos - parentBody->Get_Position(), velocity, t * time_scale);
+		this_pos = sim_step[0] + parentBody->Get_Position();
 		
 		MoveToPos(this_pos);
 		angular_velocity = Magnitude(velocity) / Magnitude(position);
@@ -851,7 +859,7 @@ int Body::Update_Satellites(float delta, float time_scale)
 
 	for (Satellite* sat : satellites)
 	{
-		sat->Update_Body( position, delta, time_scale);
+		sat->Update_Body(delta, time_scale);
 	}
 	return 0;
 }
