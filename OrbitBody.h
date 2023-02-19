@@ -543,7 +543,7 @@ public:
 		//rotate(0.0005f, 0.0005f, 0.0005f);
 		vector3 this_pos = position - com;
 		float t = (delta / 1000); //time in seconds
-		std::vector<vector3> sim_step = rk4_step(t * time_scale, this_pos, velocity, t * time_scale);
+		std::vector<vector3> sim_step = rk4_step(time_since_start, this_pos, velocity, t * time_scale);
 		this_pos = sim_step[0];
 		//if (position.z > 0) { std::cout << position.Debug() << "\n"; std::cout << velocity.Debug() << "\n"; }
 		MoveToPos(this_pos);
@@ -889,7 +889,7 @@ void Body::Create_Satellite()
 {
 	// TODO: Figure this out I guess!
 	//Add_Satellite(Satellite("Moon", this, { 3.8E8, 0, 0 }, 7.3E22, 1.7E5, { 0, -1200, 0 }, graphyte, false)); //Continue with this.
-	Add_Satellite(Satellite("Moon", this, { 3.E8, 0, 0 }, 7.3E24, 1.7E5, { 0, -1200, 0 }, graphyte, false)); //Continue with this.
+	Add_Satellite(Satellite("Moon", this, { 3.8E8, 0, 0 }, 7.3E24, 1.7E5, { 0, -1200, 0 }, graphyte, false)); //Continue with this.
 }
 
 int Body::Draw_Satellites(Graphyte& g, Camera& c)

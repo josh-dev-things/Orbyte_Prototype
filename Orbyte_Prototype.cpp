@@ -241,11 +241,11 @@ class Simulation
 		{
 			double mass = b->Get_Mass();
 
-			com = com + b->Get_Position() * mass;
+			com = com + (b->Get_Position() * mass);
 			total_mass += mass;
 		}
 
-		com = com * (1 / total_mass);
+		com = com * ((double)1 / total_mass);
 		return com;
 	}
 
@@ -345,14 +345,13 @@ public:
 				//render sun
 				Sun.Draw(graphyte, gCamera);
 				clean_orbit_queue();
-				vector3 com = calculate_centre_of_mass(Sun);
+				//vector3 com = calculate_centre_of_mass(Sun);
 				//std::cout << "\n" << com.Debug();
-				vector3 debug_com = gCamera.WorldSpaceToScreenSpace(com, SCREEN_HEIGHT, SCREEN_WIDTH);
-				graphyte.pixel(debug_com.x, debug_com.y);
+				/*vector3 debug_com = gCamera.WorldSpaceToScreenSpace(com, SCREEN_HEIGHT, SCREEN_WIDTH);
+				graphyte.pixel(debug_com.x, debug_com.y);*/
 				for (auto& b : orbiting_bodies)
 				{
-
-					b->Update_Body(com, deltaTime, time_scale); // Update body
+					b->Update_Body(Sun.position, deltaTime, time_scale); // Update body
 					//std::cout<<b.Get_Position().Debug()<<"\n"; 
 					//b.Calculate_Period();
 					b->Draw(graphyte, gCamera);
