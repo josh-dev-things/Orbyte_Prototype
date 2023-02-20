@@ -281,15 +281,13 @@ public:
 			}
 		}
 
-		SimulationData sd(Sun.mass, Sun.scale, obc, gCamera.position);
-		data_controller.WriteDataToFile(sd, to_save, "solar_system.orbyte");
+		SimulationData sd = { Sun.mass, Sun.scale, obc, gCamera.position };
+		data_controller.WriteDataToFile(sd, to_save, "path_source");
 	}
 
 	void open()
 	{
 		std::cout << "\nOpening File";
-		
-		
 		data_controller.ReadDataFromFile(path_source);
 	}
 
@@ -331,7 +329,7 @@ public:
 			Text* text_pm = graphyte.CreateText("__________________\nPERFORMANCE METRICS\n__________________", 24);
 			Simulation_Parameters.Add_Stacked_Element(text_pm);
 
-			Text* text_FPS_Display = graphyte.CreateText("TESTING TEXT DEBUG", 10);
+			Text* text_FPS_Display = graphyte.CreateText("FPS", 10);
 			Simulation_Parameters.Add_Stacked_Element(text_FPS_Display);
 
 
@@ -351,9 +349,13 @@ public:
 			/*
 				PATH TO OPEN FROM FILE
 			*/
+			GUI_Block path_gui;
+			path_gui.position = { (-SCREEN_WIDTH / 2), (-SCREEN_HEIGHT / 2) + 36, 0 };
 			Text* path_input_prompt = graphyte.CreateText("[SAVE/READ] Enter path here: ", 12);
+			path_gui.Add_Stacked_Element(path_input_prompt);
 			StringFieldValue path_to_file(&path_source); //If there is a problem here, it comes from the accessibility of path_source
-			TextField* path_input = new TextField({ ( - SCREEN_WIDTH / 2) + 100, (-SCREEN_HEIGHT / 2) + 36, 0}, path_to_file, graphyte, "Enter path to load orbyte file from");
+			TextField* path_input = new TextField({ ( - SCREEN_WIDTH / 2), (-SCREEN_HEIGHT / 2), 0}, path_to_file, graphyte, "solar_system.orbyte");
+			path_gui.Add_Inline_Element(path_input);
 
 			/*
 				INSPECTOR PARAMETERS GUI INITIALIZATION

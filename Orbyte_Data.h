@@ -103,17 +103,10 @@ public:
 
 struct SimulationData
 {
-	OrbitBodyCollection obc;
-	double cb_scale = 0;
 	double cb_mass = 0;
+	double cb_scale = 0;
+	OrbitBodyCollection obc;
 	vector3 c_pos;
-	SimulationData(double _cb_mass, double _cb_scale, OrbitBodyCollection _obc, vector3 _c_pos)
-	{
-		obc = _obc;
-		cb_scale = _cb_scale;
-		cb_mass = _cb_mass;
-		c_pos = _c_pos;
-	}
 };
 
 //So this header file is going to contain the data controller. The big bad wolf in charge of all the data being read and written out of the application.
@@ -152,6 +145,41 @@ public:
 		}
 	}
 
+	vector3 DecodeVec3(std::string to_decode)
+	{
+		std::string x = to_decode.substr(0, 63);
+		std::string y = to_decode.substr(64, 127);
+		std::string z = to_decode.substr(128, 191);
+		vector3 out = { DecodeDouble(x), DecodeDouble(y), DecodeDouble(z) };
+		return out;
+	}
+
+	double DecodeDouble(std::string to_decode)
+	{
+		//64 bits long
+		 std::bitset<64> out;
+		 std::istringstream bit_stream(to_decode);
+		 bit_stream >> out;
+		 return (double)out.to_ullong();
+	}
+
+	std::string DecodeString(std::string to_decode)
+	{
+		int no_chars = to_decode.length();
+		std::string out;
+		for (int i = 0; i < no_chars; i++)
+		{
+			int start = i * 8; //8 bits given to each char
+			int end = start + 7;
+			std::string this_char = to_decode.substr(start, end);
+			std::bitset<8> bits;
+			std::istringstream bit_stream(this_char);
+			bit_stream >> bits;
+			out += bits.to_string(); //No idea if any of this will work.
+		}
+		return out;
+	}
+
 	int WriteDataToFile(SimulationData sd, std::vector<std::string> bodies_to_save, std::string path) //Can selectively save certain bodies
 	{
 		std::string to_write;
@@ -181,16 +209,15 @@ public:
 	int ReadDataFromFile(std::string path)
 	{
 		std::ifstream in(path);
-		std::string data; //should only be one line :)
+		std::string data; //should only be one line
 		std::getline(in, data);
 		std::cout << "Read data from file: " << data << "\n";
-		
-		return 0;
-	}
+		//cbmass, cbscale, cpos, no_bodies => (bytes for name, name, center, mass, scale, velocity)
+		SimulationData sd;
 
-	int CreateNewFile()
-	{
-		//Make a new file
+		sd.cb_mass = DecodeDouble(data.substr(0, 63));
+		std::cout << "\nMass of centre body: "<< sd.cb_mass;
+		
 		return 0;
 	}
 };
