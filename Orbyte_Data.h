@@ -8,6 +8,8 @@
 #include <bitset>
 #include "utils.h"
 #include "OrbitBody.h"
+#include <ShObjIdl_core.h>
+#include <Windows.h>
 
 struct OrbitBodyData
 {
@@ -172,13 +174,13 @@ public:
 
 		out << to_write;
 		out.close();
-		ReadDataFromFile();
+		ReadDataFromFile(path);
 		return 0;
 	}
 
-	int ReadDataFromFile()
+	int ReadDataFromFile(std::string path)
 	{
-		std::ifstream in("solar_system.orbyte");
+		std::ifstream in(path);
 		std::string data; //should only be one line :)
 		std::getline(in, data);
 		std::cout << "Read data from file: " << data << "\n";

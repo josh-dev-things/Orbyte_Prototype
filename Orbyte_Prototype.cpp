@@ -61,6 +61,9 @@ class Simulation
 	Uint32 startTime = 0;
 	Uint32 deltaTime = 0; // delta time in milliseconds
 
+	//Path source for Orbyte Files
+	std::string path_source;
+
 	bool loadMedia()
 	{
 		//success flag
@@ -285,6 +288,9 @@ public:
 	void open()
 	{
 		std::cout << "\nOpening File";
+		
+		
+		data_controller.ReadDataFromFile(path_source);
 	}
 
 	int run(int argc, char* args[])
@@ -341,6 +347,13 @@ public:
 			TextField* tf = new TextField({ 10,10,0 }, TimeScaleFV, graphyte, std::to_string(time_scale));
 			graphyte.text_fields.push_back(tf);
 			Simulation_Parameters.Add_Inline_Element(tf);
+
+			/*
+				PATH TO OPEN FROM FILE
+			*/
+			Text* path_input_prompt = graphyte.CreateText("[SAVE/READ] Enter path here: ", 12);
+			StringFieldValue path_to_file(&path_source); //If there is a problem here, it comes from the accessibility of path_source
+			TextField* path_input = new TextField({ ( - SCREEN_WIDTH / 2) + 100, (-SCREEN_HEIGHT / 2) + 36, 0}, path_to_file, graphyte, "Enter path to load orbyte file from");
 
 			/*
 				INSPECTOR PARAMETERS GUI INITIALIZATION
