@@ -109,6 +109,12 @@ struct SimulationData
 	vector3 c_pos;
 };
 
+union ulldouble
+{
+	double d;
+	unsigned long long ull;
+};
+
 //So this header file is going to contain the data controller. The big bad wolf in charge of all the data being read and written out of the application.
 class DataController
 {
@@ -121,7 +127,15 @@ public:
 
 	std::string EncodeDouble(double db)
 	{
-		return std::bitset<64>(db).to_string();
+		ulldouble ulld;
+		ulld.d = db;
+		std::bitset<64>b(ulld.ull);
+		std::string result = b.to_string();
+
+		//testing
+		std::cout << "\n" << db << " (Has size: " << sizeof(db) << "bytes )" << " => Encode => " + result + " => Decode => " << DecodeDouble(result);
+
+		return result;
 	}
 
 	std::string EncodeString(std::string str)
@@ -147,9 +161,9 @@ public:
 
 	vector3 DecodeVec3(std::string to_decode)
 	{
-		std::string x = to_decode.substr(0, 63);
-		std::string y = to_decode.substr(64, 127);
-		std::string z = to_decode.substr(128, 191);
+		std::string x = to_decode.substr(0, 64);
+		std::string y = to_decode.substr(64, 64);
+		std::string z = to_decode.substr(128, 64);
 		vector3 out = { DecodeDouble(x), DecodeDouble(y), DecodeDouble(z) };
 		return out;
 	}
@@ -157,10 +171,17 @@ public:
 	double DecodeDouble(std::string to_decode)
 	{
 		//64 bits long
-		 std::bitset<64> out;
-		 std::istringstream bit_stream(to_decode);
-		 bit_stream >> out;
-		 return (double)out.to_ullong();
+		if (to_decode.length() != 64)
+		{
+			std::cout << "\n\nERROR: SEE DECODE DOUBLE: " << to_decode.length() << " bits recieved!";
+			return -1;
+		}
+		std::bitset<64> out;
+		std::istringstream bit_stream(to_decode);
+		bit_stream >> out;
+		ulldouble ulld;
+		ulld.ull = out.to_ullong();
+		return ulld.d;
 	}
 
 	std::string DecodeString(std::string to_decode)
@@ -170,8 +191,7 @@ public:
 		for (int i = 0; i < no_chars; i++)
 		{
 			int start = i * 8; //8 bits given to each char
-			int end = start + 7;
-			std::string this_char = to_decode.substr(start, end);
+			std::string this_char = to_decode.substr(start, 8);
 			std::bitset<8> bits;
 			std::istringstream bit_stream(this_char);
 			bit_stream >> bits;
@@ -185,12 +205,12 @@ public:
 		std::string to_write;
 		std::ofstream out(path);
 
-		to_write = EncodeDouble(sd.cb_mass) + EncodeDouble(sd.cb_scale) + EncodeVec3(sd.c_pos) + std::bitset<8>((Uint8)bodies_to_save.size()).to_string();
+		to_write = EncodeDouble(sd.cb_mass) + EncodeDouble(sd.cb_scale) + EncodeVec3(sd.c_pos) + EncodeDouble(bodies_to_save.size());
 		//64 + 64 + (3*64) + 8
 		for (int i = 0; i < bodies_to_save.size(); i++)
 		{
 			OrbitBodyData data = sd.obc.GetBodyData(bodies_to_save[i]); //Get data via hashing algorithm
-			to_write += std::bitset<8>(data.bytes_for_name).to_string()
+			to_write += EncodeDouble(data.bytes_for_name)
 			+ EncodeString(data.name)
 			+ EncodeVec3(data.center)
 			+ EncodeDouble(data.mass)
@@ -214,9 +234,23 @@ public:
 		std::cout << "Read data from file: " << data << "\n";
 		//cbmass, cbscale, cpos, no_bodies => (bytes for name, name, center, mass, scale, velocity)
 		SimulationData sd;
+		int i = 0;
 
-		sd.cb_mass = DecodeDouble(data.substr(0, 63));
+		sd.cb_mass = DecodeDouble(data.substr(i, 64));
 		std::cout << "\nMass of centre body: "<< sd.cb_mass;
+		i += 64;
+
+		sd.cb_scale = DecodeDouble(data.substr(i, 64));
+		std::cout << "\nScale of centre body: " << sd.cb_scale;
+		i += 64;
+
+		sd.c_pos = DecodeVec3(data.substr(128, 64 * 3));
+		std::cout << "\nPosition of camera: " << sd.c_pos.Debug();
+		i += 64 * 3;
+
+		int no_orbits = (int)DecodeDouble(data.substr(i, 64));
+		std::cout << "\nNumber of orbits: " << no_orbits;
+		i += 64;
 		
 		return 0;
 	}

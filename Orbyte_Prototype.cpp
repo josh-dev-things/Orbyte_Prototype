@@ -282,7 +282,7 @@ public:
 		}
 
 		SimulationData sd = { Sun.mass, Sun.scale, obc, gCamera.position };
-		data_controller.WriteDataToFile(sd, to_save, "path_source");
+		data_controller.WriteDataToFile(sd, to_save, path_source);
 	}
 
 	void open()
@@ -355,6 +355,8 @@ public:
 			path_gui.Add_Stacked_Element(path_input_prompt);
 			StringFieldValue path_to_file(&path_source); //If there is a problem here, it comes from the accessibility of path_source
 			TextField* path_input = new TextField({ ( - SCREEN_WIDTH / 2), (-SCREEN_HEIGHT / 2), 0}, path_to_file, graphyte, "solar_system.orbyte");
+			path_source = "solar_system.orbyte"; //default
+			graphyte.text_fields.push_back(path_input);
 			path_gui.Add_Inline_Element(path_input);
 
 			/*
@@ -372,7 +374,7 @@ public:
 			graphyte.function_buttons.push_back(&Save);
 
 			FunctionButton Open([this]() { this->open(); }, { (SCREEN_WIDTH / 2) - 25, (SCREEN_HEIGHT / 2) - 130, 0 }, { 25, 25, 0 }, graphyte, "icons/open.png");
-			graphyte.function_buttons.push_back(&Save);
+			graphyte.function_buttons.push_back(&Open);
 
 			//Mainloop time 
 			while (!quit)
