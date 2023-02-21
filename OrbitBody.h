@@ -417,17 +417,17 @@ protected:
 		//VELOCITY:
 
 		gui->Add_Stacked_Element(g.CreateText("| Velocity x: ", 10));
-		tf = new TextField({ 10,10,0 }, VelXFV, g, std::to_string(position.x));
+		tf = new TextField({ 10,10,0 }, VelXFV, g, std::to_string(velocity.x));
 		g.text_fields.push_back(tf);
 		gui->Add_Inline_Element(tf);
 
 		gui->Add_Stacked_Element(g.CreateText("| Velocity y: ", 10));
-		tf = new TextField({ 10,10,0 }, VelYFV, g, std::to_string(position.y));
+		tf = new TextField({ 10,10,0 }, VelYFV, g, std::to_string(velocity.y));
 		g.text_fields.push_back(tf);
 		gui->Add_Inline_Element(tf);
 
 		gui->Add_Stacked_Element(g.CreateText("| Velocity z: ", 10));
-		tf = new TextField({ 10,10,0 }, VelZFV, g, std::to_string(position.z));
+		tf = new TextField({ 10,10,0 }, VelZFV, g, std::to_string(velocity.z));
 		g.text_fields.push_back(tf);
 		gui->Add_Inline_Element(tf);
 
