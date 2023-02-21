@@ -40,18 +40,31 @@ private: vector3 camera_rotation;
 
 		//Rotate point
 		float rad = 0;
-
+		float x, y, z;
 		rad = rot.x;
-		point.y = std::cos(rad) * point.y - std::sin(rad) * point.z;
-		point.z = std::sin(rad) * point.y + std::cos(rad) * point.z;
+		
+		x = point.x;
+		y = point.y;
+		z = point.z;
+
+		point.y = (std::cos(rad) * y) - (std::sin(rad) * z);
+		point.z = (std::sin(rad) * y) + (std::cos(rad) * z);
+
+		x = point.x;
+		y = point.y;
+		z = point.z;
 
 		rad = rot.y;
-		point.x = std::cos(rad) * point.x + std::sin(rad) * point.z;
-		point.z = -std::sin(rad) * point.x + std::cos(rad) * point.z;
+		point.x = (std::cos(rad) * x) + (std::sin(rad) * z);
+		point.z = (-std::sin(rad) * x) + (std::cos(rad) * z);
+
+		x = point.x;
+		y = point.y;
+		z = point.z;
 
 		rad = rot.z;
-		point.x = std::cos(rad) * point.x - std::sin(rad) * point.y;
-		point.y = std::sin(rad) * point.x + std::cos(rad) * point.y;
+		point.x = (std::cos(rad) * x) - (std::sin(rad) * y);
+		point.y = (std::sin(rad) * x) + (std::cos(rad) * y);
 
 		//centroid adjustments
 		point.x += c.x;

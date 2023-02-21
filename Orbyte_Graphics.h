@@ -908,7 +908,7 @@ public:
 		pos_y = position.y + texture.getHeight() / 2;
 		visible = position.z >= 0;
 
-		button->SetPosition(position); //There's a bug here [Edit: I dont know when I wrote this so am not sure if its fixed tbh]
+		button->SetPosition(position);
 	}
 
 	void Set_Position_TL(vector3 pos) override
