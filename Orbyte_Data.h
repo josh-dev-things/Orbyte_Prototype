@@ -186,7 +186,7 @@ public:
 
 	std::string DecodeString(std::string to_decode)
 	{
-		int no_chars = to_decode.length();
+		int no_chars = to_decode.length() / 8;
 		std::string out;
 		for (int i = 0; i < no_chars; i++)
 		{
@@ -195,7 +195,10 @@ public:
 			std::bitset<8> bits;
 			std::istringstream bit_stream(this_char);
 			bit_stream >> bits;
-			out += bits.to_string(); //No idea if any of this will work.
+			
+			unsigned long character_value = bits.to_ulong();
+			unsigned char character = static_cast<unsigned char>(character_value);
+			out += character;
 		}
 		return out;
 	}
@@ -251,6 +254,34 @@ public:
 		int no_orbits = (int)DecodeDouble(data.substr(i, 64));
 		std::cout << "\nNumber of orbits: " << no_orbits;
 		i += 64;
+
+		OrbitBodyCollection obc;
+
+		for (int j = 0; j < no_orbits; j++)
+		{
+			int no_bytes_for_name = DecodeDouble(data.substr(i, 64));
+			i += 64;
+			std::cout << "\nNumber of bytes for name: " << no_bytes_for_name;
+
+			std::string name = DecodeString(data.substr(i, 8 * no_bytes_for_name));
+			i += 8 * no_bytes_for_name;
+			std::cout << "\nOrbit Name: " << name;
+
+			vector3 center = DecodeVec3(data.substr(i, 64 * 3));
+			i += 64 * 3;
+
+			double mass = DecodeDouble(data.substr(i, 64));
+			i += 64;
+
+			double scale = DecodeDouble(data.substr(i, 64));
+			i += 64;
+
+			vector3 velocity = DecodeVec3(data.substr(i, 64 * 3));
+			i += 64 * 3;
+			OrbitBodyData obd(name, center, mass, scale, velocity);
+			obc.AddBodyData(obd);
+		}
+		sd.obc = obc;
 		
 		return 0;
 	}
