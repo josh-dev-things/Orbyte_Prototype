@@ -99,6 +99,19 @@ public:
 	{
 		return TryRead(name, Hash(name));
 	}
+
+	std::vector<OrbitBodyData> GetAllOrbits()
+	{
+		std::vector<OrbitBodyData> result;
+		for (OrbitBodyData d : data)
+		{
+			if (d.name != "")
+			{
+				result.push_back(d);
+			}
+		}
+		return result;
+	}
 };
 
 struct SimulationData
@@ -225,11 +238,11 @@ public:
 
 		out << to_write;
 		out.close();
-		ReadDataFromFile(path);
+		//ReadDataFromFile(path);
 		return 0;
 	}
 
-	int ReadDataFromFile(std::string path)
+	SimulationData ReadDataFromFile(std::string path)
 	{
 		std::ifstream in(path);
 		std::string data; //should only be one line
@@ -282,8 +295,8 @@ public:
 			obc.AddBodyData(obd);
 		}
 		sd.obc = obc;
-		
-		return 0;
+		in.close();
+		return sd;
 	}
 };
 

@@ -262,6 +262,11 @@ public:
 		return;
 	}
 
+	void add_specific_orbit(OrbitBodyData data)
+	{
+		orbiting_bodies.push_back(new Body(data.name, data.center, data.mass, data.scale, data.velocity, Sun.mu, graphyte, false));
+	}
+
 	void add_orbit_body()
 	{
 		orbiting_bodies.push_back(new Body("New", { 0, 5.8E10, 0 }, 3.285E23, 2.44E6, { 47000, 0, 0 }, Sun.mu, graphyte, false));
@@ -288,7 +293,23 @@ public:
 	void open()
 	{
 		std::cout << "\nOpening File";
-		data_controller.ReadDataFromFile(path_source);
+		SimulationData new_sd = data_controller.ReadDataFromFile(path_source);
+		time_scale = 0;
+
+		Sun.mass = new_sd.cb_mass;
+		Sun.scale = new_sd.cb_scale;
+		gCamera.position = new_sd.c_pos;
+		for (Body* old_orbit : orbiting_bodies)
+		{
+			old_orbit->Delete();
+		}
+
+		OrbitBodyCollection obc = new_sd.obc;
+		std::vector<OrbitBodyData> orbits = obc.GetAllOrbits();
+		for (OrbitBodyData orbit : orbits)
+		{
+			add_specific_orbit(orbit);
+		}
 	}
 
 	int run(int argc, char* args[])
