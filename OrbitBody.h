@@ -457,7 +457,7 @@ public:
 	Body(std::string _name, vector3 _center, double _mass, double _scale, vector3 _velocity, double _mu, Graphyte& g, bool override_velocity = false):
 		graphyte(g), 
 		ScaleFV(&scale, [this]() { this->RegenerateVertices(); }), MassFV(&mass), NameFV(&name, [this]() { this->Rename(); }), 
-		PosXFV(&position.x), PosYFV(&position.y), PosZFV(&position.z),
+		PosXFV(&position.x, [this]() { this->RecenterBody(); }), PosYFV(&position.y, [this]() { this->RecenterBody(); }), PosZFV(&position.z, [this]() { this->RecenterBody(); }),
 		VelXFV(&velocity.x), VelYFV(&velocity.y), VelZFV(&velocity.z)
 	{
 		position = _center;
@@ -512,6 +512,11 @@ public:
 		this->vertices.clear();
 		this->vertices = this->Generate_Vertices(scale);
 		std::cout << "\n" << Magnitude(vertices[0] - position);
+	}
+
+	void RecenterBody()
+	{
+		MoveToPos(position);
 	}
 
 	void Rename()
