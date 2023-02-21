@@ -27,10 +27,9 @@ private: vector3 camera_rotation;
 		camera_rotation = camera_rotation + add_rotation;
 	}
 
-	vector3 rotate(vector3 rot, vector3 p, vector3 c) //Something is broken. STILL BROKEN
+	vector3 rotate(vector3 rot, vector3 point, vector3 c) //Something is broken. STILL BROKEN
 	{
 		
-		vector3 point = p;
 		//centroid adjustments
 		point.x -= c.x;
 		point.y -= c.y;

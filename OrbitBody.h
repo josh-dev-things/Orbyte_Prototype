@@ -773,7 +773,7 @@ private:
 		{
 			_velocity.x = sqrt(mu / position.z);
 		}
-		std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+		std::cout << "Someone has projected a circular orbit!";
 		_velocity = _velocity + p_velocity; // Adding the parent velocity because we need this to orbit something moving through space, not orbiting where it thought it was.
 
 		//Don't have to return a value because parameter is passed by reference.

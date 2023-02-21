@@ -553,6 +553,7 @@ public:  //Public attributes & Methods
 			SDL_RenderDrawPoint(Renderer, point.x, point.y);
 			count++;
 		}
+		std::cout << "\n\nDRAWN POINTS: " << count << " HAD MEMORY: " << count * sizeof(SDL_Point);
 
 		//Make sure you render GUI!
 		for (Text* t : texts)
