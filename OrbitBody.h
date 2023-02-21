@@ -129,6 +129,14 @@ public:
 	{
 		return edges;
 	}
+
+	void RegenerateVertices()
+	{
+		std::cout << "\n Recalculating vertex positions w/ scale: " << scale;
+		std::cout << "\n Me: (regen) " << this;
+		this->vertices.clear();
+		this->Generate_Vertices(scale);
+	}
 };
 
 class Satellite; //A Forward Declaration so nothing collapses
@@ -176,7 +184,9 @@ protected:
 	//Field Values
 	DoubleFieldValue ScaleFV;
 	DoubleFieldValue MassFV;
-	DoubleFieldValue RadiusFV;
+	DoubleFieldValue PosXFV, PosYFV, PosZFV;
+	DoubleFieldValue VelXFV, VelYFV, VelZFV;
+
 	StringFieldValue NameFV;
 
 	//GUI
@@ -302,7 +312,7 @@ protected:
 		return _vertices;
 	}
 
-	vector3 MoveToPos(vector3 new_pos)
+	void MoveToPos(vector3 new_pos)
 	{
 		vector3 old_pos = position;
 		position = new_pos;
@@ -314,7 +324,7 @@ protected:
 			p = p + delta;
 		}
 
-		return delta;
+		return;
 	}
 
 	void rotate(float rot_x = 1, float rot_y = 1, float rot_z = 1)
@@ -352,7 +362,7 @@ protected:
 		// TODO: Generate Orbit-Body specific GUI Blocks that can be toggled visibility. This'll be a challenge, good luck!
 		gui = new GUI_Block(); // I suspect this is about to become null once the constructor finishes, but who know!
 		vector3 screen_dimensions = g.Get_Screen_Dimensions();
-		gui->position = { (screen_dimensions.x / 2) - 300, -(screen_dimensions.y / 2) + 300, 0 };
+		gui->position = { (screen_dimensions.x / 2) - 300, -(screen_dimensions.y / 2) + 330, 0 };
 		inspector_name = g.CreateText(name + ": ", 12);
 		gui->Add_Stacked_Element(inspector_name);
 		std::cout << inspector_name;
@@ -387,18 +397,49 @@ protected:
 		g.text_fields.push_back(tf);
 		gui->Add_Inline_Element(tf);
 
-		gui->Add_Stacked_Element(g.CreateText("| Radius: ", 10));
-		tf = new TextField({ 10,10,0 }, RadiusFV, g, std::to_string(radius));
+		//POSITION:
+
+		gui->Add_Stacked_Element(g.CreateText("| Position x: ", 10));
+		tf = new TextField({ 10,10,0 }, PosXFV, g, std::to_string(position.x));
 		g.text_fields.push_back(tf);
 		gui->Add_Inline_Element(tf);
 
-		inspector_delete = new FunctionButton([this]() { this->Delete(); }, { (screen_dimensions.x / 2) - 300, -(screen_dimensions.y / 2) + 30, 0 }, {25, 25, 0}, g, "icons/delete.png");
+		gui->Add_Stacked_Element(g.CreateText("| Position y: ", 10));
+		tf = new TextField({ 10,10,0 }, PosYFV, g, std::to_string(position.y));
+		g.text_fields.push_back(tf);
+		gui->Add_Inline_Element(tf);
+
+		gui->Add_Stacked_Element(g.CreateText("| Position z: ", 10));
+		tf = new TextField({ 10,10,0 }, PosZFV, g, std::to_string(position.z));
+		g.text_fields.push_back(tf);
+		gui->Add_Inline_Element(tf);
+
+		//VELOCITY:
+
+		gui->Add_Stacked_Element(g.CreateText("| Velocity x: ", 10));
+		tf = new TextField({ 10,10,0 }, VelXFV, g, std::to_string(position.x));
+		g.text_fields.push_back(tf);
+		gui->Add_Inline_Element(tf);
+
+		gui->Add_Stacked_Element(g.CreateText("| Velocity y: ", 10));
+		tf = new TextField({ 10,10,0 }, VelYFV, g, std::to_string(position.y));
+		g.text_fields.push_back(tf);
+		gui->Add_Inline_Element(tf);
+
+		gui->Add_Stacked_Element(g.CreateText("| Velocity z: ", 10));
+		tf = new TextField({ 10,10,0 }, VelZFV, g, std::to_string(position.z));
+		g.text_fields.push_back(tf);
+		gui->Add_Inline_Element(tf);
+
+		//FUNCTION BUTTONS:
+
+		inspector_delete = new FunctionButton([this]() { this->Delete(); }, { (screen_dimensions.x / 2) - 275, -(screen_dimensions.y / 2) + 30, 0 }, {25, 25, 0}, g, "icons/delete.png");
 		g.function_buttons.emplace_back(inspector_delete);
 
-		inspector_reset = new FunctionButton([this]() { this->Reset(); }, { (screen_dimensions.x / 2) - 270, -(screen_dimensions.y / 2) + 30, 0 }, { 25, 25, 0 }, g, "icons/reset.png");
+		inspector_reset = new FunctionButton([this]() { this->Reset(); }, { (screen_dimensions.x / 2) - 245, -(screen_dimensions.y / 2) + 30, 0 }, { 25, 25, 0 }, g, "icons/reset.png");
 		g.function_buttons.emplace_back(inspector_reset);
 
-		inspector_satellite = new FunctionButton([this]() { this->Create_Satellite(); }, {(screen_dimensions.x / 2) - 240, -(screen_dimensions.y / 2) + 30, 0}, {25, 25, 0}, g, "icons/add.png");
+		inspector_satellite = new FunctionButton([this]() { this->Create_Satellite(); }, {(screen_dimensions.x / 2) - 215, -(screen_dimensions.y / 2) + 30, 0}, {25, 25, 0}, g, "icons/add.png");
 		g.function_buttons.emplace_back(inspector_satellite);
 
 		HideBodyInspector();
@@ -414,7 +455,10 @@ public:
 	bool to_delete = false; //Used in mainloop to schedule objects for deletion next update. => deconstructor (see free())
 
 	Body(std::string _name, vector3 _center, double _mass, double _scale, vector3 _velocity, double _mu, Graphyte& g, bool override_velocity = false):
-		graphyte(g), ScaleFV(&scale, [this]() { this->RegenerateVertices(); }), MassFV(&mass), NameFV(&name, [this]() { this->Rename(); }), RadiusFV(&radius, [this]() { this->Move_To_Radius(); })
+		graphyte(g), 
+		ScaleFV(&scale, [this]() { this->RegenerateVertices(); }), MassFV(&mass), NameFV(&name, [this]() { this->Rename(); }), 
+		PosXFV(&position.x), PosYFV(&position.y), PosZFV(&position.z),
+		VelXFV(&velocity.x), VelYFV(&velocity.y), VelZFV(&velocity.z)
 	{
 		position = _center;
 		radius = Magnitude(position);
@@ -519,11 +563,6 @@ public:
 		HideBodyInspector();
 		name_label->Set_Visibility(false);
 		to_delete = true;
-	}
-
-	void Move_To_Radius()
-	{
-		MoveToPos(Normalize(position) * radius);
 	}
 
 	int Add_Satellite(Satellite* sat);

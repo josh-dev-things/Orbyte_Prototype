@@ -312,6 +312,11 @@ public:
 		}
 	}
 
+	void regenerate_center_body_vertices()
+	{
+		Sun.RegenerateVertices();
+	}
+
 	int run(int argc, char* args[])
 	{
 		//Start up SDL and create window
@@ -366,6 +371,19 @@ public:
 			TextField* tf = new TextField({ 10,10,0 }, TimeScaleFV, graphyte, std::to_string(time_scale));
 			graphyte.text_fields.push_back(tf);
 			Simulation_Parameters.Add_Inline_Element(tf);
+			
+			Simulation_Parameters.Add_Stacked_Element(graphyte.CreateText("Center Body Mass: ", 10));
+			DoubleFieldValue CentreMassFV(&Sun.mass);
+			tf = new TextField({ 0, 0, 0 }, CentreMassFV, graphyte, std::to_string(Sun.mass));
+			graphyte.text_fields.push_back(tf);
+			Simulation_Parameters.Add_Inline_Element(tf);
+
+			Simulation_Parameters.Add_Stacked_Element(graphyte.CreateText("Center Body Scale: ", 10));
+			DoubleFieldValue CentreScaleFV(&Sun.scale, [this]() { this->regenerate_center_body_vertices(); });
+			tf = new TextField({ 0, 0, 0 }, CentreScaleFV, graphyte, std::to_string(Sun.scale));
+			graphyte.text_fields.push_back(tf);
+			Simulation_Parameters.Add_Inline_Element(tf);
+
 
 			/*
 				PATH TO OPEN FROM FILE
