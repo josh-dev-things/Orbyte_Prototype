@@ -137,6 +137,11 @@ public:
 		this->vertices.clear();
 		this->Generate_Vertices(scale);
 	}
+
+	void RecalculateMu()
+	{
+		mu = Gravitational_Constant * mass;
+	}
 };
 
 class Satellite; //A Forward Declaration so nothing collapses

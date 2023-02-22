@@ -318,6 +318,15 @@ public:
 		Sun.RegenerateVertices();
 	}
 
+	void recalculate_center_body_mu()
+	{
+		Sun.RecalculateMu();
+		for (Body* orbit : orbiting_bodies)
+		{
+			orbit->Set_Mu(Sun.mu);
+		}
+	}
+
 	int run(int argc, char* args[])
 	{
 		//Start up SDL and create window
@@ -374,7 +383,7 @@ public:
 			Simulation_Parameters.Add_Inline_Element(tf);
 			
 			Simulation_Parameters.Add_Stacked_Element(graphyte.CreateText("Center Body Mass: ", 10));
-			DoubleFieldValue CentreMassFV(&Sun.mass);
+			DoubleFieldValue CentreMassFV(&Sun.mass, [this]() { this->recalculate_center_body_mu(); });
 			tf = new TextField({ 0, 0, 0 }, CentreMassFV, graphyte, std::to_string(Sun.mass));
 			graphyte.text_fields.push_back(tf);
 			Simulation_Parameters.Add_Inline_Element(tf);
