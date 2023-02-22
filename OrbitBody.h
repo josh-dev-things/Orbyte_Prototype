@@ -327,33 +327,58 @@ protected:
 		return;
 	}
 
-	void rotate(float rot_x = 1, float rot_y = 1, float rot_z = 1)
+	vector3 rotate(vector3 rot, vector3 point, vector3 c) //Something is broken. STILL BROKEN
+	{
+
+		//centroid adjustments
+		point.x -= c.x;
+		point.y -= c.y;
+		point.z -= c.z;
+
+		//float start_magnitude = Magnitude(point);
+
+		//Rotate point
+		float rad = 0;
+		float x, y, z;
+		rad = rot.x;
+
+		x = point.x;
+		y = point.y;
+		z = point.z;
+
+		point.y = (std::cos(rad) * y) - (std::sin(rad) * z);
+		point.z = (std::sin(rad) * y) + (std::cos(rad) * z);
+
+		x = point.x;
+		y = point.y;
+		z = point.z;
+
+		rad = rot.y;
+		point.x = (std::cos(rad) * x) + (std::sin(rad) * z);
+		point.z = (-std::sin(rad) * x) + (std::cos(rad) * z);
+
+		x = point.x;
+		y = point.y;
+		z = point.z;
+
+		rad = rot.z;
+		point.x = (std::cos(rad) * x) - (std::sin(rad) * y);
+		point.y = (std::sin(rad) * x) + (std::cos(rad) * y);
+
+		//centroid adjustments
+		point.x += c.x;
+		point.y += c.y;
+		point.z += c.z;
+
+		return point;
+
+	}
+
+	void rotate_about_centre(vector3 rot)
 	{
 		for (auto& p : vertices)
 		{
-			vector3 point = p;
-			//centroid adjustments
-			point = point - position;
-
-			//Rotate point
-			float rad = 0;
-
-			rad = rot_x;
-			point.y = std::cos(rad) * point.y - std::sin(rad) * point.z;
-			point.z = std::sin(rad) * point.y + std::cos(rad) * point.z;
-
-			rad = rot_y;
-			point.x = std::cos(rad) * point.x + std::sin(rad) * point.z;
-			point.z = -std::sin(rad) * point.x + std::cos(rad) * point.z;
-
-			rad = rot_z;
-			point.x = std::cos(rad) * point.x - std::sin(rad) * point.y;
-			point.y = std::sin(rad) * point.x + std::cos(rad) * point.y;
-
-			//centroid adjustments
-			point = point + position;
-
-			p = point;
+			p = rotate(rot, p, position);
 		}
 	}
 
@@ -457,8 +482,8 @@ public:
 	Body(std::string _name, vector3 _center, double _mass, double _scale, vector3 _velocity, double _mu, Graphyte& g, bool override_velocity = false):
 		graphyte(g), 
 		ScaleFV(&scale, [this]() { this->RegenerateVertices(); }), MassFV(&mass), NameFV(&name, [this]() { this->Rename(); }), 
-		PosXFV(&position.x, [this]() { this->RecenterBody(); }), PosYFV(&position.y, [this]() { this->RecenterBody(); }), PosZFV(&position.z, [this]() { this->RecenterBody(); }),
-		VelXFV(&velocity.x), VelYFV(&velocity.y), VelZFV(&velocity.z)
+		PosXFV(&this->position.x, [this]() { this->RecenterBody(); }), PosYFV(&this->position.y, [this]() { this->RecenterBody(); }), PosZFV(&this->position.z, [this]() { this->RecenterBody(); }),
+		VelXFV(&this->velocity.x, [this]() { this->SetStartVelocity(); }), VelYFV(&this->velocity.y, [this]() { this->SetStartVelocity(); }), VelZFV(&this->velocity.z, [this]() { this->SetStartVelocity(); })
 	{
 		position = _center;
 		radius = Magnitude(position);
@@ -517,6 +542,14 @@ public:
 	void RecenterBody()
 	{
 		MoveToPos(position);
+		start_pos = position;
+		time_since_start = 0;
+	}
+
+	void SetStartVelocity()
+	{
+		start_vel = velocity;
+		time_since_start = 0;
 	}
 
 	void Rename()
@@ -571,6 +604,7 @@ public:
 	}
 
 	int Add_Satellite(Satellite* sat);
+	void Delete_Satellites();
 
 	void Create_Satellite();
 
@@ -587,7 +621,7 @@ public:
 
 		Update_Satellites(delta, time_scale);
 
-		rotate(0.0005f, 0.0005f, 0.0005f);
+		rotate_about_centre({0.01, 0.01, 0.01});
 		vector3 this_pos = position;
 		float t = (delta / 1000); //time in seconds
 		std::vector<vector3> sim_step = rk4_step(time_since_start, this_pos, velocity, t * time_scale);
@@ -921,6 +955,14 @@ void Body::Create_Satellite()
 	// TODO: Figure this out I guess!
 	//Add_Satellite(Satellite("Moon", this, { 3.8E8, 0, 0 }, 7.3E22, 1.7E5, { 0, -1200, 0 }, graphyte, false)); //Continue with this.
 	Add_Satellite(new Satellite("Moon", this, { 3.8E8, 0, 0 }, 7.3E24, 1.7E5, { 0, -1200, 0 }, graphyte, false)); //Continue with this.
+}
+
+void Body::Delete_Satellites()
+{
+	for (Satellite* sat : satellites)
+	{
+		sat->Delete();
+	}
 }
 
 int Body::Draw_Satellites(Graphyte& g, Camera& c)

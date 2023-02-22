@@ -393,7 +393,7 @@ public:
 			path_gui.position = { (-SCREEN_WIDTH / 2), (-SCREEN_HEIGHT / 2) + 36, 0 };
 			Text* path_input_prompt = graphyte.CreateText("[SAVE/READ] Enter path here: ", 12);
 			path_gui.Add_Stacked_Element(path_input_prompt);
-			StringFieldValue path_to_file(&path_source); //If there is a problem here, it comes from the accessibility of path_source
+			StringFieldValue path_to_file(&path_source, NULL, "(([A-Z]|[a-z]|(_))|[ ])+\.orbyte"); //Custom regex
 			TextField* path_input = new TextField({ ( - SCREEN_WIDTH / 2), (-SCREEN_HEIGHT / 2), 0}, path_to_file, graphyte, "solar_system.orbyte");
 			path_source = "solar_system.orbyte"; //default
 			graphyte.text_fields.push_back(path_input);

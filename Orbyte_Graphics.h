@@ -807,11 +807,12 @@ class StringFieldValue : public FieldValue
 private:
 	std::string* value = NULL; // This is the pointer to the variable the input field is associated with. E.g. object name
 	std::function<void()> read_f = NULL;
+	std::string regex;
 	bool ValidateValue(std::string content)
 	{
 		try
 		{
-			std::regex dbl_regex("(([A-Z]|[a-z])|[ ])+");
+			std::regex dbl_regex(regex);
 			if (std::regex_match(content, dbl_regex))
 			{
 				return true;
@@ -827,9 +828,10 @@ private:
 		}
 	}
 public:
-	StringFieldValue(std::string* write_to, std::function<void()> f = NULL)
+	StringFieldValue(std::string* write_to, std::function<void()> f = NULL, std::string _regex = "(([A-Z]|[a-z])|[ ])+")
 	{
 		value = write_to;
+		regex = _regex;
 		if (f)
 		{
 			read_f = f;
