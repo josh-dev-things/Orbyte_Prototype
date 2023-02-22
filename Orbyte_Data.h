@@ -219,7 +219,8 @@ public:
 	int WriteDataToFile(SimulationData sd, std::vector<std::string> bodies_to_save, std::string path) //Can selectively save certain bodies
 	{
 		std::string to_write;
-		std::ofstream out(path);
+
+		unsigned char* buffer;
 
 		to_write = EncodeDouble(sd.cb_mass) + EncodeDouble(sd.cb_scale) + EncodeVec3(sd.c_pos) + EncodeDouble(bodies_to_save.size());
 		//64 + 64 + (3*64) + 8
@@ -234,9 +235,14 @@ public:
 			+ EncodeVec3(data.velocity);
 		}
 
-		std::cout << "Writing data to file: " << to_write << "\n";
+		std::cout << "Writing data to file: " << path << "\n";
 
-		out << to_write;
+		std::ofstream out;
+		out.open(path, std::ios::binary);
+		for (char c : to_write)
+		{
+			out.write(reinterpret_cast<char*>(&sd.cb_mass), sizeof(double));
+		}
 		out.close();
 		//ReadDataFromFile(path);
 		return 0;
