@@ -218,90 +218,115 @@ public:
 
 	int WriteDataToFile(SimulationData sd, std::vector<std::string> bodies_to_save, std::string path) //Can selectively save certain bodies
 	{
-		std::string to_write;
-
-		unsigned char* buffer;
-
-		to_write = EncodeDouble(sd.cb_mass) + EncodeDouble(sd.cb_scale) + EncodeVec3(sd.c_pos) + EncodeDouble(bodies_to_save.size());
-		//64 + 64 + (3*64) + 8
-		for (int i = 0; i < bodies_to_save.size(); i++)
-		{
-			OrbitBodyData data = sd.obc.GetBodyData(bodies_to_save[i]); //Get data via hashing algorithm
-			to_write += EncodeDouble(data.bytes_for_name)
-			+ EncodeString(data.name)
-			+ EncodeVec3(data.center)
-			+ EncodeDouble(data.mass)
-			+ EncodeDouble(data.scale)
-			+ EncodeVec3(data.velocity);
-		}
+		double no_orbits = bodies_to_save.size();
 
 		std::cout << "Writing data to file: " << path << "\n";
 
-		std::ofstream out;
-		out.open(path, std::ios::binary);
-		for (char c : to_write)
+		std::ofstream out(path, std::ios::binary | std::ios::out);;
+		if (!out)
 		{
-			out.write(reinterpret_cast<char*>(&sd.cb_mass), sizeof(double));
+			std::cout << "\nERR. Writing to file failed.";
+			return -1;
+		}
+		std::cout << (char*)&sd;
+		uint8_t my_size = sizeof(sd);
+
+		out.write((char*)&sd.cb_mass, sizeof(double));
+		out.write((char*)&sd.cb_scale, sizeof(double));
+		out.write((char*)&sd.c_pos, sizeof(vector3));
+		out.write((char*)&no_orbits, sizeof(double));
+
+		for (int i = 0; i < bodies_to_save.size(); i++)
+		{
+			OrbitBodyData data = sd.obc.GetBodyData(bodies_to_save[i]); //Get data via hashing algorithm
+
+			double bfn = data.bytes_for_name;
+			out.write((char*)&bfn, sizeof(double));
+
+			std::string n = data.name;
+			for (char n_char : n)
+			{
+				out.write((char*)&n_char, sizeof(char));
+			}
+
+			vector3 c = data.center;
+			out.write((char*)&c, sizeof(vector3));
+
+			double m = data.mass;
+			out.write((char*)&m, sizeof(double));
+
+			double s = data.scale;
+			out.write((char*)&s, sizeof(double));
+
+			vector3 v = data.velocity;
+			out.write((char*)&v, sizeof(vector3));
 		}
 		out.close();
-		//ReadDataFromFile(path);
+
+		std::cout << "\nBytes: " << my_size + 1;
 		return 0;
 	}
 
 	SimulationData ReadDataFromFile(std::string path)
 	{
-		std::ifstream in(path);
-		std::string data; //should only be one line
-		std::getline(in, data);
-		std::cout << "Read data from file: " << data << "\n";
-		//cbmass, cbscale, cpos, no_bodies => (bytes for name, name, center, mass, scale, velocity)
 		SimulationData sd;
-		int i = 0;
+		double no_orbits;
 
-		sd.cb_mass = DecodeDouble(data.substr(i, 64));
-		std::cout << "\nMass of centre body: "<< sd.cb_mass;
-		i += 64;
-
-		sd.cb_scale = DecodeDouble(data.substr(i, 64));
-		std::cout << "\nScale of centre body: " << sd.cb_scale;
-		i += 64;
-
-		sd.c_pos = DecodeVec3(data.substr(128, 64 * 3));
-		std::cout << "\nPosition of camera: " << sd.c_pos.Debug();
-		i += 64 * 3;
-
-		int no_orbits = (int)DecodeDouble(data.substr(i, 64));
-		std::cout << "\nNumber of orbits: " << no_orbits;
-		i += 64;
-
-		OrbitBodyCollection obc;
-
-		for (int j = 0; j < no_orbits; j++)
+		std::ifstream in(path, std::ios::binary | std::ios::in);
+		if (!in)
 		{
-			int no_bytes_for_name = DecodeDouble(data.substr(i, 64));
-			i += 64;
-			std::cout << "\nNumber of bytes for name: " << no_bytes_for_name;
-
-			std::string name = DecodeString(data.substr(i, 8 * no_bytes_for_name));
-			i += 8 * no_bytes_for_name;
-			std::cout << "\nOrbit Name: " << name;
-
-			vector3 center = DecodeVec3(data.substr(i, 64 * 3));
-			i += 64 * 3;
-
-			double mass = DecodeDouble(data.substr(i, 64));
-			i += 64;
-
-			double scale = DecodeDouble(data.substr(i, 64));
-			i += 64;
-
-			vector3 velocity = DecodeVec3(data.substr(i, 64 * 3));
-			i += 64 * 3;
-			OrbitBodyData obd(name, center, mass, scale, velocity);
-			obc.AddBodyData(obd);
+			std::cout << "\nERR. Reading from file failed.";
+			return sd; //But center mass will be 0;
 		}
-		sd.obc = obc;
+
+		in.read((char*)&sd.cb_mass, sizeof(double));
+		std::cout << "\nReading mass: " << sd.cb_mass;
+		in.read((char*)&sd.cb_scale, sizeof(double));
+		std::cout << "\nReading scale: " << sd.cb_scale;
+		in.read((char*)&sd.c_pos, sizeof(vector3));
+		std::cout << "\nReading c_pos: " << sd.c_pos.Debug();
+		in.read((char*)&no_orbits, sizeof(double));
+
+		std::cout << "\nReading No. Orbits: " << no_orbits;
+
+		for (int i = 0; i < no_orbits; i++)
+		{
+			OrbitBodyData data;
+
+			double bfn;
+			in.read((char*)&bfn, sizeof(double));
+			data.bytes_for_name = bfn;
+			std::cout << "\nReading No. bytes: " << (double)data.bytes_for_name;
+
+			std::string name = "";
+			for (int j = 0; j < data.bytes_for_name; j++)
+			{
+				char c;
+				in.read((char*)&c, sizeof(char));
+				name += c;
+			}
+			data.name = name;
+			std::cout << "\nReading name: " << name;
+
+			in.read((char*)&data.center, sizeof(vector3));
+
+			in.read((char*)&data.mass, sizeof(double));
+
+			in.read((char*)&data.scale, sizeof(double));
+
+			in.read((char*)&data.velocity, sizeof(vector3));
+
+			sd.obc.AddBodyData(data);
+		}
+
 		in.close();
+
+
+		if (!in.good())
+		{
+			std::cout << "\n\nOh No.\n\n";
+		}
+		
 		return sd;
 	}
 };

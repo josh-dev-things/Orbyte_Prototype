@@ -297,13 +297,14 @@ public:
 		time_scale = 0;
 
 		Sun.mass = new_sd.cb_mass;
+		std::cout << "\n Sun mass: " << Sun.mass;
 		Sun.scale = new_sd.cb_scale;
 		gCamera.position = new_sd.c_pos;
 		for (Body* old_orbit : orbiting_bodies)
 		{
 			old_orbit->Delete();
 		}
-
+		std::cout << "\n obc: " << new_sd.obc.GetAllOrbits().size();
 		OrbitBodyCollection obc = new_sd.obc;
 		std::vector<OrbitBodyData> orbits = obc.GetAllOrbits();
 		for (OrbitBodyData orbit : orbits)
