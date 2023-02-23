@@ -39,7 +39,7 @@ private: vector3 camera_rotation;
 
 		//Rotate point
 		float rad = 0;
-		float x, y, z;
+		double x, y, z;
 		rad = rot.x;
 		
 		x = point.x;
