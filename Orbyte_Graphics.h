@@ -781,20 +781,20 @@ public:
 
 	void ReadField(std::string content) override
 	{
-		if (ValidateValue(content))
+		if (ValidateValue(content)) // Check if valid
 		{
-			std::cout << "\n Valid field content";
-			if (value != NULL)
+			std::cout << "\n Valid field content"; // Passed validation
+			if (value != NULL) // If pointer to value to write to is not null
 			{
-				double new_value = atof(content.c_str());
-				if (new_value != *value)
+				double new_value = atof(content.c_str()); // Conversion
+				if (new_value != *value) // Check for redundant set
 				{
 					*value = new_value;
-					std::cout << "\n Successfully wrote to value from input field!  \n" << new_value;
+					std::cout << "\n Successfully wrote to value from input field!  \n" << new_value; // Debug
 
 					if (read_f != NULL)
 					{
-						read_f();
+						read_f(); // Call attached method if it exists.
 					}
 				}
 			}
@@ -812,19 +812,19 @@ private:
 	{
 		try
 		{
-			std::regex dbl_regex(regex);
+			std::regex dbl_regex(regex); // Create regex object from string defined in constructor.
 			if (std::regex_match(content, dbl_regex))
 			{
-				return true;
+				return true; // Success
 			}
 			else {
-				throw(content);
+				throw(content); // Content has failed the validation => Catch
 			}
 		}
 		catch (std::string bad)
 		{
 			std::cout << "\n Bad input recieved: " << bad; // Its bad
-			return false;
+			return false; // Failure
 		}
 	}
 public:
