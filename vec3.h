@@ -84,9 +84,4 @@ vector3 Normalize(vector3 vec)
 	return norm;
 }
 
-struct edge
-{
-	int a, b;
-};
-
 #endif /*VEC3_H*/

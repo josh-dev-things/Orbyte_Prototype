@@ -22,8 +22,7 @@ class CentralBody
 		is due to how graphics have been implemented and consistency with naming conventions, not a design oversight.
 	*/
 private:
-	std::vector<vector3> vertices;
-	std::vector<edge> edges;
+	Mesh mesh;
 
 	void Generate_Vertices(double scale)
 	{
@@ -48,7 +47,7 @@ private:
 			v.z += position.z;
 		}
 
-		vertices = _vertices;
+		mesh.vertices = _vertices;
 
 		//Edges Now
 		std::vector<edge> _edges{
@@ -67,7 +66,7 @@ private:
 			{3,4},
 			{3,5}
 		};
-		edges = _edges; //I want to put this in its own method, however that's unnecessary as this is static soooo...
+		mesh.edges = _edges; //I want to put this in its own method, however that's unnecessary as this is static soooo...
 
 	}
 
@@ -89,7 +88,7 @@ public:
 	int Draw(Graphyte& g, Camera& c)
 	{
 		vector3 screen_dimensions = g.Get_Screen_Dimensions(); //Vector3 containing Screen Dimensions, we ignore z
-		std::vector<vector3> verts = Get_Vertices(); //Why are we using an accessor inside the class? Because its tidy and we need to get all the vertices in a new structure so that we can write the screen space positions by reference.
+		std::vector<vector3> verts = mesh.vertices;
 
 		for (vector3& p : verts)
 		{
@@ -101,7 +100,7 @@ public:
 			}
 		}
 
-		for (edge edg : edges)
+		for (edge edg : mesh.edges)
 		{
 			if (verts[edg.a].z > 0 && verts[edg.b].z > 0)
 			{
@@ -119,22 +118,16 @@ public:
 		return 0;
 	}
 
-	std::vector<vector3> Get_Vertices()
+	Mesh Get_Mesh()
 	{
-		//Return vertices
-		return vertices;
-	}
-
-	std::vector<edge> Get_Edges()
-	{
-		return edges;
+		return mesh;
 	}
 
 	void RegenerateVertices()
 	{
 		std::cout << "\n Recalculating vertex positions w/ scale: " << scale;
 		std::cout << "\n Me: (regen) " << this;
-		this->vertices.clear();
+		this->mesh.vertices.clear();
 		this->Generate_Vertices(scale);
 	}
 
@@ -153,8 +146,7 @@ private:
 	Graphyte& graphyte;
 
 protected:
-	std::vector<vector3> vertices;
-	std::vector<edge> edges;
+	Mesh mesh;
 	vector3 last_trail_point;
 	std::vector<vector3> trail_points;
 
@@ -310,7 +302,7 @@ protected:
 			{3,4},
 			{3,5}
 		};
-		edges = _edges;
+		mesh.edges = _edges;
 
 		printf("\n Generated vertices");
 
@@ -324,7 +316,7 @@ protected:
 
 		vector3 delta = position - old_pos;
 
-		for (auto& p : vertices)
+		for (auto& p : mesh.vertices)
 		{
 			p = p + delta;
 		}
@@ -381,7 +373,7 @@ protected:
 
 	void rotate_about_centre(vector3 rot)
 	{
-		for (auto& p : vertices)
+		for (auto& p : mesh.vertices)
 		{
 			p = rotate(rot, p, position);
 		}
@@ -512,7 +504,7 @@ public:
 		start_pos = position;
 		std::cout << "Instantiated Orbiting Body with initial position: " << start_pos.Debug() << " and velocity: " << velocity.Debug() << "\n";
 		
-		vertices = Generate_Vertices(scale);
+		mesh.vertices = Generate_Vertices(scale);
 
 		CreateInspector(g);
 	}
@@ -526,9 +518,9 @@ public:
 	{
 		
 		satellites.clear();
-		vertices.clear();
+		mesh.vertices.clear();
 		trail_points.clear();
-		edges.clear();
+		mesh.edges.clear();
 
 		gui = nullptr;
 		f_button->SetEnabled(false);
@@ -539,9 +531,9 @@ public:
 	{
 		std::cout << "\n Recalculating vertex positions w/ scale: " << scale;
 		std::cout << "\n Me: (regen) " <<this;
-		this->vertices.clear();
-		this->vertices = this->Generate_Vertices(scale);
-		std::cout << "\n" << Magnitude(vertices[0] - position);
+		this->mesh.vertices.clear();
+		this->mesh.vertices = this->Generate_Vertices(scale);
+		std::cout << "\n" << Magnitude(mesh.vertices[0] - position);
 	}
 
 	void RecenterBody()
@@ -677,7 +669,7 @@ public:
 	int Draw(Graphyte& g, Camera& c)
 	{
 		vector3 screen_dimensions = g.Get_Screen_Dimensions(); //Vector3 containing Screen Dimensions, we ignore z
-		std::vector<vector3> verts = this->vertices; //Why are we using an accessor inside the class? Because its tidy and we need to get all the vertices in a new structure so that we can write the screen space positions by reference.
+		std::vector<vector3> verts = this->mesh.vertices;
 		for (auto& p : verts)
 		{
 			p = c.WorldSpaceToScreenSpace(p, screen_dimensions.x, screen_dimensions.y);
@@ -698,7 +690,7 @@ public:
 			}
 		}
 
-		for (edge edg : edges)
+		for (edge edg : mesh.edges)
 		{
 			if (verts[edg.a].z > 0 && verts[edg.b].z > 0)
 			{
@@ -737,15 +729,10 @@ public:
 		return 0;
 	}
 
-	std::vector<vector3> Get_Vertices()
+	Mesh Get_Mesh()
 	{
 		//Return vertices
-		return vertices;
-	}
-
-	std::vector<edge> Get_Edges()
-	{
-		return edges;
+		return mesh;
 	}
 
 	std::vector<vector3> Get_Trail_Points()
@@ -836,7 +823,7 @@ private:
 			{3,4},
 			{3,5}
 		};
-		edges = _edges; //I want to put this in its own method, however that's unnecessary as this is static soooo...
+		mesh.edges = _edges; //I want to put this in its own method, however that's unnecessary as this is static soooo...
 
 		return _vertices;
 	};

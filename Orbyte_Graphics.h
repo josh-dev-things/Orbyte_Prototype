@@ -1063,4 +1063,16 @@ struct GUI_Block //"Blocks" are collections of text elements to help with positi
 	
 };
 
+//Geometry
+struct edge
+{
+	int a, b;
+};
+
+struct Mesh
+{
+	std::vector<vector3> vertices;
+	std::vector<edge> edges;
+};
+
 #endif /*ORBYTE_GRAPHICS_H*/
