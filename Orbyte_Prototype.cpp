@@ -22,6 +22,7 @@
 
 class Simulation
 {
+private:
 	const double SCREEN_WIDTH = 1200;
 	const double SCREEN_HEIGHT = 800;
 	const int SCREEN_FPS = 60;
@@ -249,7 +250,6 @@ class Simulation
 		return com;
 	}
 
-public:
 	void toggle_pause()
 	{
 		if (time_scale == 0)
@@ -326,6 +326,7 @@ public:
 			orbit->Set_Mu(Sun.mu);
 		}
 	}
+public:
 
 	int run(int argc, char* args[])
 	{
