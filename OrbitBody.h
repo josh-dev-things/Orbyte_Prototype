@@ -145,6 +145,16 @@ private:
 	std::vector<Satellite*> satellites;
 	Graphyte& graphyte;
 
+	int Add_Satellite(Satellite* sat);
+
+	void Delete_Satellites();
+
+	void Create_Satellite();
+
+	int Update_Satellites(float delta, float time_scale);
+
+	int Draw_Satellites(Graphyte& g, Camera& c);
+
 protected:
 	Mesh mesh;
 	vector3 last_trail_point;
@@ -162,6 +172,7 @@ protected:
 	vector3 acceleration{ 0, 0, 0 };
 	double mu = 0; 
 	double mass = 0;
+	double scale;
 
 	//Labels
 	Text* name_label = NULL;
@@ -473,7 +484,6 @@ protected:
 
 public: 
 	std::string name;
-	double scale;
 	bool to_delete = false; //Used in mainloop to schedule objects for deletion next update. => deconstructor (see free())
 
 	Body(std::string _name, vector3 _center, double _mass, double _scale, vector3 _velocity, double _mu, Graphyte& g, bool override_velocity = false):
@@ -577,7 +587,7 @@ public:
 		return OrbitBodyData(name, position, mass, scale, velocity);
 	}
 
-	std::string GetBodyData() //For debugging purposes...
+	std::string DebugBody() //For debugging purposes...
 	{
 		std::string text = name + " velocity: " + velocity.Debug() + "|| Time: " + std::to_string(time_since_start);
 		return text;
@@ -599,15 +609,6 @@ public:
 		name_label->Set_Visibility(false);
 		to_delete = true;
 	}
-
-	int Add_Satellite(Satellite* sat);
-	void Delete_Satellites();
-
-	void Create_Satellite();
-
-	int Update_Satellites(float delta, float time_scale);
-
-	int Draw_Satellites(Graphyte& g, Camera& c);
 
 	virtual int Update_Body(float delta, float time_scale)
 	{
