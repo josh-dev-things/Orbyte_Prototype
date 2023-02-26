@@ -426,8 +426,6 @@ class FunctionButton; //A Forward Declaration so nothing collapses
 class Graphyte
 {
 private: //Private attributes & Methods
-
-	const float km_per_pixel = 750; //The number of kilometres per pixel on screen.
 	double SCREEN_WIDTH = 0; //What it says on the tin.
 	double SCREEN_HEIGHT = 0; //These dimensions are not const values because they need to be set in the Init() method.
 
@@ -440,7 +438,7 @@ private: //Private attributes & Methods
 
 public:  //Public attributes & Methods
 	TextField* active_text_field = NULL; //This pointer will be used to edit text fields
-	std::vector<TextField*> text_fields;
+	std::vector<TextField*> text_fields; //Public as it is accessed by Body to instantiate GUI, consider using an accessor method.
 	std::vector<FunctionButton*> function_buttons; //It is possible to handle the input methods in a tidier way, but alas this is all I have time for.
 
 	bool Init(SDL_Renderer& _renderer, TTF_Font& _font, vector3 _screen_dimensions)
