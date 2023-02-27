@@ -155,6 +155,8 @@ private:
 
 	int Draw_Satellites(Graphyte& g, Camera& c);
 
+	void Close_Satellite_Inspectors();
+
 protected:
 	Mesh mesh;
 	vector3 last_trail_point;
@@ -580,6 +582,7 @@ public:
 		inspector_reset->SetEnabled(false);
 		inspector_satellite->SetEnabled(false);
 		gui->Hide();
+		Close_Satellite_Inspectors();
 	}
 
 	OrbitBodyData GetOrbitBodyData() //To be used when saving to a .orbyte file
@@ -869,9 +872,6 @@ public:
 		std::cout << "\n____________\nSATELLITE INSTANTIATION\n____________\n" << "parent body name: " << parentBody->name << "\nparent body location: " << parentBody->Get_Position().Debug() << "\nmy location: " << Get_Position().Debug() + "\n";
 		std::cout << "\nSAT POS (RELATIVE) CONSTRUCTOR:" + (position).Debug() + "\n";
 		std::cout << "SAT VEL (RELATIVE) CONSTRUCTOR:" + (velocity).Debug() + " MEANT TO BE: " + _velocity.Debug() + "\n";
-		f_button->SetEnabled(false);
-		f_button = NULL; //GUI Disabled for satellites.
-		HideBodyInspector();
 	}
 
 	int Update_Body(float delta, float time_scale) override
@@ -945,6 +945,14 @@ void Body::Delete_Satellites()
 	for (Satellite* sat : satellites)
 	{
 		sat->Delete();
+	}
+}
+
+void Body::Close_Satellite_Inspectors()
+{
+	for (Satellite* sat : satellites)
+	{
+		sat->HideBodyInspector();
 	}
 }
 
