@@ -262,14 +262,16 @@ private:
 		return;
 	}
 
+	// Add orbit with given OrbitBodyData
 	void add_specific_orbit(OrbitBodyData data)
 	{
 		orbiting_bodies.push_back(new Body(data.name, data.center, data.mass, data.scale, data.velocity, Sun.mu, graphyte, false));
 	}
 
+	// Add general orbit with generic parameters
 	void add_orbit_body()
 	{
-		orbiting_bodies.push_back(new Body("New", { 0, 5.8E10, 0 }, 3.285E23, 2.44E6, { 47000, 0, 0 }, Sun.mu, graphyte, false));
+		orbiting_bodies.push_back(new Body("New Orbit", { 0, 5.8E10, 0 }, 3.285E23, 2.44E6, { 47000, 0, 0 }, Sun.mu, graphyte, false));
 	}
 
 	void save()
@@ -439,17 +441,13 @@ public:
 				//gCamera.position = { earth.Get_Position().x, earth.Get_Position().y, gCamera.position.z };
 				//render sun
 				Sun.Draw(graphyte, gCamera);
-				clean_orbit_queue();
-				//vector3 com = calculate_centre_of_mass(Sun);
-				//std::cout << "\n" << com.Debug();
-				/*vector3 debug_com = gCamera.WorldSpaceToScreenSpace(com, SCREEN_HEIGHT, SCREEN_WIDTH);
-				graphyte.pixel(debug_com.x, debug_com.y);*/
-				for (auto& b : orbiting_bodies)
+
+				clean_orbit_queue(); // Check if any orbits in the vector are scheduled for deletion.
+				
+				for (Body* b : orbiting_bodies)
 				{
 					b->Update_Body(deltaTime, time_scale); // Update body
-					//std::cout<<b.Get_Position().Debug()<<"\n"; 
-					//b.Calculate_Period();
-					b->Draw(graphyte, gCamera);
+					b->Draw(graphyte, gCamera); // Draw the body
 				}
 
 				double debug_no_pixels = graphyte.Get_Number_Of_Points();
@@ -566,7 +564,7 @@ public:
 					Uint32 delay = (Uint32)interval - deltaTime;
 					if (delay > 0)
 					{
-						SDL_Delay(delay);
+						SDL_Delay(delay); // Delay to pad out frame duration and limit FPS
 						deltaTime += delay;
 					}
 				}

@@ -55,24 +55,28 @@ struct vector3
 	
 };
 
+// Length of a vector3. Thank you Pythagoras.
 double Magnitude(vector3 vec)
 {
 	return sqrt((vec.x * vec.x) + (vec.y * vec.y) + (vec.z * vec.z));
 }
 
+// Distance between two points in 3D space
 double Distance(vector3 vecFrom, vector3 vecTo)
 {
-	vector3 a = vecTo - vecFrom; //Thank you past me for making those operator overloads 
+	vector3 a = vecTo - vecFrom;
 	double distance = Magnitude(a);
 	
 	return distance;
 }
 
+// "Dot Product" of two vectors. 
 double Scalar_Product(vector3 a, vector3 b)
 {
 	return (a.x * b.x) + (a.y * b.y) + (a.z * b.z);
 }
 
+// Vector3 in same direction but with magnitude 1
 vector3 Normalize(vector3 vec)
 {
 	double mag = Magnitude(vec);

@@ -272,7 +272,6 @@ protected:
 		//Don't have to return a value because parameter is passed by reference.
 	}
 
-	//Hooray, polymorphism!
 	virtual std::vector<vector3> Generate_Vertices(double scale)
 	{
 		std::vector<vector3> _vertices{
@@ -466,6 +465,11 @@ protected:
 
 		//FUNCTION BUTTONS:
 
+		//Create the button
+		f_button = new FunctionButton([this]() { this->ShowBodyInspector(); }, name_label->Get_Position(), name_label->Get_Dimensions(), g, ""); //TODO: Fix this please
+		g.function_buttons.push_back(f_button); //No idea how this has access to function_buttons but so it does...
+		std::cout << "\n\n\n\nFUNCTION BUTTON " << f_button;
+
 		inspector_delete = new FunctionButton([this]() { this->Delete(); }, { (screen_dimensions.x / 2) - 275, -(screen_dimensions.y / 2) + 30, 0 }, {25, 25, 0}, g, "icons/delete.png");
 		g.function_buttons.emplace_back(inspector_delete);
 
@@ -476,10 +480,6 @@ protected:
 		g.function_buttons.emplace_back(inspector_satellite);
 
 		HideBodyInspector();
-
-		//Create the button
-		f_button = new FunctionButton([this]() { this->ShowBodyInspector(); }, name_label->Get_Position(), name_label->Get_Dimensions(), g, ""); //TODO: Fix this please
-		g.function_buttons.push_back(f_button); //No idea how this has access to function_buttons but so it does...
 	}
 
 public: 
@@ -488,22 +488,23 @@ public:
 
 	Body(std::string _name, vector3 _center, double _mass, double _scale, vector3 _velocity, double _mu, Graphyte& g, bool override_velocity = false):
 		graphyte(g), 
-		ScaleFV(&scale, [this]() { this->RegenerateVertices(); }), MassFV(&mass), NameFV(&name, [this]() { this->Rename(); }), 
+		ScaleFV(&scale, [this]() { this->RegenerateVertices(); }), MassFV(&mass), NameFV(&name, [this]() { this->Rename(); }), // Scale Dield Value. When written to, recalculate geometry
 		PosXFV(&this->position.x, [this]() { this->RecenterBody(); }), PosYFV(&this->position.y, [this]() { this->RecenterBody(); }), PosZFV(&this->position.z, [this]() { this->RecenterBody(); }),
 		VelXFV(&this->velocity.x, [this]() { this->SetStartVelocity(); }), VelYFV(&this->velocity.y, [this]() { this->SetStartVelocity(); }), VelZFV(&this->velocity.z, [this]() { this->SetStartVelocity(); })
 	{
 		position = _center;
+		start_pos = position;
 		radius = Magnitude(position);
 
-		name_label = g.CreateText(_name, 16);
-		name_label->pos_x = 100;
+		name_label = g.CreateText(_name, 16); // Create floating text label that follows orbit body
+		name_label->pos_x = 100; //Test values (overwritten later)
 		name_label->pos_y = 100;
 
-		mu = _mu;
+		mu = _mu; //Setting attributes
 		name = _name;
 		if (override_velocity)
 		{
-			Project_Circular_Orbit(_velocity);
+			Project_Circular_Orbit(_velocity); // Force a circular orbit. Not reccommended as will override given parameters. [NO LONGER SUPPORTED]
 		}
 		velocity = _velocity;
 		start_vel = velocity;
@@ -511,12 +512,11 @@ public:
 		scale = _scale;
 		mass = _mass;
 
-		start_pos = position;
 		std::cout << "Instantiated Orbiting Body with initial position: " << start_pos.Debug() << " and velocity: " << velocity.Debug() << "\n";
 		
-		mesh.vertices = Generate_Vertices(scale);
+		mesh.vertices = Generate_Vertices(scale); // Generate body geometry
 
-		CreateInspector(g);
+		CreateInspector(g); // Create GUI for body
 	}
 
 	~Body()
@@ -602,51 +602,54 @@ public:
 		RegenerateVertices();
 	}
 
-	void Delete()
+	virtual void Delete()
 	{
 		std::cout << "\n|||DELETED ORBIT BODY: " << name << "|||";
 		HideBodyInspector();
 		name_label->Set_Visibility(false);
+		f_button->SetEnabled(false);
 		to_delete = true;
 	}
 
 	virtual int Update_Body(float delta, float time_scale)
 	{
-		if (time_scale == 0)
+		if (time_scale == 0) // If paused, don't update.
 		{
 			return 0;
 		} 
 
-		Update_Satellites(delta, time_scale);
+		Update_Satellites(delta, time_scale); // Call Update Method of all child satellites
 
-		rotate_about_centre({0.01, 0.01, 0.01});
+		rotate_about_centre({0.01, 0.01, 0.01}); // Gradual rotation about body origin to mimic a planet's rotation about its axis
+
 		vector3 this_pos = position;
 		float t = (delta / 1000); //time in seconds
-		std::vector<vector3> sim_step = rk4_step(time_since_start, this_pos, velocity, t * time_scale);
+		std::vector<vector3> sim_step = rk4_step(time_since_start, this_pos, velocity, t * time_scale); // Get RK4 result into a sim_step buffer.
 		this_pos = sim_step[0];
 		//if (position.z > 0) { std::cout << position.Debug() << "\n"; std::cout << velocity.Debug() << "\n"; }
-		MoveToPos(this_pos);
-		angular_velocity = Magnitude(velocity) / Magnitude(position);
+		MoveToPos(this_pos); // Shift vertices to new position
+		angular_velocity = Magnitude(velocity) / Magnitude(position); // angular velocity = tangential velocity / radius
 		time_since_start += t * time_scale;
 
-
+		// Add a "breadcrumb" or trail point if a certain distance away from last
 		if (Magnitude(this_pos - last_trail_point) > (0.5 * radius) / 24)
 		{
 			trail_points.emplace_back(this_pos);
 			last_trail_point = this_pos;
-			//printf("Added Point");
 		}
+
+		// Remove trail point to only show most recent 
 		if (trail_points.size() > 24)
 		{
-			//printf("Erased Point");
 			trail_points.erase(trail_points.begin());
 		}
 		
-		velocity = sim_step[1];
+		velocity = sim_step[1]; // Get result from RK4 buffer
 		acceleration = sim_step[2];
 
-		update_inspector();
-		return 0;
+		update_inspector(); // Update GUI
+
+		return 0; // Successful update.
 	}
 
 	int Draw_Arrows(Graphyte& g, Camera& c, vector3 start, vector3 screen_dimensions)
@@ -873,14 +876,14 @@ public:
 
 	int Update_Body(float delta, float time_scale) override
 	{
-		if (time_scale == 0)
+		if (time_scale == 0) // If paused, don't update.
 		{
 			return 0;
 		}
 
 		//rotate(0.0005f, 0.0005f, 0.0005f);
 		vector3 this_pos = position;
-		//std::cout <<"\nSAT POS (RELATIVE):" +this_pos.Debug()+"\n";
+		//std::cout << "\n" + name << " SAT POS (RELATIVE):" + this_pos.Debug() + "\n";
 		float t = (delta / 1000); //time in seconds
 		Set_Mu(parentBody->Get_Mass() * 6.6743E-11);
 		std::vector<vector3> sim_step = rk4_step(t * time_scale, this_pos - parentBody->Get_Position(), velocity, t * time_scale);
@@ -908,6 +911,7 @@ public:
 		//std::cout << "\nSatellite Accel: " << Normalize(acceleration).Debug();
 
 		update_inspector();
+
 		return 0;
 	}
 };
@@ -915,20 +919,6 @@ public:
 int Body::Update_Satellites(float delta, float time_scale)
 {
 	//Now update Satellites
-
-	//First calculate COM
-	//A Level Further Maths: Mechanics
-	/*double total_mass = mass;
-	vector3 com = position;
-	for (Satellite& sat : satellites)
-	{
-		double _mass = sat.Get_Mass();
-
-		com = com + sat.Get_Position() * _mass;
-		total_mass += _mass;
-	}
-	com = (com * (1 / total_mass));*/
-
 	for (Satellite* sat : satellites)
 	{
 		sat->Update_Body(delta, time_scale);
