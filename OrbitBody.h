@@ -790,6 +790,7 @@ class Satellite : public Body
 {
 private:
 	Body* parentBody;
+	int index;
 	std::vector<vector3> Generate_Vertices(double scale) override {
 		//thing
 		std::vector<vector3> _vertices{
@@ -930,14 +931,15 @@ int Body::Add_Satellite(Satellite* sat)
 {
 	satellites.emplace_back(sat);
 	std::cout << name << " has a new satellite: " << sat->name << " | Total number of satellites: " << satellites.size() << "\n";
-	return 0;
+	return satellites.size() - 1;
 }
 
 void Body::Create_Satellite()
 {
 	// TODO: Figure this out I guess!
 	//Add_Satellite(Satellite("Moon", this, { 3.8E8, 0, 0 }, 7.3E22, 1.7E5, { 0, -1200, 0 }, graphyte, false)); //Continue with this.
-	Add_Satellite(new Satellite("Moon", this, { 3.8E8, 0, 0 }, 7.3E24, 1.7E5, { 0, -1200, 0 }, graphyte, false)); //Continue with this.
+	Satellite* new_sat = new Satellite("Moon", this, { 3.8E8, 0, 0 }, 7.3E24, 1.7E5, { 0, -1200, 0 }, graphyte, false);
+	Add_Satellite(new_sat); //Continue with this.
 }
 
 void Body::Delete_Satellites()
