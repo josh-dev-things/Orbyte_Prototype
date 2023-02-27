@@ -328,6 +328,12 @@ private:
 	}
 public:
 
+	/// <summary>
+	/// Start the simulation
+	/// </summary>
+	/// <param name="argc"></param>
+	/// <param name="args"></param>
+	/// <returns></returns>
 	int run(int argc, char* args[])
 	{
 		//Start up SDL and create window
@@ -553,9 +559,9 @@ public:
 				}
 
 				//DELAY UNTIL END
-				deltaTime = Update_Clock();
-				float interval = (float)1000 / MAX_FPS;
-				if (deltaTime < (Uint32)interval)
+				deltaTime = Update_Clock(); // get new delta
+				float interval = (float)1000 / MAX_FPS; // Intended interval (capped FPS)
+				if (deltaTime < (Uint32)interval) // If simulation is updating too quickly
 				{
 					Uint32 delay = (Uint32)interval - deltaTime;
 					if (delay > 0)
