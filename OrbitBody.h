@@ -803,14 +803,15 @@ private:
 	std::vector<vector3> Generate_Vertices(double scale) override {
 		//thing
 		std::vector<vector3> _vertices{
-			{1, 0, 0},
-			{-1, 0, 0},
+			{0, 1, 1},
+			{1, 0, 1},
+			{0, -1, 1},
+			{-1, 0, 1},
 
-			{0, 1, 0}, //2
-			{0, -1, 0},
-
-			{0, 0, 1}, //4
-			{0, 0, -1}
+			{0, 1, -1},
+			{1, 0, -1},
+			{0, -1, -1},
+			{-1, 0, -1},
 		};
 
 		for (auto& v : _vertices)
@@ -825,20 +826,20 @@ private:
 
 		//Edges Now
 		std::vector<edge> _edges{
+			{0,1},
 			{0, 3},
-			{0, 2},
+			{2, 1},
+			{2, 3},
+
+			{4, 5},
+			{4, 7},
+			{6, 5},
+			{6, 7},
+
 			{0, 4},
-			{0,5},
-
-			{1, 2},
-			{1,3},
-			{1,4},
-			{1,5},
-
-			{2,4},
-			{2,5},
-			{3,4},
-			{3,5}
+			{1, 5},
+			{2, 6},
+			{3, 7}
 		};
 		mesh.edges = _edges; //I want to put this in its own method, however that's unnecessary as this is static soooo...
 
