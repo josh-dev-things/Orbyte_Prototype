@@ -461,8 +461,9 @@ public:
 				
 				for (Body* b : orbiting_bodies)
 				{
-					b->Update_Body(deltaTime, time_scale); // Update body
+					b->Update_Body(deltaTime, time_scale, &orbiting_bodies); // Update body
 					b->Draw(graphyte, gCamera); // Draw the body
+					std::cout << "\n" + b->Get_Position().Debug();
 					if (b->snap_camera)
 					{
 						vector3 cam_pos = b->Get_Position();

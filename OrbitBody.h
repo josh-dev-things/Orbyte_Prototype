@@ -151,7 +151,7 @@ private:
 
 	void Create_Satellite();
 
-	int Update_Satellites(float delta, float time_scale);
+	int Update_Satellites(float delta, float time_scale, std::vector<Body*>* bodies_in_system);
 
 	int Draw_Satellites(Graphyte& g, Camera& c);
 
@@ -177,6 +177,7 @@ protected:
 	double mu = 0; 
 	double mass = 0;
 	double scale;
+	const double Gravitational_Constant = 6.6743E-11;
 
 	//Labels
 	Text* name_label = NULL;
@@ -221,34 +222,66 @@ protected:
 		}
 	}
 
-	std::vector<vector3> two_body_ode(float t, vector3 _r, vector3 _v)
+	std::vector<vector3> two_body_ode(float t, vector3 _r, vector3 _v, std::vector<Body*>* masses)
 	{
-		vector3 r = _r; //displacement
+		vector3 a;
+		vector3 pos = _r; //displacement
 		vector3 v = _v; //velocity
-		//std::cout << "R.z" << r.z << "\n";
+
+
+		//SUN
+		vector3 r = pos; //displacement
+
 		vector3 nr = Normalize(r);
 		//std::cout << "NR.z" << nr.z << "\n";
 		if (nr.z == 0) { nr.z = 1; r.z = 0; }
 		if (nr.y == 0) { nr.y = 1; r.y = 0; }
 		if (nr.x == 0) { nr.x = 1; r.x = 0; }
 		double mag = Magnitude(r);
-		vector3 a = {
+		a = vector3({
 			(-mu * r.x) / (pow(mag, 3)),
 			(-mu * r.y) / (pow(mag, 3)),
 			(-mu * r.z) / (pow(mag, 3))
-		};
+			});
+
+		std::cout << "\n" + name +  " " << mag;
+
+		//Others
+
+		for (Body* b : *masses)
+		{
+			if (b != this)
+			{
+				vector3 r = pos - b->Get_Position(); //displacement
+
+				double _mu = Gravitational_Constant * b->Get_Mass();
+
+				//std::cout << "R.z" << r.z << "\n";
+				vector3 nr = Normalize(r);
+				//std::cout << "NR.z" << nr.z << "\n";
+				if (nr.z == 0) { nr.z = 1; r.z = 0; }
+				if (nr.y == 0) { nr.y = 1; r.y = 0; }
+				if (nr.x == 0) { nr.x = 1; r.x = 0; }
+				double mag = Magnitude(r);
+				a = a + vector3({
+					(-_mu * r.x) / (pow(mag, 3)),
+					(-_mu * r.y) / (pow(mag, 3)),
+					(-_mu * r.z) / (pow(mag, 3))
+					});
+			}
+		}
 		//std::cout << "rk_result: " << (pow(nr.z, 3)) << "\n";
 		return { v, a };
 	}
 
-	std::vector<vector3> rk4_step(float _time, vector3 _position, vector3 _velocity, float _dt = 1)
+	std::vector<vector3> rk4_step(float _time, vector3 _position, vector3 _velocity, std::vector<Body*>* masses, float _dt = 1)
 	{
 		//std::cout << "\n DEBUGGING RK4 STEP FOR: " + name + "\n" + "position: " + _position.Debug() + "\nvelocity: " + _velocity.Debug();
 		//structure of the vectors: [pos, velocity]
-		std::vector<vector3> rk1 = two_body_ode(_time, _position, _velocity);
-		std::vector<vector3> rk2 = two_body_ode(_time + (0.5 * _dt), _position + (rk1[0] * 0.5f * _dt), _velocity + (rk1[1] * 0.5f * _dt));
-		std::vector<vector3> rk3 = two_body_ode(_time + (0.5 * _dt), _position + (rk2[0] * 0.5f * _dt), _velocity + (rk2[1] * 0.5f * _dt));
-		std::vector<vector3> rk4 = two_body_ode(_time + _dt, _position + (rk3[0] * _dt), _velocity + (rk3[1] * _dt));
+		std::vector<vector3> rk1 = two_body_ode(_time, _position, _velocity, masses);
+		std::vector<vector3> rk2 = two_body_ode(_time + (0.5 * _dt), _position + (rk1[0] * 0.5f * _dt), _velocity + (rk1[1] * 0.5f * _dt), masses);
+		std::vector<vector3> rk3 = two_body_ode(_time + (0.5 * _dt), _position + (rk2[0] * 0.5f * _dt), _velocity + (rk2[1] * 0.5f * _dt), masses);
+		std::vector<vector3> rk4 = two_body_ode(_time + _dt, _position + (rk3[0] * _dt), _velocity + (rk3[1] * _dt), masses);
 		
 		vector3 result_pos = _position + (rk1[0] + (rk2[0] * 2.0f) + (rk3[0] * 2.0f) + rk4[0]) * (_dt / 6.0f);
 		vector3 result_vel = _velocity + (rk1[1] + rk2[1] * 2 + rk3[1] * 2 + rk4[1]) * (_dt / 6);
@@ -624,20 +657,20 @@ public:
 		Delete_Satellites();
 	}
 
-	virtual int Update_Body(float delta, float time_scale)
+	virtual int Update_Body(float delta, float time_scale, std::vector<Body*>* bodies_in_system)
 	{
 		if (time_scale == 0) // If paused, don't update.
 		{
 			return 0;
 		} 
 
-		Update_Satellites(delta, time_scale); // Call Update Method of all child satellites
+		Update_Satellites(delta, time_scale, bodies_in_system); // Call Update Method of all child satellites
 
 		rotate_about_centre({0.01, 0.01, 0.01}); // Gradual rotation about body origin to mimic a planet's rotation about its axis
 
 		vector3 this_pos = position;
 		float t = (delta / 1000); //time in seconds
-		std::vector<vector3> sim_step = rk4_step(time_since_start, this_pos, velocity, t * time_scale); // Get RK4 result into a sim_step buffer.
+		std::vector<vector3> sim_step = rk4_step(time_since_start, this_pos, velocity, bodies_in_system, t * time_scale); // Get RK4 result into a sim_step buffer.
 		this_pos = sim_step[0];
 		//if (position.z > 0) { std::cout << position.Debug() << "\n"; std::cout << velocity.Debug() << "\n"; }
 		MoveToPos(this_pos); // Shift vertices to new position
@@ -777,9 +810,11 @@ public:
 		return acceleration;
 	}
 
-	void Set_Mu(double _mu)
+	void Set_Mu(double _mu);
+
+	double Get_Mu()
 	{
-		mu = _mu;
+		return mu;
 	}
 
 	/// <summary>
@@ -894,14 +929,14 @@ protected:
 public:
 	
 	Satellite(std::string _name, Body* _parentBody, vector3 center, double _mass, double _scale, vector3 _velocity, Graphyte& g, bool override_velocity = false): 
-		Body(_name, center + _parentBody->Get_Position(), _mass, _scale, _velocity + _parentBody->Get_Tangential_Velocity(), 6.6743E-11 * _parentBody->Get_Mass(), g, false), parentBody(_parentBody)
+		Body(_name, center + _parentBody->Get_Position(), _mass, _scale, _velocity + _parentBody->Get_Tangential_Velocity(), _parentBody->Get_Mu(), g, false), parentBody(_parentBody)
 	{
 		std::cout << "\n____________\nSATELLITE INSTANTIATION\n____________\n" << "parent body name: " << parentBody->name << "\nparent body location: " << parentBody->Get_Position().Debug() << "\nmy location: " << Get_Position().Debug() + "\n";
 		std::cout << "\nSAT POS (RELATIVE) CONSTRUCTOR:" + (position).Debug() + "\n";
 		std::cout << "SAT VEL (RELATIVE) CONSTRUCTOR:" + (velocity).Debug() + " MEANT TO BE: " + _velocity.Debug() + "\n";
 	}
 
-	int Update_Body(float delta, float time_scale) override
+	int Update_Body(float delta, float time_scale, std::vector<Body*>* bodies_in_system) override
 	{
 		if (time_scale == 0) // If paused, don't update.
 		{
@@ -912,9 +947,8 @@ public:
 		vector3 this_pos = position;
 		//std::cout << "\n" + name << " SAT POS (RELATIVE):" + this_pos.Debug() + "\n";
 		float t = (delta / 1000); //time in seconds
-		Set_Mu(parentBody->Get_Mass() * 6.6743E-11);
-		std::vector<vector3> sim_step = rk4_step(t * time_scale, this_pos - parentBody->Get_Position(), velocity, t * time_scale);
-		this_pos = sim_step[0] + parentBody->Get_Position();
+		std::vector<vector3> sim_step = rk4_step(time_since_start, this_pos, velocity, bodies_in_system, t * time_scale);
+		this_pos = sim_step[0];
 		radius = Magnitude(this_pos - parentBody->Get_Position());
 		
 		MoveToPos(this_pos);
@@ -944,13 +978,13 @@ public:
 	}
 };
 
-int Body::Update_Satellites(float delta, float time_scale)
+int Body::Update_Satellites(float delta, float time_scale, std::vector<Body*>* bodies_in_system)
 {
 	//Now update Satellites
 	Clean_Up_Satellites();
 	for (Satellite* sat : satellites)
 	{
-		sat->Update_Body(delta, time_scale);
+		sat->Update_Body(delta, time_scale, bodies_in_system);
 	}
 	return 0;
 }
@@ -1001,6 +1035,15 @@ void Body::Close_Satellite_Inspectors()
 	for (Satellite* sat : satellites)
 	{
 		sat->HideBodyInspector();
+	}
+}
+
+void Body::Set_Mu(double _mu)
+{
+	mu = _mu;
+	for (Satellite* s : satellites)
+	{
+		s->Set_Mu(mu);
 	}
 }
 
