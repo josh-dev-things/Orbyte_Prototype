@@ -157,6 +157,8 @@ private:
 
 	void Close_Satellite_Inspectors();
 
+	int Clean_Up_Satellites();
+
 protected:
 	Mesh mesh;
 	vector3 last_trail_point;
@@ -205,7 +207,7 @@ protected:
 	//BUTTON
 	FunctionButton* f_button = NULL;
 	
-	void update_inspector()
+	virtual void update_inspector()
 	{
 		if (gui->is_visible)
 		{
@@ -605,13 +607,14 @@ public:
 		RegenerateVertices();
 	}
 
-	virtual void Delete()
+	void Delete()
 	{
 		std::cout << "\n|||DELETED ORBIT BODY: " << name << "|||";
 		HideBodyInspector();
 		name_label->Set_Visibility(false);
 		f_button->SetEnabled(false);
 		to_delete = true;
+		Delete_Satellites();
 	}
 
 	virtual int Update_Body(float delta, float time_scale)
@@ -790,7 +793,6 @@ class Satellite : public Body
 {
 private:
 	Body* parentBody;
-	int index;
 	std::vector<vector3> Generate_Vertices(double scale) override {
 		//thing
 		std::vector<vector3> _vertices{
@@ -857,6 +859,21 @@ private:
 		//Don't have to return a value because parameter is passed by reference.
 	}
 
+protected:
+	virtual void update_inspector()
+	{
+		if (gui->is_visible)
+		{
+			if (inspector_name != NULL) { inspector_name->Set_Text(name); }//The set text method checks if we are making a redundant set => more performant
+			if (inspector_mass != NULL) { inspector_mass->Set_Text("| Mass: " + std::to_string(mass) + "kg"); }
+			if (inspector_radius != NULL) { inspector_radius->Set_Text("| Radius: " + std::to_string(Magnitude(position - parentBody->Get_Position()) / 1000) + "km"); }
+			if (inspector_velocity != NULL) { inspector_velocity->Set_Text("| Velocity: " + (velocity - parentBody->Get_Tangential_Velocity()).Debug()); }
+			if (inspector_angular_velocity != NULL) { inspector_angular_velocity->Set_Text("| Angular Velocity: " + std::to_string(angular_velocity * 60 * 60 * 24) + "rad/day"); }
+			if (inspector_acceleration != NULL) { inspector_acceleration->Set_Text("| Acceleration: " + acceleration.Debug()); }
+			if (inspector_period != NULL) { inspector_period->Set_Text("| Orbit Period: " + std::to_string(Calculate_Period() / (60 * 60 * 24)) + " days"); }
+		}
+	}
+
 public:
 	/// <summary>
 	/// Constructor for the Satellite object. It initializes the parent class: Body, and the parentBody attribute.
@@ -891,7 +908,7 @@ public:
 		this_pos = sim_step[0] + parentBody->Get_Position();
 		
 		MoveToPos(this_pos);
-		angular_velocity = Magnitude(velocity) / Magnitude(position);
+		angular_velocity = Magnitude(velocity - parentBody->Get_Tangential_Velocity()) / Magnitude(position - parentBody->Get_Position());
 		time_since_start += t * time_scale;
 
 		if (Magnitude(this_pos - last_trail_point) > (0.5 * radius) / 24)
@@ -920,6 +937,7 @@ public:
 int Body::Update_Satellites(float delta, float time_scale)
 {
 	//Now update Satellites
+	Clean_Up_Satellites();
 	for (Satellite* sat : satellites)
 	{
 		sat->Update_Body(delta, time_scale);
@@ -948,6 +966,24 @@ void Body::Delete_Satellites()
 	{
 		sat->Delete();
 	}
+	Clean_Up_Satellites();
+}
+
+int Body::Clean_Up_Satellites()
+{
+	int length = satellites.size();
+	for (int i = 0; i < length; i += 0) //This is an odd loop
+	{
+		if (satellites[i]->to_delete)
+		{
+			satellites.erase(satellites.begin() + i);
+			length -= 1;
+		}
+		else {
+			i++;
+		}
+	}
+	return 0;
 }
 
 void Body::Close_Satellite_Inspectors()
