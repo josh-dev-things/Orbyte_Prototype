@@ -178,7 +178,17 @@ private:
 		}
 	}
 
-	void click(int mX, int mY)
+	void recenter_camera()
+	{
+		gCamera.position.x = 0;
+		gCamera.position.y = 0;
+		for (Body* b : orbiting_bodies)
+		{
+			b->snap_camera = false;
+		}
+	}
+
+	void click(int mX, int mY, bool left_click)
 	{
 		std::cout << "\nChecking for clickable @: " << mX << ", " << mY << "\n";
 		if (graphyte.active_text_field != NULL)
@@ -199,10 +209,15 @@ private:
 
 		for (FunctionButton* fb : graphyte.function_buttons)
 		{
-			if (fb->CheckForClick(mX, mY))
+			if (fb->CheckForClick(mX, mY, !left_click))
 			{
 				return;
 			}
+		}
+
+		if (!left_click)
+		{
+			recenter_camera();
 		}
 
 		close_planet_inspectors();
@@ -448,6 +463,12 @@ public:
 				{
 					b->Update_Body(deltaTime, time_scale); // Update body
 					b->Draw(graphyte, gCamera); // Draw the body
+					if (b->snap_camera)
+					{
+						vector3 cam_pos = b->Get_Position();
+						gCamera.position.x = cam_pos.x;
+						gCamera.position.y = cam_pos.y;
+					}
 				}
 
 				double debug_no_pixels = graphyte.Get_Number_Of_Points();
@@ -535,7 +556,14 @@ public:
 							int mX = 0;
 							int mY = 0;
 							SDL_GetMouseState(&mX, &mY);
-							click(mX - SCREEN_WIDTH / 2, -mY + SCREEN_HEIGHT / 2);
+							click(mX - SCREEN_WIDTH / 2, -mY + SCREEN_HEIGHT / 2, true);
+						}
+						else if (sdl_event.button.button == SDL_BUTTON_RIGHT)
+						{
+							int mX = 0;
+							int mY = 0;
+							SDL_GetMouseState(&mX, &mY);
+							click(mX - SCREEN_WIDTH / 2, -mY + SCREEN_HEIGHT / 2, false);
 						}
 						break;
 

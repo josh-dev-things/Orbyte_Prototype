@@ -616,6 +616,7 @@ private:
 	int height;
 	int left_wall_offset;
 	std::function<void()> function = NULL;
+	std::function<void()> alt_function = NULL;
 
 protected:
 	bool enabled = true;
@@ -627,9 +628,22 @@ protected:
 		}
 	}
 
+	void CallAltFunction()
+	{
+		if (alt_function != NULL)
+		{
+			alt_function();
+		}
+	}
+
 	void AttachFunction(std::function<void()> f)
 	{
 		function = f;
+	}
+
+	void AttachAltFunction(std::function<void()> f)
+	{
+		alt_function = f;
 	}
 	
 public:
@@ -692,7 +706,7 @@ public:
 	/// <summary>
 	/// Constructor
 	/// </summary>
-	FunctionButton(std::function<void()> f, vector3 pos, vector3 dimensions, Graphyte& g, std::string path_to_icon) : Button(pos, dimensions)
+	FunctionButton(std::function<void()> f, vector3 pos, vector3 dimensions, Graphyte& g, std::string path_to_icon, std::function<void()> alt_f = NULL) : Button(pos, dimensions)
 	{
 		std::cout << "\n Instantiated a function button. Method present?: " << (bool)f << "\n";
 		if (path_to_icon != "") //Never accessed by user therefor no need for complex regular expressions or validation.
@@ -701,6 +715,10 @@ public:
 			icon->SetPosition(pos);
 		}
 		AttachFunction(f);
+		if (alt_f)
+		{
+			AttachAltFunction(alt_f);
+		}
 	}
 
 	~FunctionButton()
@@ -708,12 +726,18 @@ public:
 		free();
 	}
 
-	bool CheckForClick(int x, int y)
+	bool CheckForClick(int x, int y, bool alt = false)
 	{
 		if (Clicked(x, y))
 		{
 			//Button has been clicked => 
-			CallFunction();
+			if (!alt)
+			{
+				CallFunction();
+			}
+			else {
+				CallAltFunction();
+			}
 			return true;
 		}
 		return false;

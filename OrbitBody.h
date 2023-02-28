@@ -327,6 +327,7 @@ protected:
 	{
 		vector3 old_pos = position;
 		position = new_pos;
+		radius = Magnitude(position);
 
 		vector3 delta = position - old_pos;
 
@@ -470,7 +471,7 @@ protected:
 		//FUNCTION BUTTONS:
 
 		//Create the button
-		f_button = new FunctionButton([this]() { this->ShowBodyInspector(); }, name_label->Get_Position(), name_label->Get_Dimensions(), g, ""); //TODO: Fix this please
+		f_button = new FunctionButton([this]() { this->ShowBodyInspector(); }, name_label->Get_Position(), name_label->Get_Dimensions(), g, "", [this]() { this->snap_camera_to_body(); }); //TODO: Fix this please
 		g.function_buttons.push_back(f_button); //No idea how this has access to function_buttons but so it does...
 		std::cout << "\n\n\n\nFUNCTION BUTTON " << f_button;
 
@@ -486,9 +487,15 @@ protected:
 		HideBodyInspector();
 	}
 
+	void snap_camera_to_body()
+	{
+		snap_camera = true;
+	}
+
 public: 
 	std::string name;
 	bool to_delete = false; //Used in mainloop to schedule objects for deletion next update. => deconstructor (see free())
+	bool snap_camera = false;
 
 	Body(std::string _name, vector3 _center, double _mass, double _scale, vector3 _velocity, double _mu, Graphyte& g, bool override_velocity = false):
 		graphyte(g), 
@@ -779,10 +786,10 @@ public:
 	/// The amount of time in seconds for the body to complete 1 orbit
 	/// </summary>
 	/// <returns>Time period</returns>
-	double Calculate_Period()
+	virtual double Calculate_Period()
 	{
-		double T = 2 * 3.14159265359 * sqrt((pow(radius, 3) / mu)); //THIS DOES NOT GIVE A GOOD VALUE :(
-		double length_of_orbit = 2 * 3.14159265359 * radius; //YEP
+		double T = 2 * 3.14159265359 * sqrt((pow(radius, 3) / mu)); //2 * pi * R
+		double length_of_orbit = 2 * 3.14159265359 * radius; //// 2 * pi * R
 		double t = length_of_orbit / Magnitude(velocity); //THIS GIVES CORRECT VALUE
 		//std::cout << name <<" Orbit Characteristics: \n" << T << " seconds | Calculated orbit period\n" << length_of_orbit << " metres\n" << t << " other t value\n" << mu << "\n";
 		return T;
@@ -860,7 +867,7 @@ private:
 	}
 
 protected:
-	virtual void update_inspector()
+	void update_inspector() override
 	{
 		if (gui->is_visible)
 		{
@@ -874,16 +881,17 @@ protected:
 		}
 	}
 
+	double Calculate_Period() override
+	{
+		double T = 2 * 3.14159265359 * sqrt((pow(radius, 3) / mu));
+		double length_of_orbit = 2 * 3.14159265359 * radius; //YEP
+		double t = length_of_orbit / Magnitude(velocity - parentBody->Get_Tangential_Velocity());
+		//std::cout << name <<" Orbit Characteristics: \n" << T << " seconds | Calculated orbit period\n" << length_of_orbit << " metres\n" << t << " other t value\n" << mu << "\n";
+		return T;
+	}
+
 public:
-	/// <summary>
-	/// Constructor for the Satellite object. It initializes the parent class: Body, and the parentBody attribute.
-	/// </summary>
-	/// <param name="_name"></param>
-	/// <param name="_parentBody"></param>
-	/// <param name="center"></param>
-	/// <param name="_scale"></param>
-	/// <param name="_velocity"></param>
-	/// <param name="override_velocity"></param>
+	
 	Satellite(std::string _name, Body* _parentBody, vector3 center, double _mass, double _scale, vector3 _velocity, Graphyte& g, bool override_velocity = false): 
 		Body(_name, center + _parentBody->Get_Position(), _mass, _scale, _velocity + _parentBody->Get_Tangential_Velocity(), 6.6743E-11 * _parentBody->Get_Mass(), g, false), parentBody(_parentBody)
 	{
@@ -906,6 +914,7 @@ public:
 		Set_Mu(parentBody->Get_Mass() * 6.6743E-11);
 		std::vector<vector3> sim_step = rk4_step(t * time_scale, this_pos - parentBody->Get_Position(), velocity, t * time_scale);
 		this_pos = sim_step[0] + parentBody->Get_Position();
+		radius = Magnitude(sim_step[0]);
 		
 		MoveToPos(this_pos);
 		angular_velocity = Magnitude(velocity - parentBody->Get_Tangential_Velocity()) / Magnitude(position - parentBody->Get_Position());
