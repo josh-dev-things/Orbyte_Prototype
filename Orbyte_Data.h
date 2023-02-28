@@ -133,7 +133,7 @@ class DataController
 {
 public: 
 
-	int WriteDataToFile(SimulationData sd, std::vector<std::string> bodies_to_save, std::string path) //Can selectively save certain bodies
+	int WriteDataToFile(SimulationData sd, std::vector<std::string> bodies_to_save, std::string path)
 	{
 		double no_orbits = bodies_to_save.size();
 
@@ -148,34 +148,35 @@ public:
 		std::cout << (char*)&sd;
 		uint8_t my_size = sizeof(sd);
 
-		out.write((char*)&sd.cb_mass, sizeof(double));
-		out.write((char*)&sd.cb_scale, sizeof(double));
-		out.write((char*)&sd.c_pos, sizeof(vector3));
-		out.write((char*)&no_orbits, sizeof(double));
+		out.write((char*)&sd.cb_mass, sizeof(double)); // Center Body Mass
+		out.write((char*)&sd.cb_scale, sizeof(double)); // Center Body Scale
+		out.write((char*)&sd.c_pos, sizeof(vector3)); // Camera Position
+		out.write((char*)&no_orbits, sizeof(double)); // Number Of Orbits
 
 		for (int i = 0; i < bodies_to_save.size(); i++)
 		{
-			OrbitBodyData data = sd.obc.GetBodyData(bodies_to_save[i]); //Get data via hashing algorithm
+			//Access Data via hashing algorithm & hash table
+			OrbitBodyData data = sd.obc.GetBodyData(bodies_to_save[i]);
 
-			double bfn = data.bytes_for_name;
+			double bfn = data.bytes_for_name; // Number of characters in name
 			out.write((char*)&bfn, sizeof(double));
 
 			std::string n = data.name;
-			for (char n_char : n)
+			for (char n_char : n) //Write Name
 			{
 				out.write((char*)&n_char, sizeof(char));
 			}
 
-			vector3 c = data.center;
+			vector3 c = data.center; // Body position
 			out.write((char*)&c, sizeof(vector3));
 
-			double m = data.mass;
+			double m = data.mass; // Body Mass
 			out.write((char*)&m, sizeof(double));
 
-			double s = data.scale;
+			double s = data.scale; // Body Scale
 			out.write((char*)&s, sizeof(double));
 
-			vector3 v = data.velocity;
+			vector3 v = data.velocity; // Body Velocity
 			out.write((char*)&v, sizeof(vector3));
 		}
 		out.close();
