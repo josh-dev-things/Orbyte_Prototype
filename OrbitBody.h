@@ -887,7 +887,7 @@ protected:
 		double length_of_orbit = 2 * 3.14159265359 * radius; //YEP
 		double t = length_of_orbit / Magnitude(velocity - parentBody->Get_Tangential_Velocity());
 		//std::cout << name <<" Orbit Characteristics: \n" << T << " seconds | Calculated orbit period\n" << length_of_orbit << " metres\n" << t << " other t value\n" << mu << "\n";
-		return T;
+		return t;
 	}
 
 public:
@@ -914,7 +914,7 @@ public:
 		Set_Mu(parentBody->Get_Mass() * 6.6743E-11);
 		std::vector<vector3> sim_step = rk4_step(t * time_scale, this_pos - parentBody->Get_Position(), velocity, t * time_scale);
 		this_pos = sim_step[0] + parentBody->Get_Position();
-		radius = Magnitude(sim_step[0]);
+		radius = Magnitude(this_pos - parentBody->Get_Position());
 		
 		MoveToPos(this_pos);
 		angular_velocity = Magnitude(velocity - parentBody->Get_Tangential_Velocity()) / Magnitude(position - parentBody->Get_Position());
