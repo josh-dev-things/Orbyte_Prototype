@@ -13,13 +13,13 @@
 
 struct OrbitBodyData
 {
-	std::string name;
-	vector3 center;
-	double mass;
-	double scale;
-	vector3 velocity;
-
 	//Information for storage
+	std::string name; // Name of Body
+	vector3 center; // Position of Body
+	double mass; // Mass of Body
+	double scale; // Scale of Body
+	vector3 velocity; // Velocity of Body
+	
 	uint8_t bytes_for_name; //So the first 8 bits of the file will tell us how many bytes the name contains. Name being the only var with "unlimited length"
 	OrbitBodyData(std::string _name = "", vector3 _center = { 0, 0, 0 }, double _mass = 1, double _scale = 1, vector3 _velocity = {0, 0, 0})
 	{
@@ -28,28 +28,26 @@ struct OrbitBodyData
 		scale = _scale;
 		velocity = _velocity;
 		mass = _mass;
-
-		//Number of chars in name = number of bytes => 8 x number of chars = number of bits for name
-		//FLOAT is 32 BITS
-		//SO VECTOR3 is 3 x 32 BITS
-
-		// 8 x name.length + 3x32 + 32 + 3x32 + 1 = number of bits in file
 		bytes_for_name = (uint8_t)name.length();
 	}
 
 };
 
-struct OrbitBodyCollection //A Hash table of orbit objects
+//A Hash table of orbit objects
+struct OrbitBodyCollection
 {
 private:
-
-	std::vector<OrbitBodyData> data = std::vector<OrbitBodyData>(101); //101 has been chosen as it is prime and not too close to a power of two => Maximum of 101 bodies in storage!
+	//101 has been chosen as it is prime and not too close to a power of two 
+	// => Maximum of 101 bodies in storage!
+	std::vector<OrbitBodyData> data = std::vector<OrbitBodyData>(101);
 
 	int Hash(std::string name)
 	{
+		// Reverse the string. A palindrome could XOR itself
 		std::string reverse = name;
 		reverse_string(reverse, reverse.length() - 1, 0);
 
+		// XOR to produce Hash
 		std::string hash = bitwise_string_xor(name, reverse);
 		int total = 0;
 
@@ -57,6 +55,8 @@ private:
 		{
 			total += int(hash.at(i));
 		}
+
+		// Return Index To Write
 		return (total % data.size());
 	}
 
