@@ -909,12 +909,12 @@ protected:
 	{
 		if (gui->is_visible)
 		{
-			if (inspector_name != NULL) { inspector_name->Set_Text(name); }//The set text method checks if we are making a redundant set => more performant
+			if (inspector_name != NULL) { inspector_name->Set_Text(parentBody->name + "'s: " + name); }//The set text method checks if we are making a redundant set => more performant
 			if (inspector_mass != NULL) { inspector_mass->Set_Text("| Mass: " + std::to_string(mass) + "kg"); }
 			if (inspector_radius != NULL) { inspector_radius->Set_Text("| Radius: " + std::to_string(Magnitude(position - parentBody->Get_Position()) / 1000) + "km"); }
 			if (inspector_velocity != NULL) { inspector_velocity->Set_Text("| Velocity: " + (velocity - parentBody->Get_Tangential_Velocity()).Debug()); }
 			if (inspector_angular_velocity != NULL) { inspector_angular_velocity->Set_Text("| Angular Velocity: " + std::to_string(angular_velocity * 60 * 60 * 24) + "rad/day"); }
-			if (inspector_acceleration != NULL) { inspector_acceleration->Set_Text("| Acceleration: " + acceleration.Debug()); }
+			if (inspector_acceleration != NULL) { inspector_acceleration->Set_Text("| Acceleration: " + (acceleration - parentBody->Get_Acceleration()).Debug()); }
 			if (inspector_period != NULL) { inspector_period->Set_Text("| Orbit Period: " + std::to_string(Calculate_Period() / (60 * 60 * 24)) + " days"); }
 		}
 	}
@@ -922,7 +922,7 @@ protected:
 	double Calculate_Period() override
 	{
 		double T = 2 * 3.14159265359 * sqrt((pow(radius, 3) / mu));
-		double length_of_orbit = 2 * 3.14159265359 * radius; //YEP
+		double length_of_orbit = 2 * 3.14159265359 * (Magnitude(parentBody->Get_Position() - position)); //YEP
 		double t = length_of_orbit / Magnitude(velocity - parentBody->Get_Tangential_Velocity());
 		//std::cout << name <<" Orbit Characteristics: \n" << T << " seconds | Calculated orbit period\n" << length_of_orbit << " metres\n" << t << " other t value\n" << mu << "\n";
 		return t;
