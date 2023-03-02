@@ -837,7 +837,7 @@ private:
 	Body* parentBody; // Pointer to parent, e.g. Moon -> Earth
 	//Satellites have different geometry! Cube.
 	std::vector<vector3> Generate_Vertices(double scale) override {
-		//thing
+		//Polymorphism!
 		std::vector<vector3> _vertices{
 			{0, 1, 1},
 			{1, 0, 1},
@@ -877,7 +877,7 @@ private:
 			{2, 6},
 			{3, 7}
 		};
-		mesh.edges = _edges; //I want to put this in its own method, however that's unnecessary as this is static soooo...
+		mesh.edges = _edges;
 
 		return _vertices;
 	};
@@ -911,7 +911,9 @@ protected:
 		{
 			if (inspector_name != NULL) { inspector_name->Set_Text(parentBody->name + "'s: " + name); }//The set text method checks if we are making a redundant set => more performant
 			if (inspector_mass != NULL) { inspector_mass->Set_Text("| Mass: " + std::to_string(mass) + "kg"); }
+			// Override Radius
 			if (inspector_radius != NULL) { inspector_radius->Set_Text("| Radius: " + std::to_string(Magnitude(position - parentBody->Get_Position()) / 1000) + "km"); }
+			// Relative Velocity
 			if (inspector_velocity != NULL) { inspector_velocity->Set_Text("| Velocity: " + (velocity - parentBody->Get_Tangential_Velocity()).Debug()); }
 			if (inspector_angular_velocity != NULL) { inspector_angular_velocity->Set_Text("| Angular Velocity: " + std::to_string(angular_velocity * 60 * 60 * 24) + "rad/day"); }
 			if (inspector_acceleration != NULL) { inspector_acceleration->Set_Text("| Acceleration: " + (acceleration - parentBody->Get_Acceleration()).Debug()); }

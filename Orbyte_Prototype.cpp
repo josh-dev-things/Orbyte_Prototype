@@ -472,14 +472,14 @@ public:
 				for (Body* b : orbiting_bodies)
 				{
 					b->Update_Body(deltaTime, time_scale, &orbiting_bodies); // Update body
-					b->Draw(graphyte, gCamera); // Draw the body
-					std::cout << "\n" + b->Get_Position().Debug();
+					//std::cout << "\n" + b->Get_Position().Debug();
 					if (b->snap_camera)
 					{
 						vector3 cam_pos = b->Get_Position();
 						gCamera.position.x = cam_pos.x;
 						gCamera.position.y = cam_pos.y;
 					}
+					b->Draw(graphyte, gCamera); // Draw the body
 				}
 
 				double debug_no_pixels = graphyte.Get_Number_Of_Points();
