@@ -834,7 +834,8 @@ public:
 class Satellite : public Body
 {
 private:
-	Body* parentBody;
+	Body* parentBody; // Pointer to parent, e.g. Moon -> Earth
+	//Satellites have different geometry! Cube.
 	std::vector<vector3> Generate_Vertices(double scale) override {
 		//thing
 		std::vector<vector3> _vertices{
@@ -880,7 +881,7 @@ private:
 
 		return _vertices;
 	};
-
+	//Override Circular Orbit Projection [NO LONGER SUPPORTED]
 	void Project_Circular_Orbit(vector3& _velocity) override {
 		vector3 p_velocity = parentBody->Get_Tangential_Velocity();
 		//We manipulate the velocity so that a perfectly circular orbit is achieved
@@ -903,6 +904,7 @@ private:
 	}
 
 protected:
+	//Override Inspector Values
 	void update_inspector() override
 	{
 		if (gui->is_visible)
@@ -916,7 +918,7 @@ protected:
 			if (inspector_period != NULL) { inspector_period->Set_Text("| Orbit Period: " + std::to_string(Calculate_Period() / (60 * 60 * 24)) + " days"); }
 		}
 	}
-
+	//Override Period Calculation
 	double Calculate_Period() override
 	{
 		double T = 2 * 3.14159265359 * sqrt((pow(radius, 3) / mu));
@@ -927,7 +929,7 @@ protected:
 	}
 
 public:
-	
+	//Constructor
 	Satellite(std::string _name, Body* _parentBody, vector3 center, double _mass, double _scale, vector3 _velocity, Graphyte& g, bool override_velocity = false): 
 		Body(_name, center + _parentBody->Get_Position(), _mass, _scale, _velocity + _parentBody->Get_Tangential_Velocity(), _parentBody->Get_Mu(), g, false), parentBody(_parentBody)
 	{
@@ -935,7 +937,7 @@ public:
 		std::cout << "\nSAT POS (RELATIVE) CONSTRUCTOR:" + (position).Debug() + "\n";
 		std::cout << "SAT VEL (RELATIVE) CONSTRUCTOR:" + (velocity).Debug() + " MEANT TO BE: " + _velocity.Debug() + "\n";
 	}
-
+	//Override Update
 	int Update_Body(float delta, float time_scale, std::vector<Body*>* bodies_in_system) override
 	{
 		if (time_scale == 0) // If paused, don't update.

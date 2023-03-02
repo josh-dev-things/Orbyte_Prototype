@@ -291,39 +291,49 @@ private:
 
 	void save()
 	{
-		OrbitBodyCollection obc;
-		std::vector<std::string> to_save;
+		OrbitBodyCollection obc; // Collection of orbits
+		std::vector<std::string> to_save; // Name of orbits to save
 
+		// Check that body is not about to be deleted before saving.
 		for (Body* b : orbiting_bodies)
 		{
 			if (!b->to_delete)
 			{
-				to_save.push_back(b->name);
-				obc.AddBodyData(b->GetOrbitBodyData());
+				to_save.push_back(b->name); // Add name
+				obc.AddBodyData(b->GetOrbitBodyData()); // Add orbit data
 			}
 		}
 
+		// Encapsulate all simulation data
 		SimulationData sd = { Sun.mass, Sun.scale, obc, gCamera.position };
+
+		// Write to .orbyte file
 		data_controller.WriteDataToFile(sd, to_save, path_source);
 	}
 
 	void open()
 	{
 		std::cout << "\nOpening File";
+		// New Simulation Data
 		SimulationData new_sd = data_controller.ReadDataFromFile(path_source);
+		// Pause simulation
 		time_scale = 0;
 
+		// Load all parameters from SimulationData
 		Sun.mass = new_sd.cb_mass;
 		std::cout << "\n Sun mass: " << Sun.mass;
 		Sun.scale = new_sd.cb_scale;
 		gCamera.position = new_sd.c_pos;
+
+		// Clear Old Orbits
 		for (Body* old_orbit : orbiting_bodies)
 		{
 			old_orbit->Delete();
 		}
-		std::cout << "\n obc: " << new_sd.obc.GetAllOrbits().size();
+		
 		OrbitBodyCollection obc = new_sd.obc;
 		std::vector<OrbitBodyData> orbits = obc.GetAllOrbits();
+		// Instantiate Orbits
 		for (OrbitBodyData orbit : orbits)
 		{
 			add_specific_orbit(orbit);
@@ -537,15 +547,17 @@ public:
 							break;
 
 						case SDLK_DOWN:
+							//Rotate Down
 							gCamera.RotateCamera({ -0.01, 0, 0 });
 							break;
 
 						case SDLK_LEFT:
-							//Rotate Up
+							//Rotate Left
 							gCamera.RotateCamera({ 0, -0.01, 0 });
 							break;
 
 						case SDLK_RIGHT:
+							//Rotate Right
 							gCamera.RotateCamera({ 0, 0.01, 0 });
 							break;
 						}
