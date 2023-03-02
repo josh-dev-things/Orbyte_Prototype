@@ -61,6 +61,7 @@ private:
 	//Current time start time
 	Uint32 startTime = 0;
 	Uint32 deltaTime = 0; // delta time in milliseconds
+	double timeSinceStart = 0;
 
 	//Path source for Orbyte Files
 	std::string path_source;
@@ -406,6 +407,12 @@ public:
 			Text* text_Vertex_Count_Display = graphyte.CreateText("Vertices", 10);
 			Simulation_Parameters.Add_Stacked_Element(text_Vertex_Count_Display);
 
+			Text* text_cl = graphyte.CreateText("__________________\nCLOCK\n__________________", 24);
+			Simulation_Parameters.Add_Stacked_Element(text_cl);
+
+			Text* text_time_Display = graphyte.CreateText("Time: ", 10);
+			Simulation_Parameters.Add_Stacked_Element(text_time_Display);
+
 			Text* text_sp = graphyte.CreateText("__________________\nSIMULATION PARAMETERS\n__________________", 24);
 			Simulation_Parameters.Add_Stacked_Element(text_sp);
 
@@ -614,6 +621,9 @@ public:
 				float debug_fps = (float)1000 / ((float)deltaTime + 1);
 				text_FPS_Display->Set_Text("FPS: " + std::to_string(debug_fps));
 				text_Vertex_Count_Display->Set_Text("Vertex Count: " + std::to_string(debug_no_pixels));
+
+				timeSinceStart += ((double)deltaTime * time_scale);
+				text_time_Display->Set_Text("Time: " + std::to_string((timeSinceStart) / (1000 * 60 * 60 * 24)) + "days");
 			}
 
 		}
