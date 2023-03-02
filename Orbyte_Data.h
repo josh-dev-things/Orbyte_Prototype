@@ -151,6 +151,7 @@ public:
 	int WriteDataToFile(SimulationData sd, std::vector<std::string> bodies_to_save, std::string path)
 	{
 		double no_orbits = bodies_to_save.size();
+		path = "simulations/" + path;
 
 		std::cout << "Writing data to file: " << path << "\n";
 
@@ -205,6 +206,7 @@ public:
 	{
 		SimulationData sd; // New Simulation Data
 		double no_orbits; // Number of orbits to read
+		path = "simulations/" + path;
 
 		std::ifstream in(path, std::ios::binary | std::ios::in);
 		if (!in)
