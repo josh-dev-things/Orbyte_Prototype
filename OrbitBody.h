@@ -923,10 +923,9 @@ protected:
 	//Override Period Calculation
 	double Calculate_Period() override
 	{
-		double T = 2 * 3.14159265359 * sqrt((pow(radius, 3) / mu));
-		double length_of_orbit = 2 * 3.14159265359 * (Magnitude(parentBody->Get_Position() - position)); //YEP
+		//double T = 2 * 3.14159265359 * sqrt((pow(radius, 3) / mu));
+		double length_of_orbit = 2 * 3.14159265359 * (Magnitude(parentBody->Get_Position() - position)); //Relative Position
 		double t = length_of_orbit / Magnitude(velocity - parentBody->Get_Tangential_Velocity());
-		//std::cout << name <<" Orbit Characteristics: \n" << T << " seconds | Calculated orbit period\n" << length_of_orbit << " metres\n" << t << " other t value\n" << mu << "\n";
 		return t;
 	}
 
