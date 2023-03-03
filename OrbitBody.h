@@ -823,11 +823,9 @@ public:
 	/// <returns>Time period</returns>
 	virtual double Calculate_Period()
 	{
-		double T = 2 * 3.14159265359 * sqrt((pow(radius, 3) / mu)); //2 * pi * R
 		double length_of_orbit = 2 * 3.14159265359 * radius; //// 2 * pi * R
-		double t = length_of_orbit / Magnitude(velocity); //THIS GIVES CORRECT VALUE
-		//std::cout << name <<" Orbit Characteristics: \n" << T << " seconds | Calculated orbit period\n" << length_of_orbit << " metres\n" << t << " other t value\n" << mu << "\n";
-		return T;
+		double t = length_of_orbit / Magnitude(velocity);
+		return t;
 	}
 };
 
