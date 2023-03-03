@@ -30,7 +30,6 @@ struct OrbitBodyData
 		mass = _mass;
 		bytes_for_name = (uint8_t)name.length();
 	}
-
 };
 
 //A Hash table of orbit objects

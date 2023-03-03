@@ -234,6 +234,7 @@ private:
 
 	void clean_orbit_queue()
 	{
+		// this is not as performant as I'd like it to be!
 		int length = orbiting_bodies.size();
 		for (int i = 0; i < length; i += 0) //This is an odd loop
 		{
