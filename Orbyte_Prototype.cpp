@@ -529,7 +529,7 @@ public:
 							break;
 
 						case SDLK_SPACE:
-							printf("User Pressed The Space Bar\n");
+							printf("\n\nPressed The Space Bar\n");
 							if (time_scale < 1)
 							{
 								time_scale = 1;
@@ -561,11 +561,13 @@ public:
 
 						case SDLK_LEFT:
 							//Rotate Left
+							printf("\n\nPressed The Left Arrow Key\n");
 							gCamera.RotateCamera({ 0, -0.01, 0 });
 							break;
 
 						case SDLK_RIGHT:
 							//Rotate Right
+							printf("\n\nPressed The Right Arrow Key\n");
 							gCamera.RotateCamera({ 0, 0.01, 0 });
 							break;
 						}

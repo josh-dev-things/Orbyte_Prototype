@@ -244,8 +244,6 @@ protected:
 			(-mu * r.z) / (pow(mag, 3))
 			});
 
-		std::cout << "\n" + name +  " " << mag;
-
 		//Others
 
 		for (Body* b : *masses)
@@ -946,7 +944,6 @@ public:
 
 		//rotate(0.0005f, 0.0005f, 0.0005f);
 		vector3 this_pos = position;
-		//std::cout << "\n" + name << " SAT POS (RELATIVE):" + this_pos.Debug() + "\n";
 		float t = (delta / 1000); //time in seconds
 		std::vector<vector3> sim_step = rk4_step(time_since_start, this_pos, velocity, bodies_in_system, t * time_scale);
 		this_pos = sim_step[0];
