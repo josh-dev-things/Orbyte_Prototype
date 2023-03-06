@@ -630,7 +630,7 @@ public:
 		return OrbitBodyData(name, position, mass, scale, velocity);
 	}
 
-	std::string DebugBody() //For debugging purposes...
+	virtual std::string DebugBody() //For debugging purposes...
 	{
 		std::string text ="\n\n________________\n" +  name + "\n|| Mass: " + std::to_string(mass) + "\n|| Position: " + position.Debug() + "\n|| Velocity: " + velocity.Debug() + "\n|| Period: " + std::to_string(Calculate_Period() / (60 * 60 * 24)) + "days" + "\n________________\n\n";
 		return text;
@@ -974,6 +974,12 @@ public:
 
 		return 0;
 	}
+
+	std::string DebugBody() override //For debugging purposes...
+	{
+		std::string text = "\n\n________________\n" + name + "\n|| Mass: " + std::to_string(mass) + "\n|| Position: " + (position - parentBody->Get_Position()).Debug() + "\n|| Velocity: " + (velocity - parentBody->Get_Tangential_Velocity()).Debug() + "\n|| Period: " + std::to_string(Calculate_Period() / (60 * 60 * 24)) + "days" + "\n________________\n\n";
+		return text;
+	}
 };
 
 int Body::Update_Satellites(float delta, float time_scale, std::vector<Body*>* bodies_in_system)
@@ -998,7 +1004,8 @@ void Body::Create_Satellite()
 {
 	// TODO: Figure this out I guess!
 	//Add_Satellite(Satellite("Moon", this, { 3.8E8, 0, 0 }, 7.3E22, 1.7E5, { 0, -1200, 0 }, graphyte, false)); //Continue with this.
-	Satellite* new_sat = new Satellite("Moon", this, { 3.8E8, 0, 0 }, 7.3E24, 1.7E5, { 0, -1200, 0 }, graphyte, false);
+	Satellite* new_sat = new Satellite("Moon", this, { 3.844E8, 0, 0 }, 7.3E22, 1.7E5, { 0, -1024, 0 }, graphyte, false);
+	std::cout << new_sat->DebugBody();
 	Add_Satellite(new_sat); //Continue with this.
 }
 
