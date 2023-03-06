@@ -2,42 +2,50 @@
 #define VEC3_H
 struct vector3
 {
-	float x, y, z;
+	double x, y, z;
 	
-	public: vector3 operator*(float right)
+	vector3 operator*(double right)
 	{
 		vector3 result = { x * right, y * right, z * right };
 		return result;
 	}
 
-	public: vector3 operator+(float right)
+	vector3 operator+(double right)
 	{
 		vector3 result = { x + right, y + right, z + right };
 		return result;
 	}
 
-	public: vector3 operator-(float right)
+	vector3 operator-(double right)
 	{
 		vector3 result = { x - right, y - right, z - right };
 		return result;
 	}
 
-	public: vector3 operator+(vector3 v)
+	vector3 operator+(vector3 v)
 	{
 		vector3 result = { x + v.x, y + v.y, z + v.z };
 		return result;
 	}
 
-	public: vector3 operator-(vector3 v)
+	vector3 operator-(vector3 v)
 	{
 		vector3 result = { x - v.x, y - v.y, z - v.z };
 		return result;
 	}
 
-	public: vector3 operator*(vector3 v)
+	double operator*(vector3 v)
 	{
-		vector3 result = { x * v.x, y * v.y, z * v.z };
+		double result = (x*v.x) + (y*v.y) + (z*v.z);
 		return result;
+	}
+
+	vector3* operator=(const vector3& v)
+	{
+		x = v.x;
+		y = v.y;
+		z = v.z;
+		return this;
 	}
 
 	std::string Debug()
@@ -47,25 +55,37 @@ struct vector3
 	
 };
 
-float Magnitude(vector3 vec)
+// Length of a vector3. Thank you Pythagoras.
+double Magnitude(vector3 vec)
 {
-	return sqrtf((vec.x * vec.x) + (vec.y * vec.y) + (vec.z * vec.z));
+	return sqrt((vec.x * vec.x) + (vec.y * vec.y) + (vec.z * vec.z));
 }
 
+// Distance between two points in 3D space
+double Distance(vector3 vecFrom, vector3 vecTo)
+{
+	vector3 a = vecTo - vecFrom;
+	double distance = Magnitude(a);
+	
+	return distance;
+}
+
+// "Dot Product" of two vectors. 
+double Scalar_Product(vector3 a, vector3 b)
+{
+	return (a.x * b.x) + (a.y * b.y) + (a.z * b.z);
+}
+
+// Vector3 in same direction but with magnitude 1
 vector3 Normalize(vector3 vec)
 {
-	float mag = Magnitude(vec);
+	double mag = Magnitude(vec);
 	vector3 norm = {
 		vec.x / mag,
 		vec.y / mag,
-		vec.z / mag // Problem here?
+		vec.z / mag
 	};
 	return norm;
 }
-
-struct edge
-{
-	int a, b;
-};
 
 #endif /*VEC3_H*/

@@ -12,13 +12,14 @@
 
 class Camera
 {	
-private: vector3 camera_rotation;
-	public:vector3 position = {0, 0, 0};
-		  float clipping_z = 1;
-		  float start_rotate_x;
-		  float start_rotate_y;
+private:
+	vector3 camera_rotation;
 
-	Camera(vector3 _position, float _near_clipping_plane)
+public:
+	vector3 position = {0, 0, 0};
+	float clipping_z = 1;
+
+	Camera(float _near_clipping_plane = 1, vector3 _position = { 0, 0, -1.5E9 })
 	{
 		position = _position;
 		std::cout << "Instantiated Camera With Position: " << position.Debug() << "\n";
@@ -29,21 +30,9 @@ private: vector3 camera_rotation;
 		camera_rotation = camera_rotation + add_rotation;
 	}
 
-	void Start_Rotate(float x, float y)
-	{
-		start_rotate_x = x;
-		start_rotate_y = y;
-	}
-
-	void End_Rotate(float x, float y)
-	{
-		RotateCamera({(x-start_rotate_x)/ 10000, (y-start_rotate_y) / 10000,0});
-	}
-
-	vector3 rotate(vector3 rot, vector3 p, vector3 c) //Something is broken. STILL BROKEN
+	vector3 rotate(vector3 rot, vector3 point, vector3 c) //Something is broken. STILL BROKEN
 	{
 		
-		vector3 point = p;
 		//centroid adjustments
 		point.x -= c.x;
 		point.y -= c.y;
@@ -53,18 +42,31 @@ private: vector3 camera_rotation;
 
 		//Rotate point
 		float rad = 0;
-
+		double x, y, z;
 		rad = rot.x;
-		point.y = std::cos(rad) * point.y - std::sin(rad) * point.z;
-		point.z = std::sin(rad) * point.y + std::cos(rad) * point.z;
+		
+		x = point.x;
+		y = point.y;
+		z = point.z;
+
+		point.y = (std::cos(rad) * y) - (std::sin(rad) * z);
+		point.z = (std::sin(rad) * y) + (std::cos(rad) * z);
+
+		x = point.x;
+		y = point.y;
+		z = point.z;
 
 		rad = rot.y;
-		point.x = std::cos(rad) * point.x + std::sin(rad) * point.z;
-		point.z = -std::sin(rad) * point.x + std::cos(rad) * point.z;
+		point.x = (std::cos(rad) * x) + (std::sin(rad) * z);
+		point.z = (-std::sin(rad) * x) + (std::cos(rad) * z);
+
+		x = point.x;
+		y = point.y;
+		z = point.z;
 
 		rad = rot.z;
-		point.x = std::cos(rad) * point.x - std::sin(rad) * point.y;
-		point.y = std::sin(rad) * point.x + std::cos(rad) * point.y;
+		point.x = (std::cos(rad) * x) - (std::sin(rad) * y);
+		point.y = (std::sin(rad) * x) + (std::cos(rad) * y);
 
 		//centroid adjustments
 		point.x += c.x;
@@ -77,7 +79,7 @@ private: vector3 camera_rotation;
 
 	vector3 WorldSpaceToScreenSpace(vector3 world_pos, float screen_height, float screen_width)
 	{
-		//manipulate world_pos here such that it is rotated around centre of universe I guess
+		//manipulate world_pos here such that it is rotated around centre of universe
 		vector3 rotated_world_pos = rotate(camera_rotation, world_pos, { 0, 0, 0 });
 
 		vector3 pos = rotated_world_pos - position;
@@ -85,15 +87,18 @@ private: vector3 camera_rotation;
 		if (pos.z < clipping_z)
 		{
 			//DONT DRAW IT
-			vector3 do_not_draw_this = { 0, 0, -100 };
-			return do_not_draw_this;
+			//printf("Culled a vertex hopefully \n");
+			return { 0, 0, -1 };
 		}
-		vector3 Screen_Space_Pos = {
-			(pos.x / pos.z) * screen_width,
-			(pos.y / pos.z)* screen_height,
+		else {
+			//Why ignore the screen_width? Because the screen is wide and we don't want to stretch the projection
+			vector3 Screen_Space_Pos = {
+			(pos.x / pos.z) * screen_height,
+			(pos.y / pos.z) * screen_height,
 			pos.z
-		};
-		return Screen_Space_Pos;
+			};
+			return Screen_Space_Pos;
+		}
 	}
 };
 

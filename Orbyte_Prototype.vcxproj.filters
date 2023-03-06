@@ -17,16 +17,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="solar_system.orbyte">
-      <Filter>Source Files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Icosahedron.h">
-      <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="vec3.h">
       <Filter>Source Files</Filter>
@@ -38,6 +32,12 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Orbyte_Data.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Orbyte_Graphics.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="utils.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
