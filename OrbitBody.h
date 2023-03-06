@@ -632,7 +632,7 @@ public:
 
 	std::string DebugBody() //For debugging purposes...
 	{
-		std::string text = name + " velocity: " + velocity.Debug() + "|| Time: " + std::to_string(time_since_start);
+		std::string text ="\n\n________________\n" +  name + "\n|| Mass: " + std::to_string(mass) + "\n|| Position: " + position.Debug() + "\n|| Velocity: " + velocity.Debug() + "\n|| Period: " + std::to_string(Calculate_Period() / (60 * 60 * 24)) + "days" + "\n________________\n\n";
 		return text;
 	}
 
