@@ -769,26 +769,28 @@ class DoubleFieldValue : public FieldValue
 {
 private:
 	double* value = NULL; // This is the pointer to the variable the input field is associated with. E.g. time step or object mass
-	std::function<void()> read_f = NULL;
+	std::function<void()> read_f = NULL; // Function to call if successfully read
+
 	bool ValidateValue(std::string content)
 	{
 		try
 		{
-			std::regex dbl_regex("(-+)?([0-9]*\.[0-9]+|[0-9]+)");
+			std::regex dbl_regex("(-+)?([0-9]+(\.[0-9]+)?)(E[0-9]+)?"); // Regex
 			if (std::regex_match(content, dbl_regex))
 			{
+				// Success
 				double test_validity = atof(content.c_str());
 				std::cout << content << "=>" << test_validity;
 				return true;
 			}
 			else {
-				throw(content);
+				throw(content); // Issue
 			}
 		}
 		catch (std::string bad)
 		{
 			std::cout << "\n Bad input recieved: " << bad; // Its bad
-			return false;
+			return false; // Failure
 		}
 	}
 public:
@@ -812,7 +814,7 @@ public:
 				if (new_value != *value) // Check for redundant set
 				{
 					*value = new_value;
-					std::cout << "\n Successfully wrote to value from input field!  \n" << new_value; // Debug
+					std::cout << "\n Successfully wrote to double value from input field!  \n" << new_value; // Debug
 
 					if (read_f != NULL)
 					{

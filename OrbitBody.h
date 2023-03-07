@@ -265,7 +265,7 @@ protected:
 					(-_mu * r.x) / (pow(mag, 3)),
 					(-_mu * r.y) / (pow(mag, 3)),
 					(-_mu * r.z) / (pow(mag, 3))
-					});
+				});
 			}
 		}
 		//std::cout << "rk_result: " << (pow(nr.z, 3)) << "\n";
