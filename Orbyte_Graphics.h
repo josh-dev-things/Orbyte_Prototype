@@ -731,6 +731,7 @@ public:
 		if (Clicked(x, y))
 		{
 			//Button has been clicked => 
+			std::cout << "\nFunction button clicked.\n";
 			if (!alt)
 			{
 				CallFunction();
@@ -775,7 +776,7 @@ private:
 	{
 		try
 		{
-			std::regex dbl_regex("(-+)?([0-9]+(\.[0-9]+)?)(E[0-9]+)?"); // Regex
+			std::regex dbl_regex("(-+)?([0-9]+(\\.[0-9]+)?)(E[0-9]+)?"); // Regex
 			if (std::regex_match(content, dbl_regex))
 			{
 				// Success
@@ -852,7 +853,7 @@ private:
 		}
 	}
 public:
-	StringFieldValue(std::string* write_to, std::function<void()> f = NULL, std::string _regex = "(([A-Z]|[a-z])|[ ])+")
+	StringFieldValue(std::string* write_to, std::function<void()> f = NULL, std::string _regex = "(([A-Z]|[a-z])|[0-9])+")
 	{
 		value = write_to;
 		regex = _regex;

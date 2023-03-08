@@ -28,7 +28,10 @@ private:
 	const int SCREEN_FPS = 500;
 	const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
 	const int MAX_FPS = 500;
+
+	//time scale
 	double time_scale = 1;
+	TextField* time_scale_text;
 
 	//Globally used font
 	TTF_Font* gFont = NULL;
@@ -62,6 +65,8 @@ private:
 	Uint32 startTime = 0;
 	Uint32 deltaTime = 0; // delta time in milliseconds
 	double timeSinceStart = 0;
+
+	//
 
 	//Path source for Orbyte Files
 	std::string path_source;
@@ -198,7 +203,7 @@ private:
 		}
 		graphyte.active_text_field = NULL;
 
-		for (TextField* tf : graphyte.text_fields) // TODO: I dont want to iterate through text fields, I want to iterate through all buttons. Figure out how to do this.
+		for (TextField* tf : graphyte.text_fields)
 		{
 			if (tf->CheckForClick(mX, mY))
 			{
@@ -272,9 +277,12 @@ private:
 		if (time_scale == 0)
 		{
 			time_scale = 1;
+			time_scale_text->Set_Text(std::to_string((double)1));
 		}
 		else {
+			std::cout << "\nPaused Simulation\n";
 			time_scale = 0;
+			time_scale_text->Set_Text(std::to_string((double)0));
 		}
 		return;
 	}
@@ -430,6 +438,7 @@ public:
 			Simulation_Parameters.Add_Stacked_Element(graphyte.CreateText("Time Scale [0.1 | 1 | 86400]: ", 10));
 			DoubleFieldValue TimeScaleFV(&time_scale);
 			TextField* tf = new TextField({ 10,10,0 }, TimeScaleFV, graphyte, std::to_string(time_scale));
+			time_scale_text = tf;
 			graphyte.text_fields.push_back(tf);
 			Simulation_Parameters.Add_Inline_Element(tf);
 			
@@ -453,7 +462,7 @@ public:
 			path_gui.position = { (-SCREEN_WIDTH / 2), (-SCREEN_HEIGHT / 2) + 36, 0 };
 			Text* path_input_prompt = graphyte.CreateText("[SAVE/READ] Enter path here: ", 12);
 			path_gui.Add_Stacked_Element(path_input_prompt);
-			StringFieldValue path_to_file(&path_source, NULL, "(([A-Z]|[a-z]|(_))|[ ])+\.orbyte"); //Custom regex
+			StringFieldValue path_to_file(&path_source, NULL, "(([A-Z]|[a-z]|(_))|[ ])+\\.orbyte"); //Custom regex
 			TextField* path_input = new TextField({ ( - SCREEN_WIDTH / 2), (-SCREEN_HEIGHT / 2), 0}, path_to_file, graphyte, "solar_system.orbyte");
 			path_source = "solar_system.orbyte"; //default
 			graphyte.text_fields.push_back(path_input);
@@ -534,23 +543,6 @@ public:
 							if (graphyte.active_text_field != NULL)
 							{
 								graphyte.active_text_field->Backspace();
-							}
-							break;
-
-						case SDLK_SPACE:
-							printf("\n\nPressed The Space Bar\n");
-							if (time_scale < 1)
-							{
-								time_scale = 1;
-								printf("SET TIME SCALE TO 1 \n");
-							}
-							else if (time_scale == 1) {
-								time_scale = 86400;
-								printf("SET TIME SCALE TO 86400 \n");
-							}
-							else if (time_scale > 1) {
-								time_scale = 0.1;
-								printf("SET TIME SCALE TO 0.1 \n");
 							}
 							break;
 
