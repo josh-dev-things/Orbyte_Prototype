@@ -244,8 +244,8 @@ public:
 
 	Text(Text& T) //Copy constructor to save the day???
 	{
-		texture = T.texture; //How am I reading from a private attribute lol
-		text = T.text;
+		texture = T.texture; //Set the texture
+		text = T.text; // Copy over text
 		if (!texture.loadFromRenderedText(text, {255, 255, 255}))
 		{
 			printf("Failed to render text texture!\n");
@@ -288,7 +288,7 @@ public:
 
 	virtual void Set_Position_TL(vector3 pos)
 	{
-		//In some cases it is more helpful to set the position of the text with the top left anchor point, what SDL uses as the pivot for textures.
+		//In some cases it is more helpful to set the position of the text with the top left anchor point, what SDL uses as the "origin" for textures.
 		pos_x = pos.x;
 		pos_y = pos.y;
 		visible = pos.z >= 0;
@@ -321,9 +321,6 @@ public:
 		
 		if (pos_x < s_x && pos_y < s_y && visible)
 		{
-			//t->Debug();
-			//x + SCREEN_WIDTH / 2, -y + SCREEN_HEIGHT / 2
-			//std::cout << "Trying to render @: " << pos_x << "," << pos_y<<"\n";
 			texture.render(pos_x + (s_x) / 2, -pos_y + (s_y) / 2);
 		}
 		return 0;
@@ -336,7 +333,7 @@ public:
 
 	~Text()
 	{
-		free(); //THIS IS GETTING CALLED... PROBABLY BECAUSE YOU ARE AN IDIOT
+		free(); // Deconstructor
 	}
 
 	void free()
@@ -624,7 +621,7 @@ protected:
 	{
 		if (function != NULL)
 		{
-			function();
+			function(); // Call attached function
 		}
 	}
 
@@ -632,18 +629,18 @@ protected:
 	{
 		if (alt_function != NULL)
 		{
-			alt_function();
+			alt_function(); // Call attached alternative function
 		}
 	}
 
 	void AttachFunction(std::function<void()> f)
 	{
-		function = f;
+		function = f; // Set function
 	}
 
 	void AttachAltFunction(std::function<void()> f)
 	{
-		alt_function = f;
+		alt_function = f;// Set alt function
 	}
 	
 public:
@@ -668,7 +665,7 @@ public:
 
 	virtual void SetEnabled(bool _enabled)
 	{
-		std::cout << "BUTTON CHANGED: " << _enabled;
+		/*std::cout << "BUTTON CHANGED: " << _enabled;*/
 		enabled = _enabled;
 	}
 
@@ -676,15 +673,18 @@ public:
 	{
 		if (!enabled)
 		{
+			//Disabled button should not be clicked!
 			return false;
 		}
 
 		// (0<AM.AB<AB.AB) ^ (0<AM.AD<AD.AD) Where M is a point we're checking
+		// Find each vertex using left_wall_offset, position and height of the button.
 		vector3 A = { position.x - left_wall_offset, position.y + height / 2, 0 };
 		vector3 B = { position.x - left_wall_offset + width, position.y + height / 2, 0 };
 		vector3 D = { position.x - left_wall_offset, position.y - height / 2, 0 };
-		vector3 C = { position.x - left_wall_offset + width, position.y - height / 2, 0 }; //All the vertices
-		//std::cout << "\n Dimensions" << width << "|"<< height;
+		vector3 C = { position.x - left_wall_offset + width, position.y - height / 2, 0 };
+		
+		// M is the location of the click
 		vector3 M = { x, y, 0 };
 
 		vector3 AM = M - A;
@@ -693,7 +693,7 @@ public:
 		vector3 BM = M - A;
 
 		bool in_area = 0 <= AB*AM && AB*AM <= AB*AB && 0 <= BC*BM && BC*BM <= BC*BC;
-		//std::cout << "\n RESULT: " << in_area;
+		// Return if click in button bounds.
 		return in_area;
 	}
 };
