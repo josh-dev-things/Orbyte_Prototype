@@ -665,7 +665,7 @@ public:
 
 		Update_Satellites(delta, time_scale, bodies_in_system); // Call Update Method of all child satellites
 
-		rotate_about_centre({0.01, 0.01, 0.01}); // Gradual rotation about body origin to mimic a planet's rotation about its axis
+		rotate_about_centre({0.001 * time_scale, 0.001 * time_scale, 0.001 * time_scale }); // Gradual rotation about body origin to mimic a planet's rotation about its axis
 
 		vector3 this_pos = position;
 		float t = (delta / 1000); //time in seconds
@@ -708,7 +708,8 @@ public:
 
 		//Draw arrow for acceleration
 		Arrow arrow_acceleration;
-		arrow_end = c.WorldSpaceToScreenSpace(position + (acceleration * arrow_modifier * 5E5), screen_dimensions.x, screen_dimensions.y);
+		arrow_modifier = c.position.z < 0 ? c.position.z * -(1/2) : c.position.z * (1/2);
+		arrow_end = c.WorldSpaceToScreenSpace(position + (acceleration * arrow_modifier), screen_dimensions.x, screen_dimensions.y);
 		dir = arrow_end - start;
 		arrow_acceleration.Draw(start, Normalize(dir), Magnitude(dir), 2, g); //Draw arrow, with 2 heads.
 

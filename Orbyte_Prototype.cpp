@@ -331,8 +331,10 @@ private:
 
 		// Load all parameters from SimulationData
 		Sun.mass = new_sd.cb_mass;
+		recalculate_center_body_mu();
 		std::cout << "\n Sun mass: " << Sun.mass;
 		Sun.scale = new_sd.cb_scale;
+		regenerate_center_body_vertices();
 		gCamera.position = new_sd.c_pos;
 
 		// Clear Old Orbits
