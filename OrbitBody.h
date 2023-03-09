@@ -591,7 +591,7 @@ public:
 	void RecenterBody()
 	{
 		MoveToPos(position);
-		Project_Circular_Orbit(velocity);
+		//Project_Circular_Orbit(velocity);
 		start_pos = position;
 		time_since_start = 0;
 	}
