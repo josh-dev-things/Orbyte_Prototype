@@ -29,6 +29,10 @@ private:
 	const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
 	const int MAX_FPS = 500;
 
+	//Performance testing
+	double frames_since_debug = 0;
+	double time_since_debug = 0;
+
 	//time scale
 	double time_scale = 1;
 	TextField* time_scale_text;
@@ -612,6 +616,8 @@ public:
 
 				//DELAY UNTIL END
 				deltaTime = Update_Clock(); // get new delta
+
+
 				float interval = (float)1000 / MAX_FPS; // Intended interval (capped FPS)
 				if (deltaTime < (Uint32)interval) // If simulation is updating too quickly
 				{
@@ -624,12 +630,21 @@ public:
 				}
 
 				/*DEBUG*/
-				float debug_fps = (float)1000 / ((float)deltaTime + 1);
-				text_FPS_Display->Set_Text("FPS: " + std::to_string(debug_fps));
 				text_Vertex_Count_Display->Set_Text("Vertex Count: " + std::to_string(debug_no_pixels));
 
 				timeSinceStart += ((double)deltaTime * time_scale);
 				text_time_Display->Set_Text("Time: " + std::to_string((timeSinceStart) / (1000 * 60 * 60 * 24)) + "days");
+
+				frames_since_debug++;
+				time_since_debug += deltaTime;
+				if (frames_since_debug > 1000)
+				{
+					double debug_fps = (frames_since_debug * 1000) / time_since_debug;
+					std::cout << "\n" << (frames_since_debug * 1000) / time_since_debug;
+					text_FPS_Display->Set_Text("FPS: " + std::to_string(debug_fps));
+					frames_since_debug = 0;
+					time_since_debug = 0;
+				}
 			}
 
 		}
