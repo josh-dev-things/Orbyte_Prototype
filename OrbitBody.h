@@ -665,7 +665,7 @@ public:
 
 		Update_Satellites(delta, time_scale, bodies_in_system); // Call Update Method of all child satellites
 
-		rotate_about_centre({0.001 * time_scale, 0.001 * time_scale, 0.001 * time_scale }); // Gradual rotation about body origin to mimic a planet's rotation about its axis
+		rotate_about_centre({0.0001 * time_scale * delta / 1000, 0.0001 * time_scale * delta / 1000, 0.0001 * time_scale * delta / 1000 }); // Gradual rotation about body origin to mimic a planet's rotation about its axis
 
 		vector3 this_pos = position;
 		float t = (delta / 1000); //time in seconds
