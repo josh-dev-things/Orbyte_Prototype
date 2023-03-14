@@ -9,15 +9,15 @@
 #include <string>
 #include <numeric>
 #include <iostream>
-#include <functional>
-#include <regex> //Regular Expressions!
+#include <functional> //Functions as variables and parameters
+#include <regex> //Regular Expressions
 
 /*
 	A "Texture" class is a way of encapsulating the rendering of more complex graphics. Images, fonts etc. would be loaded to a texture.
 	Implementation heavily guided by this resource: https://lazyfoo.net/tutorials/SDL/ A series of tutorials regarding creating an application
 	using SDL.
 
-	Largely used for fonts in this application.
+	Largely used for fonts & icons in this application.
 */
 class GTexture
 {
@@ -43,14 +43,15 @@ public:
 		renderer = _renderer;
 		font = _font;
 
-		mTexture = NULL;
-		mWidth = 0;
+		mTexture = NULL; //SDL Texture
+		mWidth = 0; //Dimensions
 		mHeight = 0;
 
 	}
 
 	GTexture(const GTexture& source) : GTexture{&*source.renderer, &*source.font}
 	{
+		//Debugging
 		std::cout << "Copy constructor";
 	}
 
@@ -225,8 +226,8 @@ protected:
 public:
 	int pos_x; //Position along x axis in screenspace
 	int pos_y; //Position along y axis in screenspace
-	std::string text;
-	bool visible = true;
+	std::string text; //Text displayed
+	bool visible = true; //Default to visible
 
 	Text(std::string str, int font_size, std::vector<int> position, SDL_Renderer& _renderer, TTF_Font& _font, SDL_Color color = { 255, 255, 255 })
 		: texture(GTexture(&_renderer, &_font))
@@ -234,7 +235,7 @@ public:
 		//Constructor for the text class.
 		text = str;
 
-		if (!texture.loadFromRenderedText(str, color))
+		if (!texture.loadFromRenderedText(str, color)) //If creating text is unsuccessful
 		{
 			printf("Failed to render text texture!\n");
 		}
@@ -242,7 +243,7 @@ public:
 		pos_y = position[1];
 	}
 
-	Text(Text& T) //Copy constructor to save the day???
+	Text(Text& T) //Copy constructor
 	{
 		texture = T.texture; //Set the texture
 		text = T.text; // Copy over text
@@ -257,7 +258,7 @@ public:
 
 	int Set_Text(std::string str, SDL_Color color = {255,255,255})
 	{
-		if (str == text)
+		if (str == text) //Prevents unnecessary assignments and reloading texture
 		{
 			//std::cout << "Redundant text assignment";
 			return 0;
@@ -270,7 +271,7 @@ public:
 
 		text = str;
 
-		if (!texture.loadFromRenderedText(str, color))
+		if (!texture.loadFromRenderedText(str, color)) //If not successful
 		{
 			printf("Failed to render text texture!\n");
 			return -1;
@@ -294,32 +295,32 @@ public:
 		visible = pos.z >= 0;
 	}
 
-	virtual void Set_Visibility(bool is_visible)
+	virtual void Set_Visibility(bool is_visible) //Show or hide the text
 	{
 		visible = is_visible;
 	}
 
-	GTexture& Get_Texture()
+	GTexture& Get_Texture() //Accessor method for texture
 	{
 		return texture;
 	}
 
-	vector3 Get_Position()
+	vector3 Get_Position() //Accessor method for position
 	{
 		return vector3{ (double)pos_x, (double)pos_y, 0 };
 	}
 
-	vector3 Get_Dimensions()
+	vector3 Get_Dimensions() //Accessor method for dimensions
 	{
 		return vector3{ (double)texture.getWidth(), (double)texture.getHeight(), 0 };
 	}
 
-	int Render(const vector3 screen_dimensions)
+	int Render(const vector3 screen_dimensions) //Draw the texture to the screen
 	{
 		int s_x = screen_dimensions.x;
 		int s_y = screen_dimensions.y;
 		
-		if (pos_x < s_x && pos_y < s_y && visible)
+		if (pos_x < s_x && pos_y < s_y && visible) //Checking if texture is on the screen
 		{
 			texture.render(pos_x + (s_x) / 2, -pos_y + (s_y) / 2);
 		}
@@ -338,7 +339,7 @@ public:
 
 	void free()
 	{
-		texture.free();
+		texture.free(); //Free the texture
 	}
 };
 
@@ -352,17 +353,18 @@ private:
 public:
 	int pos_x; //Position along x axis in screenspace
 	int pos_y; //Position along y axis in screenspace
-	std::string path_to_image;
-	bool visible = true;
-	std::vector<int> dimensions;
+	std::string path_to_image; //Path to icon
+	bool visible = true; //Can be seen / should be drawn
+	std::vector<int> dimensions; //Size (normally square)
 
 	Icon(std::string path, std::vector<int> position, std::vector<int> _dimensions, SDL_Renderer& _renderer)
 		: texture(GTexture(&_renderer, NULL))
 	{
 		//Constructor for the text class.
 		path_to_image = path;
+		//No validation of path necessary as user never provides paths to images to use as icons
 
-		if (!texture.loadFromFile(path))
+		if (!texture.loadFromFile(path)) //If fails to load the image at given path.
 		{
 			printf("Failed to render icon texture!\n");
 			free();
@@ -372,16 +374,14 @@ public:
 		dimensions = _dimensions;
 	}
 
-	int Render(const vector3 screen_dimensions)
+	int Render(const vector3 screen_dimensions) //Draw the icon
 	{
 		int s_x = screen_dimensions.x;
 		int s_y = screen_dimensions.y;
 
 		if (pos_x < s_x && pos_y < s_y && visible)
 		{
-			//t->Debug();
 			//x + SCREEN_WIDTH / 2, -y + SCREEN_HEIGHT / 2
-			//std::cout << "Trying to render @: " << pos_x << "," << pos_y<<"\n";
 			texture.render(pos_x + (s_x) / 2, -pos_y + (s_y) / 2, dimensions[0], dimensions[1]);
 			//std::cout << "\nTrying to draw icon @ " << pos_x << " " << pos_y;
 		}
@@ -393,15 +393,15 @@ public:
 		vector3 my_dimensions = GetDimensions();
 		pos_x = new_position.x - (my_dimensions.x / 2);
 		pos_y = new_position.y + (my_dimensions.y / 2);
-		//This works.
+		//Set the position by centre
 	}
 
 	void SetDimensions(std::vector<int> new_dimensions)
 	{
-		dimensions = new_dimensions;
+		dimensions = new_dimensions; //Change size of icon
 	}
 
-	vector3 GetDimensions()
+	vector3 GetDimensions() //Accessor method for size of icon
 	{
 		return { (double)dimensions[0], (double)dimensions[1], 0 };
 	}
@@ -413,9 +413,9 @@ public:
 	}
 };
 
-class TextField; //A Forward Declaration so nothing collapses
+class TextField; //A Forward Declaration so nothing breaks
 
-class FunctionButton; //A Forward Declaration so nothing collapses
+class FunctionButton; //A Forward Declaration so nothing breaks
 
 /*
 	Handles all graphics for the application. This includes all pixel writes to the screen; loading and writing to textures; rendering
@@ -440,13 +440,14 @@ public:  //Public attributes & Methods
 
 	bool Init(SDL_Renderer& _renderer, TTF_Font& _font, vector3 _screen_dimensions)
 	{
-		Renderer = &_renderer;
-		Font = &_font;
+		Renderer = &_renderer; //SDL Renderer
+		Font = &_font; //Font to be used for text
 
+		//Screen dimensions
 		SCREEN_WIDTH = _screen_dimensions.x;
 		SCREEN_HEIGHT = _screen_dimensions.y;
 
-		if (Renderer == NULL || Font == NULL)
+		if (Renderer == NULL || Font == NULL) // Fails to initialize if without Renderer or if without font
 		{
 			return false;
 		}
@@ -463,6 +464,7 @@ public:  //Public attributes & Methods
 		return newText;
 	}
 
+	//This method instantiates a new icon object and returns it. The new icon object will be added to the queue of icons.
 	Icon* CreateIcon(std::string path, std::vector<int> dimensions)
 	{
 		Icon* newIcon = new Icon(path, {0, 0}, dimensions, *Renderer);
@@ -471,16 +473,17 @@ public:  //Public attributes & Methods
 		return newIcon;
 	}
 
-	Text* GetTextParams(std::string str, int font_size, SDL_Color color = { 255, 255, 255 }) // There is a nuance between these two methods. See textfield
+	//Generate parameters for a text field. To be used in a copy constructor.
+	Text* GetTextParams(std::string str, int font_size, SDL_Color color = { 255, 255, 255 })
 	{
 		Text* newText = new Text(str, font_size, { 0, 0 }, *Renderer, *Font, color);
-		std::cout << "Created new text: " << newText->text << "\n";
+		std::cout << "\nCreated new text: " << newText->text << "\n";
 		return newText;
 	}
 
 	void AddTextToRenderQueue(Text* newText)
 	{
-		texts.push_back(newText);
+		texts.push_back(newText); //Add text to back of render queue
 	}
 
 	void RemoveTextFromRenderQueue(Text* text)
@@ -489,7 +492,7 @@ public:  //Public attributes & Methods
 		{
 			if (texts[i] == text)
 			{
-				texts.erase(texts.begin() + i);
+				texts.erase(texts.begin() + i); //Erase text from queue
 				return;
 			}
 		}
@@ -497,35 +500,37 @@ public:  //Public attributes & Methods
 
 	void AddIconToRenderQueue(Icon* icon)
 	{
-		icons.push_back(icon);
+		icons.push_back(icon); //Add icon to queue
 	}
 
 	vector3 Get_Screen_Dimensions()
 	{
-		return { (float)SCREEN_WIDTH, (float)SCREEN_HEIGHT, 0 };
+		return { (float)SCREEN_WIDTH, (float)SCREEN_HEIGHT, 0 }; //Accessor method for screen dimensions
 	}
 
 	double Get_Number_Of_Points()
 	{
-		return points.size();
+		return points.size(); //Get number of points to be drawn
 	}
 
 	void pixel(int x, int y)
 	{
+		//Check if on screen
 		if (std::abs(x) < (float)(SCREEN_WIDTH / 2) && std::abs(y) < (float)(SCREEN_HEIGHT / 2)) //abs value for negative values... that took so long to find.
 		{
 			SDL_Point _point = { x + SCREEN_WIDTH / 2, -y + SCREEN_HEIGHT / 2 };
-			points.emplace_back(_point);
+			points.emplace_back(_point); //Add to points to be drawn
 		}
 	}
 
+	//Create a line between two points p1, p2
 	void line(float x1, float y1, float x2, float y2)
 	{
 		int dx = (x2 - x1);
 		int dy = (y2 - y1);
-		int length = std::sqrt(dx * dx + dy * dy);
+		int length = std::sqrt(dx * dx + dy * dy); //Thank you pythagoras
 		float angle = std::atan2(dy, dx);
-		//std::cout << "Drawing line with points: " << length << "\n";
+		
 		for (int i = 0; i < length; i++)
 		{
 			pixel(x1 + std::cos(angle) * i,
@@ -536,37 +541,36 @@ public:  //Public attributes & Methods
 	//Draw everything to the screen. Called AFTER all points added to the render queue
 	void draw()
 	{
-		SDL_SetRenderDrawColor(Renderer, 0, 0, 0, 255);
-		SDL_RenderClear(Renderer);
+		SDL_SetRenderDrawColor(Renderer, 0, 0, 0, 255); //Render color set to black
+		SDL_RenderClear(Renderer); //Clear screen
 		int count = 0;
 
-		//pixel(100, 100);
-
+		//Draw every pixel in points
 		for (auto& point : points)
 		{
+			//Color is determined by position on screen
 			SDL_SetRenderDrawColor(Renderer, 255, ((float)point.x / (float)SCREEN_WIDTH) * 255, ((float)point.y / (float)SCREEN_HEIGHT) * 255, 255);
 			SDL_RenderDrawPoint(Renderer, point.x, point.y);
 			count++;
 		}
-		//std::cout << "\n\nDRAWN POINTS: " << count << " HAD MEMORY: " << count * sizeof(SDL_Point);
 
-		//Make sure you render GUI!
+		//Render GUI!
 		for (Text* t : texts)
 		{
-			t->Render({ SCREEN_WIDTH, SCREEN_HEIGHT, 0 });
+			t->Render({ SCREEN_WIDTH, SCREEN_HEIGHT, 0 }); //Draw text
 		}
 
 		for (Icon* i : icons)
 		{
-			i->Render({ SCREEN_WIDTH, SCREEN_HEIGHT, 0 });
+			i->Render({ SCREEN_WIDTH, SCREEN_HEIGHT, 0 }); //Draw icon
 			
 		}
 
-		SDL_RenderPresent(Renderer);
-		points.clear();
+		SDL_RenderPresent(Renderer); //Draw to screen
+		points.clear(); //Clear all pixels
 	}
 
-	void free()
+	void free() //Deconstructor
 	{
 		for (auto& t : texts)
 		{
@@ -578,6 +582,9 @@ public:  //Public attributes & Methods
 	}
 };
 
+/*
+	Used to graphically represent vectors.
+*/
 class Arrow
 {
 public:
@@ -589,6 +596,7 @@ public:
 		vector3 perp_dir = vector3{ direction.y, -direction.x, 0 };
 		double arrow_head_size = magnitude / 10;
 
+		//Draw arrow heads. Convention dictates 1 for velocity and 2 for acceleration
 		for (int i = 0; i < heads; i++)
 		{
 			vector3 ah1 = end + (direction * arrow_head_size);
@@ -608,12 +616,12 @@ public:
 class Button
 {
 private:
-	vector3 position;
-	int width;
+	vector3 position; //position of button on screen
+	int width; //dimensions
 	int height;
-	int left_wall_offset;
-	std::function<void()> function = NULL;
-	std::function<void()> alt_function = NULL;
+	int left_wall_offset; //How far left wall is from centre
+	std::function<void()> function = NULL; //Main function to call when clicked
+	std::function<void()> alt_function = NULL; //Alt function to call when right clicked
 
 protected:
 	bool enabled = true;
@@ -666,7 +674,7 @@ public:
 	virtual void SetEnabled(bool _enabled)
 	{
 		/*std::cout << "BUTTON CHANGED: " << _enabled;*/
-		enabled = _enabled;
+		enabled = _enabled; //Enable or disable button
 	}
 
 	bool Clicked(int x, int y)
@@ -701,7 +709,7 @@ public:
 class FunctionButton : public Button
 {
 private:
-	Icon* icon = NULL;
+	Icon* icon = NULL; //Icon to show where the button is
 public:
 	/// <summary>
 	/// Constructor
@@ -714,10 +722,10 @@ public:
 			icon = g.CreateIcon(path_to_icon, {(int)dimensions.x, (int)dimensions.y, 0});
 			icon->SetPosition(pos);
 		}
-		AttachFunction(f);
+		AttachFunction(f); //Must have a main function
 		if (alt_f)
 		{
-			AttachAltFunction(alt_f);
+			AttachAltFunction(alt_f); //Does not have to have an alt function
 		}
 	}
 
@@ -732,7 +740,7 @@ public:
 		{
 			//Button has been clicked => 
 			std::cout << "\nFunction button clicked.\n";
-			if (!alt)
+			if (!alt) //If main click
 			{
 				CallFunction();
 			}
@@ -744,7 +752,7 @@ public:
 		return false;
 	}
 
-	void SetEnabled(bool _enabled) override
+	void SetEnabled(bool _enabled) override // Set both button and icon to be enabled or disabled
 	{
 		Button::SetEnabled(_enabled);
 		if (icon)

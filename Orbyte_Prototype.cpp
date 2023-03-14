@@ -1,8 +1,7 @@
 // Orbyte_Prototype.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //  SDL + GUI library built for SDL 
-// https://lazyfoo.net/tutorials/SDL/01_hello_SDL/index2.php
-// https://lazyfoo.net/tutorials/SDL/index.php
 
+// https://lazyfoo.net/tutorials/SDL/index.php See this resource for fundamental SDL setup
 
 #include <iostream>
 #include <string>
@@ -23,11 +22,11 @@
 class Simulation
 {
 private:
-	const double SCREEN_WIDTH = 1200;
+	const double SCREEN_WIDTH = 1200; //Screen dimensions
 	const double SCREEN_HEIGHT = 800;
-	const int SCREEN_FPS = 500;
+	const int SCREEN_FPS = 500; //fPS
 	const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
-	const int MAX_FPS = 500;
+	const int MAX_FPS = 500; //FPS Cap
 
 	//Performance testing
 	double frames_since_debug = 0;
@@ -69,8 +68,6 @@ private:
 	Uint32 startTime = 0;
 	Uint32 deltaTime = 0; // delta time in milliseconds
 	double timeSinceStart = 0;
-
-	//
 
 	//Path source for Orbyte Files
 	std::string path_source;
@@ -172,7 +169,7 @@ private:
 		SDL_Quit();
 	}
 
-	void commit_to_text_field()
+	void commit_to_text_field() //Commit changes to active textfield
 	{
 		if (graphyte.active_text_field != NULL)
 		{
@@ -180,7 +177,7 @@ private:
 		}
 	}
 
-	void close_planet_inspectors() //This is a janky implementation, but its all I have time for.
+	void close_planet_inspectors() //This is a rough implementation, but its all I have time for.
 	{
 		for (Body* b : orbiting_bodies)
 		{
@@ -188,24 +185,27 @@ private:
 		}
 	}
 
-	void recenter_camera()
+	void recenter_camera() //Set the camera back to the center of the simulation
 	{
 		gCamera.position.x = 0;
 		gCamera.position.y = 0;
 		for (Body* b : orbiting_bodies)
 		{
-			b->snap_camera = false;
+			b->snap_camera = false; //Not tracking any orbits
 		}
 	}
 
+	/*
+		Handle mouse click
+	*/
 	void click(int mX, int mY, bool left_click)
 	{
 		std::cout << "\nChecking for clickable @: " << mX << ", " << mY << "\n";
-		if (graphyte.active_text_field != NULL)
+		if (graphyte.active_text_field != NULL) //Disable text field
 		{
 			graphyte.active_text_field->Disable();
 		}
-		graphyte.active_text_field = NULL;
+		graphyte.active_text_field = NULL; //Set to null
 
 		for (TextField* tf : graphyte.text_fields)
 		{
@@ -219,7 +219,7 @@ private:
 
 		for (FunctionButton* fb : graphyte.function_buttons)
 		{
-			if (fb->CheckForClick(mX, mY, !left_click))
+			if (fb->CheckForClick(mX, mY, !left_click)) //Check for click also calls attached functions
 			{
 				return;
 			}
@@ -227,10 +227,10 @@ private:
 
 		if (!left_click)
 		{
-			recenter_camera();
+			recenter_camera(); //Recenter camera if right click
 		}
 
-		close_planet_inspectors();
+		close_planet_inspectors(); //CLose all planet inspectors.
 	}
 
 	Uint32 Update_Clock()
@@ -241,9 +241,12 @@ private:
 		return delta;
 	}
 
+	/*
+		Remove any orbits to be deleted from the orbit queue before update
+	*/
 	void clean_orbit_queue()
 	{
-		// this is not as performant as I'd like it to be!
+		// This is not as performant as I'd like it to be!
 		int length = orbiting_bodies.size();
 		for (int i = 0; i < length; i += 0) //This is an odd loop
 		{
@@ -258,7 +261,7 @@ private:
 		}
 	}
 
-	vector3 calculate_centre_of_mass(CentralBody cb)
+	vector3 calculate_centre_of_mass(CentralBody cb) //NOT USED
 	{
 		//A Level Further Maths: Mechanics
 		double total_mass = cb.mass;
@@ -356,12 +359,12 @@ private:
 		}
 	}
 
-	void regenerate_center_body_vertices()
+	void regenerate_center_body_vertices() //Regen centre body geometry
 	{
 		Sun.RegenerateVertices();
 	}
 
-	void recalculate_center_body_mu()
+	void recalculate_center_body_mu() // Recalculate mu of centre body
 	{
 		Sun.RecalculateMu();
 		for (Body* orbit : orbiting_bodies)
@@ -399,21 +402,7 @@ public:
 			//T_Velocity: 30000ms^-1
 			//Mu: Sun's mu (See Analysis)
 
-			//Body mars = Body("Mars", { 0, 2.4E11, 0 }, 3.4E6, { 24000, 0, 0 }, Sun, graphyte, false);
-			//Body jupiter = Body("Jupiter", { 0, 7.4E11, 0 }, 7E7, { 13000, 0, 0 }, Sun, graphyte, false);
-			//Body saturn = Body("Saturn", { 0, 1.4E12, 0 }, 5.8E7, { 9680, 0, 0 }, Sun, graphyte, false);
-			//Body uranus = Body("Uranus", { 0, 2.8E12, 0 }, 2.5E7, { 6800, 0, 0 }, Sun, graphyte, false);
-			//Body neptune = Body("Neptune", { 0, 4.47E12, 0 }, 2.5E7, { 5430, 0, 0 }, Sun, graphyte, false);
-
 			orbiting_bodies.emplace_back(&earth);
-			//orbiting_bodies.emplace_back(&mercury);
-			/*orbiting_bodies.emplace_back(venus);  
-			orbiting_bodies.emplace_back(earth);
-			orbiting_bodies.emplace_back(mars);
-			orbiting_bodies.emplace_back(jupiter);
-			orbiting_bodies.emplace_back(saturn);
-			orbiting_bodies.emplace_back(uranus);
-			orbiting_bodies.emplace_back(neptune); */
 
 
 			/*
@@ -494,8 +483,6 @@ public:
 			//Mainloop time 
 			while (!quit)
 			{
-				//GRAPHICS 
-				//gCamera.position = { earth.Get_Position().x, earth.Get_Position().y, gCamera.position.z };
 				//render sun
 				Sun.Draw(graphyte, gCamera);
 
@@ -504,7 +491,7 @@ public:
 				for (Body* b : orbiting_bodies)
 				{
 					b->Update_Body(deltaTime, time_scale, &orbiting_bodies); // Update body
-					//std::cout << "\n" + b->Get_Position().Debug();
+					
 					if (b->snap_camera)
 					{
 						vector3 cam_pos = b->Get_Position();
@@ -515,25 +502,25 @@ public:
 				}
 
 				double debug_no_pixels = graphyte.Get_Number_Of_Points();
-				graphyte.draw();
-				//END GRAPHICS
+				
+				graphyte.draw(); //Draw everything!
 
 
 				int current_mouse_x = 0;
 				int current_mouse_y = 0;
-				//Handle events
+				//Handle input events
 				while (SDL_PollEvent(&sdl_event) != 0)
 				{
-					switch (sdl_event.type)
+					switch (sdl_event.type) //Switch on type of input
 					{
 					default:
 						break;
 
-					case SDL_QUIT:
+					case SDL_QUIT: //Exit
 						quit = true;
 						break;
 
-					case SDL_TEXTINPUT:
+					case SDL_TEXTINPUT: //Typing
 						printf("User is typing: %s\n", sdl_event.text.text);
 						if (graphyte.active_text_field != NULL)
 						{
@@ -541,7 +528,7 @@ public:
 						}
 						break;
 
-					case SDL_KEYDOWN:
+					case SDL_KEYDOWN: //Keypress
 						switch (sdl_event.key.keysym.sym)
 						{
 						case SDLK_BACKSPACE:
@@ -580,15 +567,15 @@ public:
 						}
 						break;
 
-					case SDL_MOUSEBUTTONDOWN:
-						if (sdl_event.button.button == SDL_BUTTON_LEFT)
+					case SDL_MOUSEBUTTONDOWN: //Mouseclick
+						if (sdl_event.button.button == SDL_BUTTON_LEFT) //Left click
 						{
 							int mX = 0;
 							int mY = 0;
 							SDL_GetMouseState(&mX, &mY);
-							click(mX - SCREEN_WIDTH / 2, -mY + SCREEN_HEIGHT / 2, true);
+							click(mX - SCREEN_WIDTH / 2, -mY + SCREEN_HEIGHT / 2, true); //Adjust for screen dimensions
 						}
-						else if (sdl_event.button.button == SDL_BUTTON_RIGHT)
+						else if (sdl_event.button.button == SDL_BUTTON_RIGHT) //Right click
 						{
 							int mX = 0;
 							int mY = 0;
@@ -648,7 +635,7 @@ public:
 			}
 
 		}
-		//Free resources and close SDL
+		//Empty memory and close SDL
 		close();
 
 		return 0;
